@@ -8,7 +8,7 @@ import { renderApp, mockApi, ME, SOURCE, INSTRUMENT } from "./testUtils";
 
 vi.mock("./components/PriceChart", () => ({ PriceChart: ({ bars }: { bars: unknown[] }) => <div data-testid="price-chart">{bars.length} Balken</div> }));
 
-const ROUTES = ["/", "/login", "/quellen", "/instrument/1", "/gibt-es-nicht"];
+const ROUTES = ["/", "/login", "/quellen", "/nachrichten", "/instrument/1", "/gibt-es-nicht"];
 
 describe.each(ROUTES)("Route %s", (path) => {
   it("zeigt den Hinweis (Grundregel 5)", async () => {

@@ -3,7 +3,7 @@ import type { InstrumentWithQuote } from "../lib/api";
 import { formatDateTime, formatPercent, formatPrice } from "../lib/format";
 import { SourceTip } from "./SourceTip";
 
-export function InstrumentCard({ item, onRemove }: { item: InstrumentWithQuote; onRemove?: () => void }) {
+export function InstrumentCard({ item, onRemove, newsCount, newsReason }: { item: InstrumentWithQuote; onRemove?: () => void; newsCount?: number; newsReason?: string | null }) {
   const q = item.quote;
   const tone = q?.change_pct == null ? "text-slate-400" : q.change_pct > 0 ? "text-emerald-400" : q.change_pct < 0 ? "text-rose-400" : "text-slate-300";
   return (
@@ -33,7 +33,12 @@ export function InstrumentCard({ item, onRemove }: { item: InstrumentWithQuote; 
       ) : (
         <p className="mt-3 text-sm text-amber-300" data-testid="no-quote">Kein Kurs verfügbar: Für dieses Instrument wurde bisher kein Kurs von einer Quelle abgerufen.</p>
       )}
-      <p className="mt-3 text-xs text-slate-400">Neue Nachrichten: noch nicht angebunden (Phase 2) · Erkannte Muster: noch nicht angebunden (Phase 3)</p>
+      <p className="mt-3 text-xs text-slate-400" data-testid="news-count">
+        {newsCount != null
+          ? <>Nachrichten (letzte 24 Stunden): <Link to={`/nachrichten?instrument=${item.id}`} className="underline">{newsCount}</Link></>
+          : `Nachrichten: nicht verfügbar${newsReason ? ` (${newsReason})` : ""}`}
+        {" · Erkannte Muster: noch nicht angebunden (Phase 3)"}
+      </p>
     </article>
   );
 }
