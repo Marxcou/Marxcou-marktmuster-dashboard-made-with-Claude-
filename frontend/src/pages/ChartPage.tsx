@@ -1,11 +1,13 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { PriceChart, type ChartKind } from "../components/PriceChart";
+import { NewsClusterCard } from "../components/NewsClusterCard";
+import { PriceChart, type ChartKind, type NewsMarker } from "../components/PriceChart";
 import { SourceTip } from "../components/SourceTip";
 import { useLiveEvents } from "../hooks/useLiveEvents";
 import { api, type BarsResponse, type InstrumentWithQuote } from "../lib/api";
 import { formatDateTime, formatPercent, formatPrice } from "../lib/format";
+import { useInstrumentNews } from "../lib/news";
 import { RANGES, rangeStart, windowBars } from "../lib/timeframes";
 
 export function ChartPage() {
@@ -29,7 +31,18 @@ export function ChartPage() {
     }
   });
 
+  const [selected, setSelected] = useState<number[]>([]);
+  const firstBar = bars.data?.bars[0]?.ts_utc;
+  const news = useInstrumentNews(id, firstBar ? firstBar.slice(0, 13) + ":00:00Z" : undefined);
   const shown = useMemo(() => windowBars(bars.data?.bars ?? [], range), [bars.data, range]);
+  const markers = useMemo<NewsMarker[]>(() => {
+    if (shown.length === 0) return [];
+    const from = new Date(shown[0].ts_utc).getTime();
+    return (news.data?.items ?? [])
+      .filter((c) => new Date(c.first_published_at).getTime() >= from)
+      .map((c) => ({ clusterId: c.id, ts: c.first_published_at, title: c.canonical_title }));
+  }, [news.data, shown]);
+  const selectedClusters = (news.data?.items ?? []).filter((c) => selected.includes(c.id));
   const q = inst.data?.quote;
   const last = shown[shown.length - 1];
   const lastUpdate = bars.dataUpdatedAt ? new Date(bars.dataUpdatedAt).toISOString() : null;
@@ -79,7 +92,7 @@ export function ChartPage() {
       )}
       {shown.length > 0 && (
         <>
-          <PriceChart bars={shown} kind={kind} intraday={intraday} />
+          <PriceChart bars={shown} kind={kind} intraday={intraday} markers={markers} onMarkerClick={setSelected} />
           <p className="mt-2 text-xs text-slate-400" data-testid="last-update">
             Letzter Datenpunkt: {last && formatDateTime(last.ts_utc)}
             {lastUpdate && ` · Zuletzt im Dashboard aktualisiert: ${formatDateTime(lastUpdate)}`}
@@ -88,6 +101,15 @@ export function ChartPage() {
           {last && <SourceTip source={last.source} ts={last.ts_utc} fetchedAt={last.fetched_at} />}
         </>
       )}
+
+      <div className="mt-6" data-testid="chart-news">
+        <h2 className="mb-2 font-semibold">Nachrichten-Marker</h2>
+        {news.isError && <p role="alert" className="text-rose-300">Nachrichten konnten nicht geladen werden (Backend nicht erreichbar).</p>}
+        {news.data?.empty_reason && <p className="text-sm text-amber-300" data-testid="no-markers">Keine Nachrichten-Marker: {news.data.empty_reason}</p>}
+        {news.data && !news.data.empty_reason && markers.length === 0 && <p className="text-sm text-slate-400">Für den gezeigten Zeitraum liegen keine Meldungen zu diesem Instrument vor.</p>}
+        {markers.length > 0 && <p className="text-xs text-slate-400">Marker „N“ = Meldung zeitlich an dieser Kerze (keine Aussage über eine Ursache der Kursbewegung). Klick auf einen Marker zeigt die Meldung mit allen Quellen.</p>}
+        <div className="mt-3 space-y-4">{selectedClusters.map((c) => <NewsClusterCard key={c.id} cluster={c} />)}</div>
+      </div>
     </section>
   );
 }

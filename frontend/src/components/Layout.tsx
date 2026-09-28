@@ -29,6 +29,7 @@ export function Layout() {
         <span className="font-semibold">Marktmuster-Dashboard</span>
         <nav className="flex gap-4 text-sm text-slate-300">
           <NavLink to="/">Watchlist</NavLink>
+          <NavLink to="/nachrichten">Nachrichten</NavLink>
           <NavLink to="/quellen">Quellen</NavLink>
         </nav>
         {me && (

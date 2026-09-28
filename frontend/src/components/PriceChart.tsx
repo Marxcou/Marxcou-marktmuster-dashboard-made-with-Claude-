@@ -1,13 +1,19 @@
-import { ColorType, CrosshairMode, createChart, type IChartApi, type UTCTimestamp } from "lightweight-charts";
+import { ColorType, CrosshairMode, createChart, type IChartApi, type ISeriesApi, type UTCTimestamp } from "lightweight-charts";
 import { useEffect, useRef } from "react";
 import type { Bar } from "../lib/api";
+
+export interface NewsMarker { clusterId: number; ts: string; title: string }
 
 export type ChartKind = "candles" | "line";
 
 const berlin = (opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", ...opts });
 const toTime = (iso: string) => Math.floor(new Date(iso).getTime() / 1000) as UTCTimestamp;
 
-export function PriceChart({ bars, kind, intraday }: { bars: Bar[]; kind: ChartKind; intraday: boolean }) {
+export function PriceChart({ bars, kind, intraday, markers = [], onMarkerClick }: {
+  bars: Bar[]; kind: ChartKind; intraday: boolean; markers?: NewsMarker[]; onMarkerClick?: (clusterIds: number[]) => void;
+}) {
+  const clickRef = useRef(onMarkerClick);
+  clickRef.current = onMarkerClick;
   const ref = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
 
@@ -33,13 +39,40 @@ export function PriceChart({ bars, kind, intraday }: { bars: Bar[]; kind: ChartK
     });
     chartRef.current = chart;
 
+    let main: ISeriesApi<"Candlestick"> | ISeriesApi<"Line">;
     if (kind === "candles") {
       const s = chart.addCandlestickSeries({ upColor: "#34d399", downColor: "#fb7185", wickUpColor: "#34d399", wickDownColor: "#fb7185", borderVisible: false });
       s.setData(bars.map((b) => ({ time: toTime(b.ts_utc), open: b.open, high: b.high, low: b.low, close: b.close })));
+      main = s;
     } else {
       const s = chart.addLineSeries({ color: "#38bdf8", lineWidth: 2 });
       s.setData(bars.map((b) => ({ time: toTime(b.ts_utc), value: b.close })));
+      main = s;
     }
+    // Nachrichten-Marker: an die zeitlich passende Kerze gehängt (letzte Kerze, die nicht nach der Meldung beginnt).
+    // Nur zeitliches Zusammenfallen, keine Aussage über Ursache.
+    const barTimes = bars.map((b) => toTime(b.ts_utc));
+    const snap = (iso: string) => {
+      const t = toTime(iso);
+      if (barTimes.length === 0 || t < barTimes[0]) return null;
+      let c = barTimes[0];
+      for (const bt of barTimes) { if (bt <= t) c = bt; else break; }
+      return c;
+    };
+    const byTime = new Map<number, number[]>();
+    for (const m of markers) {
+      const t = snap(m.ts);
+      if (t != null) byTime.set(t, [...(byTime.get(t) ?? []), m.clusterId]);
+    }
+    main.setMarkers([...byTime.entries()].sort((a, b) => a[0] - b[0]).map(([t, ids]) => ({
+      time: t as UTCTimestamp, position: "aboveBar" as const, shape: "circle" as const, color: "#f59e0b",
+      text: ids.length > 1 ? String(ids.length) : "N",
+    })));
+    chart.subscribeClick((p) => {
+      if (p.time == null) return;
+      const ids = byTime.get(p.time as number);
+      if (ids) clickRef.current?.(ids);
+    });
     // Volumen nur dort, wo die Quelle es liefert; fehlende Werte werden nicht ergänzt.
     const vol = chart.addHistogramSeries({ priceFormat: { type: "volume" }, priceScaleId: "vol", color: "#64748b" });
     chart.priceScale("vol").applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
@@ -47,7 +80,7 @@ export function PriceChart({ bars, kind, intraday }: { bars: Bar[]; kind: ChartK
     chart.timeScale().fitContent();
 
     return () => { chart.remove(); chartRef.current = null; };
-  }, [bars, kind, intraday]);
+  }, [bars, kind, intraday, markers]);
 
   return <div ref={ref} data-testid="price-chart" className="w-full" role="img" aria-label="Kursdiagramm" />;
 }
