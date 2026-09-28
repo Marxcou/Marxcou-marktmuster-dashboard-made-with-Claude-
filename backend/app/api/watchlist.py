@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import func, select
 
 from app.api.instruments import InstrumentOut, InstrumentWithQuote, latest_quote
 from app.deps import DB, CurrentUser
 from app.models import Instrument, WatchlistItem
+from app.price_service import backfill_new_instrument
 
 router = APIRouter(prefix="/api/watchlist", tags=["watchlist"])
 
@@ -27,7 +28,7 @@ def list_watchlist(db: DB, user: CurrentUser) -> list[InstrumentWithQuote]:
 
 
 @router.post("", status_code=201)
-def add(body: WatchlistAdd, db: DB, user: CurrentUser) -> dict[str, int]:
+def add(body: WatchlistAdd, bg: BackgroundTasks, db: DB, user: CurrentUser) -> dict[str, int]:
     if db.get(Instrument, body.instrument_id) is None:
         raise HTTPException(404, "Instrument nicht gefunden")
     if db.get(WatchlistItem, (user.id, body.instrument_id)) is None:
@@ -35,6 +36,7 @@ def add(body: WatchlistAdd, db: DB, user: CurrentUser) -> dict[str, int]:
                         .where(WatchlistItem.user_id == user.id)) or 0
         db.add(WatchlistItem(user_id=user.id, instrument_id=body.instrument_id, position=pos))
         db.commit()
+        bg.add_task(backfill_new_instrument, body.instrument_id)  # Chart soll nicht bis zum nächsten Job leer sein
     return {"instrument_id": body.instrument_id}
 
 

@@ -12,6 +12,12 @@ from app.db import Base, engine  # noqa: E402
 from app.main import app  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _no_network_adapters(monkeypatch):
+    """Tests laufen ohne echte Anbieter-Aufrufe; Adapter-Tests nutzen httpx.MockTransport."""
+    monkeypatch.setattr("app.main.load_builtin_adapters", lambda: None)
+
+
 @pytest.fixture()
 def client():
     Base.metadata.drop_all(engine)
