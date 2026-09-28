@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { NavLink, Outlet } from "react-router-dom";
 import { api, type Meta } from "../lib/api";
+import { useAuth } from "../lib/auth";
 
 // Rückfalltext, falls /api/meta nicht erreichbar ist: der Hinweis muss trotzdem sichtbar sein (Grundregel 5).
 export const DISCLAIMER_FALLBACK =
@@ -15,6 +16,7 @@ export function Disclaimer({ text }: { text?: string }) {
 }
 
 export function Layout() {
+  const { me, logout } = useAuth();
   const { data: meta } = useQuery({ queryKey: ["meta"], queryFn: () => api<Meta>("/meta"), retry: false });
   return (
     <div className="flex min-h-screen flex-col bg-slate-950 text-slate-100">
@@ -29,6 +31,12 @@ export function Layout() {
           <NavLink to="/">Watchlist</NavLink>
           <NavLink to="/quellen">Quellen</NavLink>
         </nav>
+        {me && (
+          <div className="ml-auto flex items-center gap-3 text-sm text-slate-300">
+            <span>{me.user.display_name}</span>
+            <button type="button" onClick={() => void logout()} className="underline">Abmelden</button>
+          </div>
+        )}
       </header>
       <Disclaimer text={meta?.disclaimer} />
       <main className="flex-1 p-4"><Outlet /></main>
