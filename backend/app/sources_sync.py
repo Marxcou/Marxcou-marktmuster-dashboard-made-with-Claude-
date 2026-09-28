@@ -15,7 +15,7 @@ def sync_sources(db: Session) -> None:
         row.update_interval, row.delay_text = meta.update_interval, meta.delay_text
         row.requires_key, row.is_official = meta.requires_key, meta.is_official
         if not adapter.is_configured():
-            row.status, row.last_error = "disabled", "API-Schlüssel nicht gesetzt"
+            row.status, row.last_error = "disabled", adapter.disabled_reason
         else:
             h = adapter.health()
             row.status, row.last_error = h.status, h.message

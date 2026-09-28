@@ -2,7 +2,24 @@
 
 Informations-Tool für Aktien: Nachrichten, Charts, Mustererkennung, Szenarien. **Keine Anlageberatung.** Die Grundregeln stehen in [CLAUDE.md](CLAUDE.md).
 
-Stand: **Phase 1A + 1B (Foundation, Kursdaten-Backend)**. Lauffähig sind Login, Nutzerverwaltung, Datenbank, API, Worker und die Oberfläche mit Hinweis, Dark Mode und deutschen Formaten. Das Backend holt Kursdaten (siehe unten); die Watchlist-/Chart-Oberfläche (1C) folgt in einem eigenen Pull Request.
+Stand: **Phase 1A + 1B (Foundation, Kursdaten-Backend) und Phase 2 Backend (News-Aggregator)**. Lauffähig sind Login, Nutzerverwaltung, Datenbank, API, Worker und die Oberfläche mit Hinweis, Dark Mode und deutschen Formaten. Das Backend holt Kursdaten (siehe unten); die Watchlist-/Chart-Oberfläche (1C) folgt in einem eigenen Pull Request.
+
+## Nachrichten (Phase 2, Backend)
+
+Der Worker ruft je Quelle in eigenem Intervall Meldungen zu den Aktien aller Watchlists ab, ordnet sie Instrumenten zu (Anbieter-Symbol, ISIN, Ticker, Firmenname; der Grund steht je Zuordnung dabei), führt Duplikate zu Clustern zusammen (normalisierte URL, Titelähnlichkeit innerhalb von 48 Stunden, **alle** Quellen eines Clusters bleiben sichtbar) und bewertet die Stimmung mit Begründung und Modellangabe. Gespeichert werden nur Überschrift, ein Auszug von höchstens 300 Zeichen und der Link. Endpunkte: `/api/news`, `/api/instruments/{id}/news`, `/api/news/counts`, `/api/news/sentiment-status`, `/api/sources` (siehe `docs/api-contract.md`).
+
+| Quelle | Schlüssel in `.env` | Hinweis |
+|---|---|---|
+| Finnhub Unternehmensnachrichten | `FINNHUB_API_KEY` (derselbe wie für Kurse) | nur US, alle 5 Min. |
+| SEC EDGAR | `SEC_EDGAR_CONTACT_EMAIL` | Pflichtmeldungen (8-K, 10-Q, 10-K, Form 4), Kontaktadresse ist Pflicht im User-Agent |
+| Marketaux | `MARKETAUX_API_KEY` | 100 Anfragen/Tag: Aktien werden reihum abgefragt, höchstens 90 Anfragen/Tag |
+| Alpha Vantage News (optional) | `ALPHAVANTAGE_API_KEY` | 25 Anfragen/Tag, höchstens 20 genutzt |
+| GDELT | keiner | verrauscht: Meldungen ohne Firmenname oder Ticker im Titel werden verworfen |
+| RSS-Feeds, EQS | `RSS_ENABLED_FEEDS`, `EQS_RSS_URL` | **standardmäßig aus**: Adresse und Nutzungsbedingungen zuerst prüfen |
+
+Quellen ohne Schlüssel bzw. ohne Freischaltung erscheinen auf der Seite Quellen als "deaktiviert" mit Grund; ein Ausfall einer Quelle beeinträchtigt die anderen nicht.
+
+**Stimmung:** Immer verfügbar ist ein regelbasiertes Wortlisten-Verfahren (Deutsch/Englisch, ohne Kosten). Mit `ANTHROPIC_API_KEY` bewertet Claude Haiku 4.5 die Meldungen und muss die auslösenden Formulierungen wörtlich zitieren; das Backend prüft jedes Zitat gegen den Text und fällt bei Abweichung auf das Lexikon zurück. `CLAUDE_MONTHLY_BUDGET_USD` (Standard 10) ist eine harte Obergrenze: vor jedem Aufruf wird der Verbrauch des Monats plus der Höchstwert des Aufrufs geprüft. Danach gilt das Lexikon, sichtbar in `/api/news/sentiment-status` und auf der Seite Quellen. Bitte zusätzlich ein Ausgabenlimit in der Anthropic-Konsole setzen.
 
 ## Kursdaten (Phase 1B)
 

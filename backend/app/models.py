@@ -121,3 +121,65 @@ class Event(Base):
     type: Mapped[str] = mapped_column(String(40))  # quote | news | detection | source_status
     payload: Mapped[dict[str, Any]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class NewsCluster(Base):
+    """Zusammengeführte Meldungen zur selben Nachricht. Die UI listet alle Quellen des Clusters."""
+    __tablename__ = "news_clusters"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    canonical_title: Mapped[str] = mapped_column(String(500))
+    first_published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    last_published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    item_count: Mapped[int] = mapped_column(Integer, default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class NewsItem(Base):
+    __tablename__ = "news_items"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
+    external_id: Mapped[str] = mapped_column(String(300))
+    url: Mapped[str] = mapped_column(String(1000))
+    url_normalized: Mapped[str] = mapped_column(String(1000), index=True)
+    title: Mapped[str] = mapped_column(String(500))
+    excerpt: Mapped[str] = mapped_column(String(300), default="")  # nie der Volltext
+    published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    language: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    publisher: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    cluster_id: Mapped[int] = mapped_column(ForeignKey("news_clusters.id"), index=True)
+    __table_args__ = (UniqueConstraint("source_id", "external_id"),)
+
+
+class NewsInstrument(Base):
+    __tablename__ = "news_instruments"
+    cluster_id: Mapped[int] = mapped_column(ForeignKey("news_clusters.id"), primary_key=True)
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id"), primary_key=True, index=True)
+    match_method: Mapped[str] = mapped_column(String(20))  # provider_tag | isin | ticker | name
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class Sentiment(Base):
+    """Stimmung je Cluster mit Begründung und Verfahren. source_id verweist auf das Verfahren
+    (sentiment_lexicon oder claude_sentiment) und erscheint damit auf der Seite Quellen."""
+    __tablename__ = "sentiments"
+    cluster_id: Mapped[int] = mapped_column(ForeignKey("news_clusters.id"), primary_key=True)
+    label: Mapped[str] = mapped_column(String(10))  # positiv | neutral | negativ
+    score: Mapped[float] = mapped_column(Float)  # -1 .. 1
+    evidence: Mapped[list[str]] = mapped_column(JSON, default=list)  # wörtliche Zitate
+    rationale: Mapped[str] = mapped_column(Text)
+    method: Mapped[str] = mapped_column(String(10))  # lexicon | claude
+    model_name: Mapped[str] = mapped_column(String(100))
+    model_version: Mapped[str] = mapped_column(String(50))
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class LlmUsage(Base):
+    """Verbrauch der Claude-API je Monat (für die harte Obergrenze CLAUDE_MONTHLY_BUDGET_USD)."""
+    __tablename__ = "llm_usage"
+    month: Mapped[str] = mapped_column(String(7), primary_key=True)  # YYYY-MM (UTC)
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    cost_usd: Mapped[float] = mapped_column(Float, default=0.0)

@@ -1,13 +1,13 @@
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.config import get_settings
 from app.deps import DB, CurrentUser
 from app.grundregeln import DISCLAIMER
-from app.models import Source
+from app.models import NewsItem, Source
 
 router = APIRouter(prefix="/api", tags=["meta"])
 
@@ -32,6 +32,7 @@ class SourceOut(BaseModel):
     status: str
     last_success_at: datetime | None
     last_error: str | None
+    item_count_24h: int | None = None
 
 
 @router.get("/health")
@@ -46,5 +47,13 @@ def meta() -> MetaOut:
 
 
 @router.get("/sources", response_model=list[SourceOut])
-def sources(db: DB, _u: CurrentUser) -> list[Source]:
-    return list(db.scalars(select(Source).order_by(Source.kind, Source.name)))
+def sources(db: DB, _u: CurrentUser) -> list[SourceOut]:
+    since = datetime.now(UTC) - timedelta(hours=24)
+    counts = dict(db.execute(select(NewsItem.source_id, func.count(NewsItem.id))
+                             .where(NewsItem.fetched_at >= since).group_by(NewsItem.source_id)).all())
+    out = []
+    for s in db.scalars(select(Source).order_by(Source.kind, Source.name)):
+        row = SourceOut.model_validate(s, from_attributes=True)
+        row.item_count_24h = counts.get(s.id, 0) if s.kind == "news" else None
+        out.append(row)
+    return out

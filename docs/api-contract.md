@@ -61,10 +61,11 @@ Alle Antworten enthalten `source`-Objekte (Grundregel 2). Stimmung und Cluster s
     "model_version": "1", "rationale": "…", "evidence": ["Rekordgewinn"], "created_at": "…"
   },
   "items": [{"id": 1, "title": "…", "excerpt": "…", "url": "https://…", "published_at": "…",
-             "fetched_at": "…", "language": "en", "source": {"key": "finnhub_news", "name": "Finnhub", "homepage": "…", "terms_url": "…", "delay_text": "…"}}]
+             "fetched_at": "…", "language": "en", "publisher": "Reuters", "source": {"key": "finnhub_news", "name": "Finnhub", "homepage": "…", "terms_url": "…", "delay_text": "…"}}]
 }
 ```
 
+- `items[].publisher`: ursprünglicher Verlag bzw. Domain, wenn der Anbieter Meldungen weiterreicht (z. B. Finnhub, Marketaux, GDELT), sonst `null`.
 - `instruments[].match_method`: `provider_tag` (Anbieter liefert das Symbol), `isin`, `ticker` (Cashtag oder Tickersymbol im Titel), `name` (Firmenname im Titel/Auszug).
 - `sentiment` ist `null`, solange noch nicht berechnet. `method` ist `lexicon` oder `claude`; `model_name` nennt das verwendete Verfahren bzw. Modell (Grundregel: Modell angeben). `evidence` sind wörtliche Zitate aus Überschrift/Auszug (bei `claude` vom Backend gegen den Text geprüft).
 - Meldungen mit KI-Stimmung sind im UI als "KI-generiert" zu kennzeichnen (`method == "claude"`).
@@ -73,4 +74,4 @@ Alle Antworten enthalten `source`-Objekte (Grundregel 2). Stimmung und Cluster s
 
 ### `/sources` (Erweiterung, additiv)
 
-Zusätzlich zu den bisherigen Feldern: `item_count_24h` (Anzahl in den letzten 24 h gespeicherter Meldungen, nur bei `kind == "news"`, sonst `null`). Neu in der Liste: die News-Quellen `finnhub_news`, `sec_edgar`, `alphavantage_news`, `marketaux`, `gdelt`, optional `eqs_news` und je ein `rss_<id>` pro RSS-Feed sowie die Stimmungsverfahren `sentiment_lexicon` und `claude_sentiment` (`kind: "llm"`). Ohne Schlüssel bzw. ohne Freischaltung steht der Status `disabled` mit `last_error` (Grund).
+Zusätzlich zu den bisherigen Feldern: `item_count_24h` (Anzahl in den letzten 24 h gespeicherter Meldungen, nur bei `kind == "news"`, sonst `null`). Neu in der Liste: die News-Quellen `finnhub_news`, `sec_edgar`, `alphavantage_news`, `marketaux`, `gdelt`, optional `eqs_news` und je ein `rss_<id>` pro RSS-Feed sowie die Stimmungsverfahren `sentiment_lexicon` (`kind: "reference"`) und `claude_sentiment` (`kind: "llm"`). Ohne Schlüssel bzw. ohne Freischaltung steht der Status `disabled` mit `last_error` (Grund).
