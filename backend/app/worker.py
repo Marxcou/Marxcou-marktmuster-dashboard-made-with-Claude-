@@ -2,12 +2,14 @@
 den Scheduler, den Health-Check-Job für alle registrierten Adapter und den Einhängepunkt für weitere Jobs."""
 import logging
 from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from app.adapters.registry import load_builtin_adapters
+from app.adapters.registry import load_builtin_adapters, news_adapters
 from app.alpaca_stream import start_stream_thread
 from app.db import SessionLocal
+from app.news_service import make_job, sentiment_job
 from app.price_service import daily_job, intraday_job, quote_job
 from app.sources_sync import sync_sources
 
@@ -28,6 +30,14 @@ def build_scheduler() -> BlockingScheduler:
     sched.add_job(health_job, "interval", seconds=60, id="source-health", max_instances=1)
     for fn, seconds in JOBS:
         sched.add_job(fn, "interval", seconds=seconds, id=fn.__name__, max_instances=1)
+    # Phase 2: je News-Quelle ein eigener Job (eigenes Intervall). Nicht freigeschaltete Quellen (kein Schlüssel,
+    # Feed nicht freigegeben) bekommen keinen Job und stehen auf der Seite Quellen als 'disabled'.
+    for adapter in news_adapters():
+        if adapter.is_configured():
+            key = adapter.metadata().key
+            sched.add_job(make_job(key), "interval", seconds=adapter.poll_seconds, id=f"news-{key}",
+                          max_instances=1, next_run_time=datetime.now(UTC) + timedelta(seconds=10))
+    sched.add_job(sentiment_job, "interval", seconds=300, id="sentiment", max_instances=1)
     return sched
 
 

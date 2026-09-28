@@ -5,7 +5,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from starlette.websockets import WebSocketState
 
 from app.adapters.registry import load_builtin_adapters
-from app.api import auth, instruments, meta, users, watchlist
+from app.api import auth, instruments, meta, news, users, watchlist
 from app.bootstrap import ensure_admin
 from app.db import SessionLocal
 from app.deps import SESSION_COOKIE
@@ -25,7 +25,7 @@ async def lifespan(_app: FastAPI):  # type: ignore[no-untyped-def]
 
 
 app = FastAPI(title="Marktmuster-Dashboard API", lifespan=lifespan)
-for r in (meta.router, auth.router, users.router, instruments.router, watchlist.router):
+for r in (meta.router, auth.router, users.router, instruments.router, watchlist.router, news.router):
     app.include_router(r)
 
 

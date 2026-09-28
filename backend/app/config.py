@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     openfigi_api_key: str = ""
     yahoo_enabled: bool = False
     sec_edgar_contact_email: str = ""
+    eqs_rss_url: str = ""  # Feed-Adresse der EQS-News (Nutzungsbedingungen vorher prüfen)
+    rss_enabled_feeds: str = ""  # Komma-Liste von Feed-IDs (siehe adapters/rss.py) oder "all"
     marketaux_api_key: str = ""
     alphavantage_api_key: str = ""
     anthropic_api_key: str = ""

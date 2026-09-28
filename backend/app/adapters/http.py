@@ -109,3 +109,15 @@ class ProbedHealth:
             status = "online" if h.last_success_at else "offline"
         return Health(status=status, checked_at=now, last_success_at=h.last_success_at,  # type: ignore[arg-type]
                       message=h.last_error)
+
+
+class PassiveHealth(ProbedHealth):
+    """Für Quellen mit knappem Tageskontingent: kein Probe-Aufruf, der Status folgt den echten Abrufen."""
+
+    def _probe(self) -> None:
+        return None
+
+    def health(self) -> Health:
+        if self.http.last_success_at is None and self.http.last_error is None:
+            return Health(status="degraded", checked_at=datetime.now(UTC), message="Noch kein Abruf erfolgt")
+        return super().health()

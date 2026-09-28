@@ -90,6 +90,9 @@ class NewsRecord:
     fetched_at: datetime
     source_key: str
     language: str | None = None
+    publisher: str | None = None  # ursprünglicher Verlag/Domain, falls der Anbieter Meldungen weiterreicht
+    # Vom Anbieter gelieferte Symbole (Herkunft "provider_tag"). Konvention: US-Symbole unverändert ("AAPL"),
+    # XETRA mit Suffix ".DE" ("SAP.DE"). Leer, wenn der Anbieter keine Zuordnung liefert.
     symbols: tuple[str, ...] = ()
 
 
@@ -100,8 +103,10 @@ class SourceAdapter(ABC):
     @abstractmethod
     def health(self) -> Health: ...
 
+    disabled_reason = "API-Schlüssel nicht gesetzt"
+
     def is_configured(self) -> bool:
-        """False, wenn ein nötiger API-Schlüssel fehlt. Dann Status 'disabled'."""
+        """False, wenn ein nötiger API-Schlüssel fehlt. Dann Status 'disabled' mit disabled_reason."""
         return True
 
 
@@ -120,6 +125,27 @@ class PriceAdapter(SourceAdapter):
         return []
 
 
+@dataclass(frozen=True)
+class NewsTarget:
+    """Ein beobachtetes Instrument (aus den Watchlists). Adapter nutzen Symbol, Name oder ISIN je nach Anbieter."""
+
+    symbol: str
+    exchange: str
+    name: str
+    isin: str | None = None
+
+
 class NewsAdapter(SourceAdapter):
+    supported_exchanges: tuple[str, ...] = ("XNYS", "XNAS", "XETR")
+    poll_seconds: int = 600  # Abrufintervall im Worker
+    # True: Meldungen ohne belegte Instrument-Zuordnung werden verworfen (verrauschte Quellen wie GDELT)
+    require_match: bool = False
+
     @abstractmethod
     def fetch_news(self, symbols: list[str], since: datetime) -> list[NewsRecord]: ...
+
+    def fetch_news_for(self, targets: list[NewsTarget], since: datetime) -> list[NewsRecord]:
+        """Standard: nach Symbolen der unterstützten Börsen abrufen. Adapter, die Namen oder eine andere
+        Symbolschreibweise brauchen (GDELT, Marketaux), überschreiben diese Methode."""
+        symbols = [t.symbol for t in targets if t.exchange in self.supported_exchanges]
+        return self.fetch_news(symbols, since) if symbols else []
