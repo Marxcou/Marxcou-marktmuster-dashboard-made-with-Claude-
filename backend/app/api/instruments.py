@@ -1,13 +1,19 @@
 """Instrumente und Kursdaten. Der Vertrag steht in docs/api-contract.md.
-Suche: Phase 1A durchsucht nur lokal gespeicherte Instrumente; 1B ergänzt Anbieter-Suche/OpenFIGI."""
+Suche: lokal gespeicherte Instrumente plus Anbieter-Suche (OpenFIGI); Treffer werden gespeichert."""
+import logging
 from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import or_, select
 
+from app.adapters.http import SourceError
+from app.adapters.registry import price_adapters
 from app.deps import DB, CurrentUser
 from app.models import Instrument, PriceBar, Quote, Source
+from app.price_service import NO_INTRADAY_REASON, SOURCE_PRIORITY, has_intraday, upsert_instrument
+
+log = logging.getLogger("instruments")
 
 router = APIRouter(prefix="/api", tags=["instruments"])
 
@@ -88,7 +94,20 @@ def search(db: DB, _u: CurrentUser, q: str = Query(min_length=1, max_length=100)
     stmt = select(Instrument).where(
         or_(Instrument.symbol.ilike(like), Instrument.name.ilike(like), Instrument.isin.ilike(like))
     ).order_by(Instrument.symbol).limit(25)
-    return list(db.scalars(stmt))
+    results: dict[int, Instrument] = {i.id: i for i in db.scalars(stmt)}
+    # Anbieter-Suche ergänzt lokale Treffer (ISIN, Name, Ticker); ein Ausfall lässt die lokale Suche bestehen.
+    for adapter in price_adapters():
+        if not adapter.is_configured():
+            continue
+        try:
+            found = adapter.search_instruments(q.strip())
+        except SourceError as exc:
+            log.warning("Suche %s: %s", adapter.metadata().key, exc)
+            continue
+        for rec in found[:15]:
+            inst = upsert_instrument(db, rec)
+            results.setdefault(inst.id, inst)
+    return sorted(results.values(), key=lambda i: (i.symbol, i.exchange))[:25]
 
 
 @router.get("/instruments/{instrument_id}", response_model=InstrumentWithQuote)
@@ -116,12 +135,25 @@ def get_bars(
         stmt = stmt.where(PriceBar.ts_utc >= start)
     if end:
         stmt = stmt.where(PriceBar.ts_utc <= end)
-    rows = db.execute(stmt.order_by(PriceBar.ts_utc.desc()).limit(limit)).all()
+    rows = db.execute(stmt.order_by(PriceBar.ts_utc.desc()).limit(limit * 2)).all()
+    # Liefern mehrere Quellen dieselbe Kerze, zeigt der Chart nur eine (Quelle mit höchster Priorität).
+    rank = {k: i for i, k in enumerate(SOURCE_PRIORITY)}
+    best: dict[object, tuple[PriceBar, Source]] = {}
+    for b, s in rows:
+        slot = b.ts_utc.date() if timeframe == "1d" else b.ts_utc
+        if slot not in best or rank.get(s.key, 99) < rank.get(best[slot][1].key, 99):
+            best[slot] = (b, s)
+    chosen = sorted(best.values(), key=lambda t: t[0].ts_utc)[-limit:]
     bars = [
         BarOut(ts_utc=b.ts_utc, open=b.open, high=b.high, low=b.low, close=b.close, volume=b.volume,
                fetched_at=b.fetched_at, is_demo=b.is_demo, source=_ref(s))
-        for b, s in reversed(rows)
+        for b, s in chosen
     ]
-    reason = None if bars else "Keine Kursdaten für diesen Zeitraum gespeichert (noch keine Quelle hat sie geliefert)."
+    if bars:
+        reason = None
+    elif timeframe != "1d" and not has_intraday(inst.exchange):
+        reason = NO_INTRADAY_REASON
+    else:
+        reason = "Keine Kursdaten für diesen Zeitraum gespeichert (noch keine Quelle hat sie geliefert)."
     return BarsOut(instrument=InstrumentOut.model_validate(inst, from_attributes=True),
                    timeframe=timeframe, bars=bars, empty_reason=reason)

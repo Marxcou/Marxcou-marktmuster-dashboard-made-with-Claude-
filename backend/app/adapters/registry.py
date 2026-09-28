@@ -22,4 +22,13 @@ def clear() -> None:  # nur für Tests
 
 
 def load_builtin_adapters() -> None:
-    """Hook für 1B/2x: hier die Adapter-Module importieren und register(...) aufrufen."""
+    """Registriert alle eingebauten Adapter. Adapter ohne API-Schlüssel werden trotzdem registriert und als
+    'disabled' auf der Quellen-Seite gezeigt (Grundregel 6: ehrlich statt still)."""
+    from app.adapters.alpaca import AlpacaAdapter
+    from app.adapters.finnhub import FinnhubAdapter
+    from app.adapters.openfigi import OpenFigiAdapter
+    from app.adapters.stooq import StooqAdapter
+
+    for adapter_cls in (AlpacaAdapter, FinnhubAdapter, StooqAdapter, OpenFigiAdapter):
+        if adapter_cls.key not in _ADAPTERS:
+            register(adapter_cls())

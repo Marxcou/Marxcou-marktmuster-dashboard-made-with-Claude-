@@ -6,13 +6,16 @@ from collections.abc import Callable
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 from app.adapters.registry import load_builtin_adapters
+from app.alpaca_stream import start_stream_thread
 from app.db import SessionLocal
+from app.price_service import daily_job, intraday_job, quote_job
 from app.sources_sync import sync_sources
 
 log = logging.getLogger("worker")
 
 # Workstreams 1B/2x/3x hängen ihre Jobs hier ein: (Funktion, Intervall in Sekunden)
-JOBS: list[tuple[Callable[[], None], int]] = []
+# 1B: Kurs-Fallback per Polling (der WebSocket liefert live), Intraday-Kerzen, Tagesdaten
+JOBS: list[tuple[Callable[[], None], int]] = [(quote_job, 60), (intraday_job, 120), (daily_job, 3600)]
 
 
 def health_job() -> None:
@@ -32,6 +35,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO)
     load_builtin_adapters()
     log.info("Worker gestartet")
+    start_stream_thread()
     build_scheduler().start()
 
 
