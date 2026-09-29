@@ -7,5 +7,6 @@ RUN pip install --no-cache-dir .
 COPY alembic.ini ./
 COPY alembic ./alembic
 COPY entrypoint.sh ./
-RUN chmod +x entrypoint.sh
+# CRLF-fest: entfernt Windows-Zeilenenden, falls der Checkout welche enthält
+RUN sed -i 's/\r$//' entrypoint.sh && chmod +x entrypoint.sh
 CMD ["./entrypoint.sh", "api"]

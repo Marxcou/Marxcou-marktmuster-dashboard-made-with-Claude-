@@ -110,6 +110,19 @@ docker compose up --build
 
 Dann im Browser `http://localhost:8080` öffnen (Port über `WEB_PORT`). Der erste Admin wird beim Start aus `ADMIN_EMAIL`/`ADMIN_PASSWORD` angelegt. Weitere Nutzer legt ein Admin an (`POST /api/users`); es gibt keine offene Registrierung.
 
+### Windows: Zeilenenden
+
+Die Datei `.gitattributes` erzwingt LF für Skripte und Konfigurationsdateien, die in den Linux-Containern laufen. Zusätzlich entfernt `backend/Dockerfile` beim Bauen eventuelle CRLF aus `entrypoint.sh`. Trat vorher `exec ./entrypoint.sh: no such file or directory` auf, in einem bestehenden Klon nach dem Pull einmal ausführen:
+
+```bash
+git pull
+git add --renormalize .
+git status                  # sollte nichts Relevantes zeigen
+docker compose up --build -d
+```
+
+Falls Dateien im Arbeitsverzeichnis weiterhin CRLF haben: `git rm --cached -r . && git reset --hard` (verwirft lokale, nicht committete Änderungen).
+
 `.env` wird nie committet. Schlüssel gehören ausschließlich dorthin.
 
 ## Entwicklung ohne Docker

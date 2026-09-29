@@ -1,0 +1,11 @@
+# Zeilenenden: Dateien, die Linux-Container ausführen oder einlesen, bleiben immer LF,
+# auch unter Windows mit core.autocrlf=true.
+* text=auto
+*.sh text eol=lf
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+*.ini text eol=lf
+*.conf text eol=lf
+*.mako text eol=lf
+*.py text eol=lf
+.dockerignore text eol=lf
