@@ -31,10 +31,11 @@ export function Layout() {
           <NavLink to="/">Watchlist</NavLink>
           <NavLink to="/nachrichten">Nachrichten</NavLink>
           <NavLink to="/quellen">Quellen</NavLink>
+          {me?.user.role === "admin" && <NavLink to="/admin/benutzer">Benutzer</NavLink>}
         </nav>
         {me && (
           <div className="ml-auto flex items-center gap-3 text-sm text-slate-300">
-            <span>{me.user.display_name}</span>
+            <NavLink to="/konto" className="underline">{me.user.display_name}</NavLink>
             <button type="button" onClick={() => void logout()} className="underline">Abmelden</button>
           </div>
         )}

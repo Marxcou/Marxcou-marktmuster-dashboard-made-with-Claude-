@@ -101,6 +101,15 @@ Auf der Chart-Seite (Tageskerzen) lässt sich der **Prognosekorridor** zuschalte
 
 Der Worker holt Daten nur für Aktien, die auf mindestens einer Watchlist stehen. Fehlt ein Schlüssel, zeigt `/api/sources` den Status `disabled`; es werden keine Ersatzdaten erzeugt. XETRA hat im kostenlosen Tarif nur Tagesdaten: 1T/1W zeigen dafür einen ausdrücklichen Hinweis. Kurse aus dem Alpaca-Live-Feed stammen von der IEX-Börse und können vom konsolidierten Kurs abweichen. Ein Ausfall einer Quelle bleibt lokal (Rate-Limit, Retry, Circuit-Breaker je Adapter).
 
+## Stabilität und Tempo (Phase 5A)
+
+Gemessen mit `backend/scripts/bench.py` (40 Instrumente, 35 davon auf Watchlists, 1500 Tageskerzen, je Zeitraster mehrere tausend Kerzen, 20.000 Meldungen; Ergebnisse in `docs/performance.md`):
+
+- Die Worker-Jobs für Muster und Analysen rechnen nur noch neu, wenn es neue abgeschlossene Kerzen gibt (oder sich Parameter/Algorithmus-Version ändern). Ein Lauf ohne neue Kerzen dauert dadurch etwa 2 s statt 12 s (Muster) bzw. 9 s (Analysen). Die Erkennung ist deterministisch, das Ergebnis wäre identisch.
+- `quote_job` und `intraday_job` fragen die US-Quellen nur zwischen 04:00 und 20:30 Uhr New York, Montag bis Freitag, ab. Nachts und am Wochenende entfallen die Anfragen (Rate-Limits der freien Tarife). XETRA-Tagesdaten laufen unverändert stündlich.
+- Die Ereignis-Warteschlange (`events`) wird im täglichen Aufräum-Job auf 24 Stunden gekürzt. Vorher wuchs sie mit jeder Kursaktualisierung unbegrenzt.
+- Ein Fehler bei einem Instrument stoppt in den Kurs-Jobs nicht mehr die übrigen Instrumente (wie schon bei Mustern, Analysen und Prognosen), er landet im Log.
+
 ## Starten (Docker Compose)
 
 Voraussetzung: Docker mit Compose.
@@ -120,6 +129,17 @@ Hast du `.env` erst nach dem ersten Start angepasst und kommst nicht hinein, üb
 ```bash
 docker compose run --rm api python -m app.admin_cli
 ``` Weitere Nutzer legt ein Admin an (`POST /api/users`); es gibt keine offene Registrierung.
+
+### Benutzerverwaltung (Admin)
+
+Als Administrator erscheint im Menü **Benutzer**. Dort kannst du Konten anlegen (E-Mail, Anzeigename, Rolle), sperren und wieder entsperren und Passwörter zurücksetzen. Ablauf für einen Freund:
+
+1. **Konto anlegen**: das Dashboard zeigt ein Einmalpasswort genau einmal an. Es wird nicht gespeichert und nicht per E-Mail verschickt (es gibt keinen Mailversand), gib es selbst weiter.
+2. Beim ersten Login muss der Freund ein eigenes Passwort festlegen (mindestens 10 Zeichen); bis dahin ist nur diese Seite erreichbar. Jeder Nutzer kann sein Passwort später unter seinem Namen oben rechts ändern; dabei werden seine anderen Sitzungen beendet.
+3. **Sperren** beendet sofort alle Sitzungen des Kontos, Anmeldung und Live-Verbindung sind danach nicht mehr möglich. **Passwort zurücksetzen** erzeugt ein neues Einmalpasswort und beendet ebenfalls alle Sitzungen.
+4. Der letzte aktive Admin und das eigene Konto lassen sich nicht sperren oder herabstufen.
+
+API-Schlüssel stehen nur in der `.env` des Servers. Kein Endpunkt und keine Seite liefert sie an einen Browser (auch nicht an Admins); ein Test prüft das für alle GET-Routen. Manche kostenlose Datentarife erlauben nur private Nutzung, bitte vor dem Teilen die Nutzungsbedingungen prüfen (Seite "Quellen"). Das Claude-Budget gilt für alle Nutzer zusammen. Aktualisieren: `docker compose up --build` (die Migration `0007` läuft beim Start).
 
 ### Windows: Zeilenenden
 
@@ -142,6 +162,10 @@ Falls Dateien im Arbeitsverzeichnis weiterhin CRLF haben: `git rm --cached -r . 
 cd backend && pip install -e ".[dev]" && pytest && ruff check . && mypy app
 cd frontend && npm ci && npm test && npm run build
 ```
+
+## Serverbetrieb (Phase 5)
+
+Für den Dauerbetrieb auf einem Server (Tailscale oder öffentliche HTTPS-Adresse mit automatischem Zertifikat), Aktualisieren mit `./deploy/update.sh`, nächtliche Datenbank-Sicherung und Wiederherstellung: siehe [docs/betrieb.md](docs/betrieb.md). Mit `APP_ENV=production` startet die API nur mit eigenen Werten für `SESSION_SECRET` und `ADMIN_PASSWORD`.
 
 ## Aufbau
 

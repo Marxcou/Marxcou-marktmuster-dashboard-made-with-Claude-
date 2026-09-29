@@ -11,7 +11,13 @@ Jeder Kurs/jede Kerze trägt `source` (`key`, `name`, `homepage`, `terms_url`, `
 | POST `/auth/login` `{email,password}` | nein | Setzt Cookie, liefert `{user, csrf_token}` |
 | GET `/auth/me` | ja | `{user, csrf_token}` |
 | POST `/auth/logout` | ja | 204 |
-| GET/POST `/users` | Admin | Nutzer auflisten/einladen (keine offene Registrierung) |
+| POST `/auth/change-password` `{current_password,new_password}` | ja | 204. Mindestens 10 Zeichen, muss sich vom alten unterscheiden (400), falsches aktuelles Passwort 400. Beendet alle anderen Sitzungen des Kontos, setzt `must_change_password=false` |
+| GET `/users` | Admin | `[{id,email,display_name,role,is_active,must_change_password,created_at}]` (nie Passwort oder Hash) |
+| POST `/users` `{email,display_name,role?,password?}` | Admin | 201, wie oben plus `temporary_password` (nur in dieser Antwort; ohne `password` wird eines erzeugt). Konto startet mit `must_change_password=true`. 409 bei vergebener E-Mail |
+| PATCH `/users/{id}` `{is_active?,role?,display_name?}` | Admin | Sperren/Entsperren. Sperren beendet alle Sitzungen des Kontos. 409 beim eigenen Konto und beim letzten aktiven Admin |
+| POST `/users/{id}/reset-password` | Admin | `{temporary_password}` (nur in dieser Antwort). Setzt `must_change_password=true`, beendet alle Sitzungen |
+
+Weitere Regeln: Nicht-Admins erhalten auf alle `/users`-Endpunkte 403. Login eines gesperrten Kontos (mit richtigem Passwort) liefert 403 "Dieses Konto ist gesperrt"; mit falschem Passwort 401. Solange `must_change_password=true` gilt, liefert jeder Endpunkt außer `/auth/me`, `/auth/logout` und `/auth/change-password` 403 (Header `X-Error-Code: password_change_required`); `UserOut` enthält das Flag. Kein Endpunkt liefert API-Schlüssel oder Passwort-Hashes (Test `test_no_endpoint_returns_secrets`).
 | GET `/instruments/search?q=` | ja | Suche nach Ticker, Name, ISIN in lokal gespeicherten Instrumenten plus OpenFIGI (Treffer werden gespeichert, max. 25). Fällt OpenFIGI aus, kommen die lokalen Treffer. Antwortform unverändert |
 | GET `/instruments/{id}` | ja | Instrument + letzter Kurs (`quote` oder `null`) |
 | GET `/instruments/{id}/bars?timeframe=1m\|5m\|1h\|1d&start&end&limit` | ja | `{instrument, timeframe, bars[], empty_reason}` |

@@ -19,6 +19,7 @@ from app.adapters.http import SourceError
 from app.adapters.registry import price_adapters
 from app.db import SessionLocal
 from app.events import publish
+from app.market_hours import us_session_active
 from app.models import Instrument, PriceBar, Quote, Source, WatchlistItem
 from app.sources_sync import sync_sources
 
@@ -192,24 +193,40 @@ def quote_from_daily(db: Session, inst: Instrument) -> bool:
 # --- Jobs (vom Worker eingehängt) ---
 
 def quote_job() -> None:
+    if not us_session_active():
+        return
     with SessionLocal() as db:
         for inst in watched_instruments(db):
-            refresh_quote(db, inst)
+            try:
+                refresh_quote(db, inst)
+            except Exception:  # noqa: BLE001 - ein Instrument darf die anderen nicht stoppen
+                db.rollback()
+                log.exception("Kurs %s fehlgeschlagen", inst.symbol)
 
 
 def intraday_job() -> None:
+    if not us_session_active():
+        return
     with SessionLocal() as db:
         for inst in watched_instruments(db):
             if has_intraday(inst.exchange):
-                backfill_instrument(db, inst, ("1m", "5m", "1h"))
+                try:
+                    backfill_instrument(db, inst, ("1m", "5m", "1h"))
+                except Exception:  # noqa: BLE001
+                    db.rollback()
+                    log.exception("Intraday-Kerzen %s fehlgeschlagen", inst.symbol)
 
 
 def daily_job() -> None:
     with SessionLocal() as db:
         for inst in watched_instruments(db):
-            backfill_instrument(db, inst, ("1d",))
-            if not has_intraday(inst.exchange):
-                quote_from_daily(db, inst)
+            try:
+                backfill_instrument(db, inst, ("1d",))
+                if not has_intraday(inst.exchange):
+                    quote_from_daily(db, inst)
+            except Exception:  # noqa: BLE001
+                db.rollback()
+                log.exception("Tageskerzen %s fehlgeschlagen", inst.symbol)
 
 
 def backfill_new_instrument(instrument_id: int) -> None:

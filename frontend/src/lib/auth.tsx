@@ -7,6 +7,7 @@ interface AuthState {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -41,7 +42,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     qc.setQueryData(["me"], null);
   };
 
-  return <AuthContext.Provider value={{ me: data ?? null, loading: isLoading, login, logout }}>{children}</AuthContext.Provider>;
+  const refresh = async () => {
+    const me = await api<Me>("/auth/me");
+    setCsrfToken(me.csrf_token);
+    qc.setQueryData(["me"], me);
+  };
+
+  return <AuthContext.Provider value={{ me: data ?? null, loading: isLoading, login, logout, refresh }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthState {

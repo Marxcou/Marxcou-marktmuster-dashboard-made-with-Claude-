@@ -8,6 +8,7 @@ from typing import Any, cast
 from sqlalchemy import CursorResult, delete, select
 from sqlalchemy.orm import Session
 
+from app import events as event_bus
 from app.api_usage import prune_usage
 from app.config import get_settings
 from app.db import SessionLocal
@@ -60,5 +61,6 @@ def retention_job() -> None:
     with SessionLocal() as db:
         stats = prune_news(db)
         prune_usage(db)
+        event_bus.prune(db)
     if stats["clusters"]:
         log.info("Aufbewahrung: %d Cluster mit %d Meldungen gelöscht", stats["clusters"], stats["items"])
