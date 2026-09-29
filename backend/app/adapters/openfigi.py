@@ -1,4 +1,5 @@
 """OpenFIGI (Bloomberg-Mapping-Dienst): Suche nach Ticker, Firmenname und ISIN für US und XETRA."""
+import logging
 import re
 from datetime import UTC, datetime
 from typing import Any
@@ -6,8 +7,10 @@ from typing import Any
 import httpx
 
 from app.adapters.base import AdapterMetadata, BarRecord, InstrumentRecord, PriceAdapter, Timeframe
-from app.adapters.http import ProbedHealth, ResilientHttp, SourceError
+from app.adapters.http import ProbedHealth, ResilientHttp, SourceError, is_header_safe
 from app.config import get_settings
+
+log = logging.getLogger(__name__)
 
 # OpenFIGI-Börsencodes -> MIC. Nur diese drei Märkte sind im Umfang (Nasdaq-Segmente UQ/UW/UR).
 EXCH_TO_MIC = {"UN": "XNYS", "UQ": "XNAS", "UW": "XNAS", "UR": "XNAS", "GY": "XETR"}
@@ -20,7 +23,10 @@ class OpenFigiAdapter(ProbedHealth, PriceAdapter):
     supported_exchanges = ("XNYS", "XNAS", "XETR")
 
     def __init__(self, transport: httpx.BaseTransport | None = None, **kw: Any) -> None:
-        self._token = get_settings().openfigi_api_key
+        self._token = get_settings().openfigi_api_key.strip()
+        if self._token and not is_header_safe(self._token):
+            log.warning("OPENFIGI_API_KEY: unzulässige Zeichen, OpenFIGI läuft ohne Schlüssel (niedrigeres Limit)")
+            self._token = ""
         headers = {"X-OPENFIGI-APIKEY": self._token} if self._token else {}
         self.http = ResilientHttp(base_url="https://api.openfigi.com", headers=headers,
                                   rate_per_min=20 if not self._token else 200, transport=transport, **kw)

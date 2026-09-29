@@ -1,13 +1,16 @@
 """Alpaca Market Data (Basic, kostenlos): US-Kurse und Historie über den IEX-Feed.
 IEX ist eine einzelne Börse mit kleinem Volumenanteil, der Kurs kann vom konsolidierten Kurs abweichen."""
+import logging
 from datetime import UTC, datetime
 from typing import Any
 
 import httpx
 
 from app.adapters.base import AdapterMetadata, BarRecord, PriceAdapter, QuoteRecord, Timeframe
-from app.adapters.http import ProbedHealth, ResilientHttp, SourceError
+from app.adapters.http import ProbedHealth, ResilientHttp, SourceError, is_header_safe
 from app.config import get_settings
+
+log = logging.getLogger(__name__)
 
 US_EXCHANGES = ("XNYS", "XNAS")
 _TF = {"1m": "1Min", "5m": "5Min", "1h": "1Hour", "1d": "1Day"}
@@ -23,10 +26,15 @@ class AlpacaAdapter(ProbedHealth, PriceAdapter):
 
     def __init__(self, transport: httpx.BaseTransport | None = None, **kw: Any) -> None:
         s = get_settings()
-        self._configured = bool(s.alpaca_api_key_id and s.alpaca_api_secret_key)
+        key_id, secret = s.alpaca_api_key_id.strip(), s.alpaca_api_secret_key.strip()
+        self._configured = bool(key_id and secret)
+        if self._configured and not (is_header_safe(key_id) and is_header_safe(secret)):
+            log.warning("ALPACA_API_KEY_ID/ALPACA_API_SECRET_KEY: unzulässige Zeichen, Alpaca bleibt deaktiviert")
+            self._configured, key_id, secret = False, "", ""
+            self.disabled_reason = "Alpaca-Schlüssel enthält unzulässige Zeichen (nur ASCII, ohne Leerzeichen)"
         self.http = ResilientHttp(
             base_url="https://data.alpaca.markets",
-            headers={"APCA-API-KEY-ID": s.alpaca_api_key_id, "APCA-API-SECRET-KEY": s.alpaca_api_secret_key},
+            headers={"APCA-API-KEY-ID": key_id, "APCA-API-SECRET-KEY": secret},
             rate_per_min=150, transport=transport, **kw,
         )
 

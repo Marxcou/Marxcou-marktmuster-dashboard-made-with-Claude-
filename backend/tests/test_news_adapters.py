@@ -217,3 +217,64 @@ def test_rss_adapter_filters_by_since():
     assert len(a.fetch_news([], datetime(2026, 9, 28, tzinfo=UTC))) == 1
     assert a.fetch_news([], datetime(2026, 9, 29, tzinfo=UTC)) == []
     assert json.dumps(a.metadata().name)
+
+
+@pytest.mark.parametrize("bad", ["lücke@example.com", "kein-at-zeichen", "a b@example.com", "x@y.de\nEvil: 1"])
+def test_sec_edgar_invalid_contact_email_disables_source_instead_of_crashing(monkeypatch, bad):
+    from app.config import get_settings
+    monkeypatch.setenv("SEC_EDGAR_CONTACT_EMAIL", bad)
+    get_settings.cache_clear()
+    try:
+        a = SecEdgarAdapter()  # früher: UnicodeEncodeError beim Aufbau des User-Agent
+        assert not a.is_configured()
+        assert "ungültig" in a.disabled_reason
+    finally:
+        get_settings.cache_clear()
+
+
+def test_invalid_env_values_never_stop_adapter_loading_and_sync(monkeypatch):
+    from app.adapters import registry
+    from app.config import get_settings
+    from app.db import Base, SessionLocal, engine
+    from app.models import Source
+    from app.sources_sync import sync_sources
+
+    monkeypatch.setenv("SEC_EDGAR_CONTACT_EMAIL", "lücke@example.com")
+    monkeypatch.setenv("ALPACA_API_KEY_ID", "schlüssel")
+    monkeypatch.setenv("ALPACA_API_SECRET_KEY", "geheim")
+    monkeypatch.setenv("OPENFIGI_API_KEY", "schlüssel")
+    get_settings.cache_clear()
+    registry.clear()
+    Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
+    try:
+        registry.load_builtin_adapters()
+        with SessionLocal() as db:
+            sync_sources(db)
+            rows = {r.key: r for r in db.query(Source)}
+        assert rows["sec_edgar"].status == "disabled" and rows["alpaca"].status == "disabled"
+        assert "ungültig" in rows["sec_edgar"].last_error or "unzulässig" in rows["alpaca"].last_error
+        assert "openfigi" in rows  # läuft ohne Schlüssel weiter, nicht versteckt
+    finally:
+        registry.clear()
+        get_settings.cache_clear()
+        Base.metadata.drop_all(engine)
+
+
+def test_adapter_constructor_crash_becomes_visible_disabled_source(monkeypatch):
+    from app.adapters import registry
+    from app.adapters.finnhub import FinnhubAdapter
+
+    def boom(self, *a, **k):
+        raise RuntimeError("kaputt")
+
+    registry.clear()
+    monkeypatch.setattr(FinnhubAdapter, "__init__", boom)
+    try:
+        registry.load_builtin_adapters()
+        broken = registry.get_adapter("finnhub")
+        assert broken is not None and not broken.is_configured()
+        assert broken.health().status == "disabled"
+        assert registry.get_adapter("sec_edgar") is not None
+    finally:
+        registry.clear()
