@@ -1,7 +1,8 @@
 """Muster-Backtest mit echten Kursdaten (Workstream 3C): Tagesdaten laden, Backtest je Aktie rechnen,
 Ergebnis je Mustertyp in backtest_runs schreiben (kind="pattern", subject=pattern_type).
 
-Grundregel 6: Es werden nur Daten verwendet, die eine echte Kursquelle geliefert hat (Standard: Stooq).
+Grundregel 6: Es werden nur Daten verwendet, die eine echte Kursquelle geliefert hat (Stooq oder Yahoo,
+siehe backtest_job).
 Fehlen Daten, fehlt der Wert im Lauf und wird als fehlend aufgeführt; es wird nichts ergänzt oder geschätzt.
 Grundregel 2: Jeder Lauf nennt Quelle, Abrufzeitraum, verwendete und fehlende Werte."""
 import json

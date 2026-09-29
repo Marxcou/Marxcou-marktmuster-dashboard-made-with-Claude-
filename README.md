@@ -51,7 +51,9 @@ Alle Parameter mit Beschreibung stehen in `backend/app/analysis/params.py` und u
 
 ## Muster-Backtest (Phase 3C)
 
-Die historische Trefferquote je Mustertyp wird mit echten Tagesdaten von Stooq berechnet. Der Backtest ist ein einmaliger Job (nicht im Worker-Zeitplan) und braucht `STOOQ_API_KEY` in `.env`. Ohne Kursdaten speichert er nichts; bis zum ersten Lauf zeigt das Dashboard "nicht berechnet".
+Die historische Trefferquote je Mustertyp wird mit echten Tagesdaten berechnet. Der Backtest ist ein einmaliger Job (nicht im Worker-Zeitplan) und nimmt die erste eingerichtete Tagesdatenquelle: **Stooq**, wenn `STOOQ_API_KEY` gesetzt ist, sonst **Yahoo Finance (inoffiziell)**, wenn `YAHOO_ENABLED=true` gesetzt ist. Mit `--source stooq` oder `--source yahoo` lässt sich die Quelle erzwingen. Ein Lauf nutzt genau eine Quelle; sie steht im Ergebnis (`metrics.source`, Text "Tagesdaten von …") und in der Musteransicht neben der Trefferquote. Ist keine Quelle eingerichtet oder liefert sie nichts, rechnet und speichert der Job nichts; bis zum ersten Lauf zeigt das Dashboard "nicht berechnet".
+
+Yahoo ist inoffiziell: Es gibt keine dokumentierte API, der Abruf kann ohne Ankündigung ausfallen, und die Nutzungsbedingungen erlauben diese Nutzung nicht ausdrücklich. Die Kurse sind splitbereinigt, nicht dividendenbereinigt.
 
 ```bash
 # erst mit zwei Werten ausprobieren, ohne etwas zu speichern
@@ -60,7 +62,7 @@ docker compose run --rm worker python -m app.backtest_job --symbols SAP.XETR,AAP
 docker compose run --rm worker python -m app.backtest_job
 ```
 
-Ohne Docker: `cd backend && python -m app.backtest_job` (gleiche Optionen). Der vollständige Lauf lädt ca. 140 Tagesreihen (Stooq-Limit: 20 Abrufe je Minute, also ca. 7 Minuten) und rechnet ca. 1 CPU-Minute je Aktie, verteilt auf alle Kerne bis auf einen (`--workers`). Die geladenen Daten liegen 7 Tage im Zwischenspeicher `BACKTEST_CACHE_DIR`, ein zweiter Lauf fragt Stooq also nicht erneut. Weitere Optionen: `--start`, `--horizon` (Kerzen, Standard 20), `--min-move` (%, Standard 5), `--step`, `--window`, `--universe-file` (eigene Liste, je Zeile `SYMBOL,BÖRSE`), `python -m app.backtest_job --help`.
+Ohne Docker: `cd backend && python -m app.backtest_job` (gleiche Optionen). Der vollständige Lauf lädt ca. 140 Tagesreihen (Stooq: 20 Abrufe je Minute, also ca. 7 Minuten; Yahoo: höchstens 30 je Minute) und rechnet ca. 1 CPU-Minute je Aktie, verteilt auf alle Kerne bis auf einen (`--workers`). Die geladenen Daten liegen 7 Tage im Zwischenspeicher `BACKTEST_CACHE_DIR`, ein zweiter Lauf fragt die Quelle also nicht erneut (getrennt je Quelle). Weitere Optionen: `--source`, `--start`, `--horizon` (Kerzen, Standard 20), `--min-move` (%, Standard 5), `--step`, `--window`, `--universe-file` (eigene Liste, je Zeile `SYMBOL,BÖRSE`), `python -m app.backtest_job --help`.
 
 So wird gerechnet (`backend/app/analysis/backtest.py`):
 
@@ -94,6 +96,7 @@ Auf der Chart-Seite (Tageskerzen) lässt sich der **Prognosekorridor** zuschalte
 | Alpaca (IEX) | US: Live-Kurse per WebSocket, Kerzen 1m/5m/1h/1d | `ALPACA_API_KEY_ID`, `ALPACA_API_SECRET_KEY` |
 | Finnhub | US: Kurs als Ausweichquelle | `FINNHUB_API_KEY` |
 | Stooq | Tagesdaten US und XETRA | `STOOQ_API_KEY` |
+| Yahoo Finance (inoffiziell) | Tagesdaten US und XETRA, wenn Stooq fehlt | `YAHOO_ENABLED=true` (kein Schlüssel) |
 | OpenFIGI | Suche nach Ticker, Name, ISIN | optional `OPENFIGI_API_KEY` |
 
 Der Worker holt Daten nur für Aktien, die auf mindestens einer Watchlist stehen. Fehlt ein Schlüssel, zeigt `/api/sources` den Status `disabled`; es werden keine Ersatzdaten erzeugt. XETRA hat im kostenlosen Tarif nur Tagesdaten: 1T/1W zeigen dafür einen ausdrücklichen Hinweis. Kurse aus dem Alpaca-Live-Feed stammen von der IEX-Börse und können vom konsolidierten Kurs abweichen. Ein Ausfall einer Quelle bleibt lokal (Rate-Limit, Retry, Circuit-Breaker je Adapter).
