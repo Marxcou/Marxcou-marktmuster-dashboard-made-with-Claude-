@@ -3,12 +3,14 @@ import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { NewsClusterCard } from "../components/NewsClusterCard";
 import { EventList, MoveList, PatternList, ZoneList } from "../components/AnalysisLists";
+import { ForecastPanel } from "../components/ForecastPanel";
 import { PatternPanel } from "../components/PatternPanel";
 import { PriceChart, type ChartKind, type NewsMarker, type PriceOverlay } from "../components/PriceChart";
 import { SourceTip } from "../components/SourceTip";
 import { SubChart } from "../components/SubChart";
 import { useLiveEvents } from "../hooks/useLiveEvents";
 import { INDICATOR_TOGGLES, patternTimeframe, useIndicatorEvents, useIndicators, useMoveLinks, usePatterns } from "../lib/analysis";
+import { forecastTimeframe, scenarioLevels, useForecast, validSteps } from "../lib/forecast";
 import { alignSeries, toTime } from "../lib/chartData";
 import { ChartGroup } from "../lib/chartSync";
 import { api, type BarsResponse, type InstrumentWithQuote } from "../lib/api";
@@ -66,6 +68,12 @@ export function ChartPage() {
   const patterns = usePatterns(id, patTf, startIso, showInvalid);
   const detections = patterns.data?.detections ?? [];
   const selectedDetection = detections.find((d) => d.id === selectedPattern) ?? null;
+  const [showForecast, setShowForecast] = useState(true);
+  const [horizon, setHorizon] = useState(20);
+  const fcTf = forecastTimeframe(range.timeframe);
+  const forecast = useForecast(id, fcTf, horizon, showForecast);
+  const forecastSteps = useMemo(() => validSteps(forecast.data?.steps ?? []), [forecast.data]);
+  const levels = useMemo(() => scenarioLevels(selectedDetection), [selectedDetection]);
   const toggleInd = (key: string) => setActiveInd((a) => (a.includes(key) ? a.filter((k) => k !== key) : [...a, key]));
   const overlays = useMemo<PriceOverlay[]>(() => {
     if (!ind.data || shown.length === 0) return [];
@@ -128,6 +136,12 @@ export function ChartPage() {
         ))}
       </div>
 
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <label className={`cursor-pointer rounded border px-3 py-1 text-sm ${showForecast ? "border-sky-500 bg-sky-900" : "border-slate-700"}`}>
+          <input type="checkbox" className="sr-only" checked={showForecast} onChange={() => setShowForecast((v) => !v)} />Prognosekorridor
+        </label>
+      </div>
+
       {bars.isLoading && <p className="text-slate-400">Lade Kursdaten …</p>}
       {bars.isError && <p role="alert" className="text-rose-300">Kursdaten konnten nicht geladen werden (Backend nicht erreichbar).</p>}
       {bars.data && shown.length === 0 && (
@@ -140,7 +154,8 @@ export function ChartPage() {
         <>
           <PriceChart bars={shown} kind={kind} intraday={intraday} markers={markers} onMarkerClick={setSelected}
             overlays={overlays} patterns={detections} zones={patterns.data?.zones ?? []} events={events.data?.events ?? []}
-            selectedPatternId={selectedPattern} onPatternClick={setSelectedPattern} group={group} />
+            selectedPatternId={selectedPattern} onPatternClick={setSelectedPattern} group={group}
+            forecast={showForecast ? forecastSteps : []} scenarioLevels={showForecast ? levels : []} />
           {ownPanels.map((i) => (
             <div key={i.key} className="mt-2">
               <p className="text-xs text-slate-400">{i.label}</p>
@@ -169,6 +184,14 @@ export function ChartPage() {
           </p>
           {last && <SourceTip source={last.source} ts={last.ts_utc} fetchedAt={last.fetched_at} />}
         </>
+      )}
+
+      {showForecast && (
+        <div className="mt-6" data-testid="chart-forecast">
+          {fcTf == null
+            ? <p className="text-sm text-amber-300" data-testid="no-forecast">Prognosekorridore gibt es nur für Tageskerzen. Für den Zeitraum {range.label} (Kerzen {range.timeframe}) wird keiner berechnet.</p>
+            : <ForecastPanel data={forecast.data} loading={forecast.isLoading} error={forecast.isError} horizon={horizon} onHorizon={setHorizon} currency={inst.data?.currency ?? "EUR"} pattern={selectedDetection} />}
+        </div>
       )}
 
       <div className="mt-6" data-testid="chart-patterns">

@@ -60,6 +60,10 @@ Der Worker rechnet alle 15 Minuten für alle Watchlist-Instrumente (nur abgeschl
 
 Code: `backend/app/analysis/forecast.py` (reines numpy, deterministischer Seed je Datenstand), `backend/app/forecast_service.py`, `backend/app/api/forecasts.py`. Endpunkte: `GET /api/instruments/{id}/forecast`, `GET /api/forecasts/methods`. Tests: `backend/tests/test_forecast.py`, `test_forecast_api.py`.
 
+## Prognosekorridor im Frontend (Phase 4B)
+
+Auf der Chart-Seite (Tageskerzen) lässt sich der **Prognosekorridor** zuschalten: drei verschachtelte Wahrscheinlichkeitsbereiche (50, 80 und 95 %) hinter der letzten Kerze, nie eine Einzellinie. Darunter das Panel mit den Werten am Ende des Horizonts (5, 10 oder 20 Kerzen), "Wie wird das berechnet?" (Methode, Annahmen, Grenzen, Parameter), der **Prognosegüte** aus dem Backtest (Abdeckung der Bänder, Fehlermaße gegen die naive Referenz "Kurs bleibt gleich", Stichprobe, Signifikanztest) und dem Vergleichsverfahren ARIMA. Wird ein Muster gewählt, erscheinen seine Bestätigungs- und Ungültigkeitsniveaus als Linien bis zum Ende des Korridors, dazu Lage im Korridor, simulierte Pfadanteile und die historische Quote aus dem Muster-Backtest nebeneinander. Fehlt die Prognose oder der Backtest, steht das mit Grund da; ist die Methode nicht nachweisbar besser als die Referenz, steht auch das. Code: `frontend/src/components/ForecastPanel.tsx`, `frontend/src/lib/forecast.ts`, Tests `frontend/src/forecast.test.tsx`; Vertrag: `docs/api-contract.md`, Abschnitt "Phase 4A".
+
 ## Kursdaten (Phase 1B)
 
 | Quelle | Umfang | Schlüssel in `.env` |
