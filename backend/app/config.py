@@ -42,6 +42,19 @@ class Settings(BaseSettings):
     claude_use_batch: bool = True  # Stimmung per Batch-API (halber Preis, Ergebnis nach Minuten bis Stunden)
     news_retention_days: int = 90  # ältere Meldungen werden gelöscht; 0 = nie löschen
 
+    @model_validator(mode="after")
+    def _production_needs_real_secrets(self) -> "Settings":
+        """Im Produktionsbetrieb startet die App nicht mit den Beispielwerten aus .env.example."""
+        if self.app_env == "production":
+            problems = []
+            if self.session_secret.startswith("change-me") or len(self.session_secret) < 32:
+                problems.append("SESSION_SECRET (mindestens 32 Zeichen, z. B. openssl rand -hex 32)")
+            if self.admin_password.startswith("change-me"):
+                problems.append("ADMIN_PASSWORD")
+            if problems:
+                raise ValueError("APP_ENV=production, aber noch Beispielwerte gesetzt: " + ", ".join(problems))
+        return self
+
     @model_validator(mode="before")
     @classmethod
     def _ignore_comment_values(cls, data: Any) -> Any:
