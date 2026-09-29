@@ -4,27 +4,39 @@ Es werden nur Überschrift, ein kurzer Auszug und der Link zur Originalseite üb
 Standardmäßig aus: Feed-Adresse und Nutzungsbedingungen jeder IR-Seite müssen vor der Freischaltung geprüft werden.
 Freischalten per .env: IR_FEEDS=AAPL|https://.../feed.xml,SAP.DE|https://.../rss.xml (Symbol|Adresse, nur https).
 Die Zuordnung zur Aktie ist belegt, weil der Feed ausdrücklich dem konfigurierten Unternehmen gehört."""
+import logging
 from datetime import UTC, datetime
 from typing import Any
-from urllib.parse import urlparse
 
 import httpx
 
 from app.adapters.base import AdapterMetadata, NewsAdapter, NewsRecord, NewsTarget
-from app.adapters.http import ProbedHealth, ResilientHttp, SourceError
+from app.adapters.http import ProbedHealth, ResilientHttp, SourceError, is_valid_https_url
 from app.adapters.rss import parse_feed
 from app.config import get_settings
 
+log = logging.getLogger(__name__)
 
-def parse_ir_feeds(raw: str) -> dict[str, str]:
-    """'SYM|https://url,SYM2|https://url2' -> {'SYM': url}. Ungültige Einträge (kein https, ohne Symbol) entfallen."""
+
+def parse_ir_feeds_checked(raw: str) -> tuple[dict[str, str], int]:
+    """'SYM|https://url,SYM2|https://url2' -> ({'SYM': url}, Anzahl ungültiger Einträge).
+    Ungültig: ohne Symbol, kein https, kein gültiger Hostname."""
     out: dict[str, str] = {}
+    invalid = 0
     for part in raw.split(","):
+        if not part.strip():
+            continue
         sym, _, url = part.strip().partition("|")
         sym, url = sym.strip().upper(), url.strip()
-        if sym and urlparse(url).scheme == "https" and urlparse(url).netloc:
+        if sym and is_valid_https_url(url):
             out[sym] = url
-    return out
+        else:
+            invalid += 1
+    return out, invalid
+
+
+def parse_ir_feeds(raw: str) -> dict[str, str]:
+    return parse_ir_feeds_checked(raw)[0]
 
 
 class IrFeedsAdapter(ProbedHealth, NewsAdapter):
@@ -34,7 +46,17 @@ class IrFeedsAdapter(ProbedHealth, NewsAdapter):
 
     def __init__(self, feeds: dict[str, str] | None = None, transport: httpx.BaseTransport | None = None,
                  **kw: Any) -> None:
-        self._feeds = parse_ir_feeds(get_settings().ir_feeds) if feeds is None else feeds
+        self._invalid = 0
+        if feeds is None:
+            self._feeds, self._invalid = parse_ir_feeds_checked(get_settings().ir_feeds)
+            if self._invalid:
+                log.warning("IR_FEEDS: %d ungültige(r) Eintrag/Einträge ignoriert (Format Symbol|https://Adresse)",
+                            self._invalid)
+                if not self._feeds:
+                    self.disabled_reason = ("IR_FEEDS ungültig (erwartet: SYMBOL|https://adresse, mehrere durch "
+                                            "Komma getrennt); Quelle deaktiviert")
+        else:
+            self._feeds = feeds
         self.http = ResilientHttp(base_url="", headers={"User-Agent": "Marktmuster-Dashboard (Informationstool)"},
                                   rate_per_min=6, transport=transport, **kw)
 
@@ -43,7 +65,9 @@ class IrFeedsAdapter(ProbedHealth, NewsAdapter):
         return AdapterMetadata(
             key=self.key, name="Investor-Relations-Feeds", kind="news",
             description="Meldungen von den Investor-Relations-Seiten einzelner Unternehmen (nur Feeds, die "
-            f"ausdrücklich konfiguriert wurden; aktuell {n}). Nur Überschrift, kurzer Auszug und Link zur "
+            f"ausdrücklich konfiguriert wurden; aktuell {n}"
+            + (f", {self._invalid} ungültige Einträge in IR_FEEDS ignoriert" if self._invalid else "")
+            + "). Nur Überschrift, kurzer Auszug und Link zur "
             "Originalseite.",
             homepage="", terms_url="", update_interval="alle 15 Min. (Watchlist-Aktien mit Feed)",
             delay_text="Minuten nach Veröffentlichung", requires_key=False, is_official=True)
