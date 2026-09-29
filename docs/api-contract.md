@@ -327,6 +327,12 @@ Prognosen gibt es nur als Korridor (Grundregel 4): je Schritt die Quantile 2,5/1
   "comparison": [{"method_key": "arima_1_1_0", "name": "ARIMA(1,1,0) auf Log-Kursen", "description": "…",
                   "steps": ["… wie oben"], "backtest": "ForecastBacktest …", "metrics": ["… = backtest.metrics"]}],
   "pattern_scenarios": ["PatternScenarioLink …"],
+  "median_line": {"quantile": "50", "name": "Mittlerer Verlauf der Modellverteilung", "description": "…",
+                  "errors": [{"horizon_bars": 5, "sample_size": 142, "model": 2.1, "naive": 2.0, "unit": "%",
+                              "better_than_naive": false}]},
+  "example_paths": [{"percentile": 10, "label": "Beispielpfad (Endwert am 10. Perzentil der Simulation)",
+                     "steps": [{"step": 1, "ts": "2026-09-29T00:00:00Z", "close": 150.4}]}],
+  "example_paths_note": "Einzelne simulierte Verläufe, ausgewählt nach ihrem Endwert …",
   "data_basis": {"bars_from": "…", "bars_to": "…", "bar_count": 1256, "last_fetched_at": "…", "sources": ["SourceRef …"]},
   "note": "Statistische Szenarien aus historischen Schwankungen, keine Vorhersage und keine Anlageberatung.",
   "empty_reason": null
@@ -334,6 +340,8 @@ Prognosen gibt es nur als Korridor (Grundregel 4): je Schritt die Quantile 2,5/1
 ```
 
 - **`steps[].ts`**: Handelstage vereinfacht als Werktage (Mo–Fr) nach `based_on_until`; Feiertage sind nicht berücksichtigt (steht in `method.limitations`).
+- **`median_line`** beschreibt den mittleren Verlauf: das 50-%-Quantil aus `steps` (keine eigene Zahlenreihe), als Mitte des Korridors. `errors` sind die Median-Fehler (`median_abs_error`) des Prognose-Backtests je Horizont, in Prozent des Kurses am Ursprung, mit der naiven Referenz; leer, wenn kein Backtest vorliegt. `null` ohne Prognose. Die Linie wird nur zusammen mit dem Korridor gezeigt, ohne Beschriftung am Endpunkt (Grundregeln 1 und 4).
+- **`example_paths`**: nur Hauptmethode, fünf tatsächlich simulierte Pfade, deren Endwert am 10./30./50./70./90. Perzentil aller simulierten Endwerte liegt (aufsteigend). `steps` wie `horizon` gekürzt. Beispiele, keine wahrscheinlicheren Verläufe; leer ohne Prognose.
 - **`method`** ist die Hauptmethode (Korridor im Chart). **`comparison`** enthält die Vergleichsmethode ARIMA(1,1,0) mit demselben Aufbau; Frontend kann sie im Methoden-Panel zeigen.
 - **`empty_reason`** z. B. "Noch keine Kursdaten gespeichert.", "Zu wenige Kerzen für eine Prognose (mindestens 250, vorhanden 80).", "Die Prognose wurde für dieses Instrument noch nicht berechnet.", "Prognosen gibt es derzeit nur für Tageskerzen." Dann ist `steps` leer und `method` trotzdem gesetzt (Beschreibung bleibt einsehbar).
 

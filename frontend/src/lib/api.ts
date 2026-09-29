@@ -106,7 +106,8 @@ export interface PatternsResponse {
 export interface PatternCounts { counts: Record<string, number>; empty_reason: string | null }
 
 // Phase 4. Die Typen spiegeln docs/api-contract.md, Abschnitt "Phase 4A".
-// Prognosen gibt es ausschließlich als Quantile je Schritt (Grundregel 4), keine Einzellinie.
+// Prognosen gibt es ausschließlich als Quantile je Schritt (Grundregel 4). Der mittlere Verlauf (Median) und die Beispielpfade
+// kommen nur zusammen mit dem Korridor und werden nie ohne ihn gezeichnet.
 export type QuantileKey = "2.5" | "10" | "25" | "50" | "75" | "90" | "97.5";
 export interface ForecastStep { step?: number; ts: string; quantiles: Record<QuantileKey, number> }
 export interface ForecastMethod { key: string; name: string; description: string; assumptions?: string[]; limitations?: string[]; params?: Record<string, unknown> }
@@ -119,6 +120,10 @@ export interface ForecastBacktest {
   skill?: number | null; dm_p_value?: number | null; better_than_naive: boolean | null; verdict_text: string | null; by_horizon?: ForecastHorizonResult[]; method_note?: string | null;
 }
 export interface ForecastComparison { method_key: string; name: string; description?: string; steps: ForecastStep[]; backtest?: ForecastBacktest | null; metrics?: ForecastMetric[] }
+export interface ForecastMedianError { horizon_bars: number; sample_size: number | null; model: number | null; naive: number | null; unit?: string | null; better_than_naive: boolean | null }
+export interface ForecastMedianLine { quantile: QuantileKey; name: string; description: string; errors: ForecastMedianError[] }
+export interface ForecastPathPoint { step?: number; ts: string; close: number }
+export interface ForecastExamplePath { percentile: number; label: string; steps: ForecastPathPoint[] }
 export interface PatternScenarioItem {
   kind: string; title: string; trigger_level: number | null; model_probability: number | null; model_probability_text: string | null; historical: ScenarioHistorical | null;
 }
@@ -128,6 +133,7 @@ export interface ForecastResponse {
   last_close: number | null; currency?: string; generated_at: string | null; algo_version: string; params_hash?: string; is_demo?: boolean; steps: ForecastStep[];
   bands?: { level: number; lower: QuantileKey; upper: QuantileKey }[]; backtest: ForecastBacktest | null; comparison?: ForecastComparison[];
   pattern_scenarios?: PatternScenarioLink[]; data_basis: DataBasis | null; note?: string | null; empty_reason: string | null; pending?: boolean;
+  median_line?: ForecastMedianLine | null; example_paths?: ForecastExamplePath[]; example_paths_note?: string | null;
 }
 
 let csrfToken = "";

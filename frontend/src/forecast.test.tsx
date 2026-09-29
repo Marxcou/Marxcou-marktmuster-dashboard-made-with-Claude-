@@ -2,12 +2,12 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { renderApp, mockApi, ME, SOURCE, INSTRUMENT } from "./testUtils";
 import { ForecastPanel } from "./components/ForecastPanel";
 import type { ForecastResponse, PatternDetection } from "./lib/api";
-import { coverageNote, levelPosition, metricVsNaive, scenarioLevels, validSteps } from "./lib/forecast";
+import { coverageNote, levelPosition, medianSeries, metricVsNaive, scenarioLevels, validExamplePaths, validSteps } from "./lib/forecast";
 
 vi.mock("./components/AiExplanation", () => ({ AiExplanation: () => <div data-testid="ai-explanation" /> }));
 vi.mock("./components/PriceChart", () => ({
-  PriceChart: (p: { forecast: unknown[]; scenarioLevels: unknown[]; patterns: unknown[]; onPatternClick: (id: number) => void }) => (
-    <button data-testid="price-chart" onClick={() => p.onPatternClick(42)}>{p.forecast.length} Prognoseschritte, {p.scenarioLevels.length} Szenario-Niveaus, {p.patterns.length} Muster</button>
+  PriceChart: (p: { forecast: unknown[]; scenarioLevels: unknown[]; patterns: unknown[]; onPatternClick: (id: number) => void; medianLine?: boolean; examplePaths?: unknown[] }) => (
+    <button data-testid="price-chart" onClick={() => p.onPatternClick(42)}>{p.forecast.length} Prognoseschritte, {p.scenarioLevels.length} Szenario-Niveaus, {p.patterns.length} Muster, Median {p.medianLine ? "an" : "aus"}, {p.examplePaths?.length ?? 0} Beispielpfade</button>
   ),
 }));
 
@@ -30,6 +30,12 @@ const FORECAST: ForecastResponse = {
     scenarios: [{ kind: "bestaetigung", title: "Bestätigung", trigger_level: 151.4, model_probability: 0.31, model_probability_text: "In 31 % der simulierten Pfade schließt der Kurs zuerst über 151,40.", historical: null },
       { kind: "scheitern", title: "Scheitern", trigger_level: 139.72, model_probability: 0.12, model_probability_text: null, historical: { share: 0.58, sample_size: 214, text: null } }] }],
 };
+const path = (pct: number, end: number) => ({ percentile: pct, label: `Beispielpfad (Endwert am ${pct}. Perzentil der Simulation)`, steps: [{ ts: "2026-09-29T00:00:00Z", close: 151 }, { ts: "2026-10-26T00:00:00Z", close: end }] });
+const MEDIAN_LINE = { quantile: "50" as const, name: "Mittlerer Verlauf der Modellverteilung", description: "Median je Handelstag, kein erwarteter Kurs.",
+  errors: [{ horizon_bars: 5, sample_size: 142, model: 2.1, naive: 2.0, unit: "%", better_than_naive: false }, { horizon_bars: 20, sample_size: 142, model: 4.1, naive: 4.3, unit: "%", better_than_naive: false }] };
+FORECAST.median_line = MEDIAN_LINE;
+FORECAST.example_paths = [path(10, 146), path(50, 152), path(90, 158)];
+FORECAST.example_paths_note = "Einzelne simulierte Verläufe; keiner ist wahrscheinlicher als die übrigen.";
 const PATTERN = {
   id: 42, name: "Doppelboden", status: "in_bildung", status_label: "In Bildung", start_ts: "2026-08-20T00:00:00Z", end_ts: "2026-09-17T00:00:00Z",
   key_points: [], lines: [], criteria: [], confidence: { score: 0.74, method: "", breakdown: [] }, confirmation_level: 151.4, invalidation_level: 139.72, backtest: null, explanation: "", data_basis: BASIS, params: {}, algo_version: "1", params_hash: "x", detected_at: "2026-09-17T20:06:00Z", direction_if_confirmed: "aufwärts", scenarios: [
@@ -51,6 +57,26 @@ describe("Prognose-Panel (Grundregel 4)", () => {
     expect(t).not.toMatch(/Median/);
     expect(screen.getByTestId("forecast-note").textContent).toContain("keine Einzelprognose");
     expect(screen.getByTestId("forecast-basis").textContent).toContain("Block-Bootstrap");
+  });
+  it("zeigt den mittleren Verlauf als Mitte des Korridors mit seinem Backtest-Fehler je Horizont", () => {
+    ui(FORECAST);
+    const m = screen.getByTestId("median-line").textContent ?? "";
+    expect(m).toContain("Mittlerer Verlauf der Modellverteilung"); expect(m).toContain("kein erwarteter Kurs");
+    const t = screen.getByTestId("median-error-table").textContent ?? "";
+    expect(t).toContain("5 Handelstagen"); expect(t).toContain("± 4,10 %"); expect(t).toContain("± 4,30 %"); expect(t).toContain("142 Prognosen");
+    expect(screen.getByTestId("forecast-line-legend").textContent).toContain("Mittlerer Verlauf (Median)");
+    // kein Endwert der Linie als Einzelzahl: der Median am Horizont (152,00) erscheint nirgends im Panel
+    expect(screen.getByTestId("forecast-panel").textContent).not.toContain("152,00");
+  });
+  it("nennt fehlende Backtest-Fehler der Linie ausdrücklich", () => {
+    ui({ ...FORECAST, median_line: { ...MEDIAN_LINE, errors: [] } });
+    expect(screen.getByTestId("median-error-missing").textContent).toContain("nicht verfügbar");
+  });
+  it("erklärt Beispielpfade als Beispiele und sagt, wie man sie einblendet", () => {
+    ui(FORECAST);
+    const e = screen.getByTestId("example-paths").textContent ?? "";
+    expect(e).toContain("keiner ist wahrscheinlicher"); expect(e).toContain("Schalter „Beispielpfade“");
+    expect(screen.getByTestId("forecast-line-legend").textContent).toContain("Beispielpfade (3) (ausgeblendet)");
   });
   it("macht Methode, Annahmen und Grenzen einsehbar", () => {
     ui(FORECAST);
@@ -114,6 +140,12 @@ describe("Prognose-Hilfen", () => {
     expect(metricVsNaive({ key: "k", model: 3, naive: 2 }).text).toContain("größerer");
     expect(metricVsNaive({ key: "k", model: null, naive: 2 }).ratio).toBeNull();
   });
+  it("liest den Median je Schritt und verwirft unvollständige Beispielpfade", () => {
+    expect(medianSeries([{ ts: "b", quantiles: q(10) }, { ts: "a", quantiles: q(9) }])).toEqual([{ ts: "a", v: 9 }, { ts: "b", v: 10 }]);
+    const broken = { ...path(30, 1), steps: [{ ts: "x", close: Number.NaN }] };
+    expect(validExamplePaths([path(10, 1), broken]).map((p) => p.percentile)).toEqual([10]);
+    expect(validExamplePaths(undefined)).toEqual([]);
+  });
   it("übernimmt nur Szenarien mit Niveau", () => {
     expect(scenarioLevels(PATTERN)).toHaveLength(2);
     expect(scenarioLevels(null)).toEqual([]);
@@ -137,6 +169,20 @@ describe("Chart-Seite Phase 4", () => {
     fireEvent.click(screen.getByTestId("price-chart"));
     await waitFor(() => expect(screen.getByTestId("price-chart").textContent).toContain("2 Szenario-Niveaus"));
     expect(screen.getByTestId("pattern-scenario-link")).toBeTruthy();
+  });
+  it("zeigt den mittleren Verlauf standardmäßig und Beispielpfade erst auf Wunsch", async () => {
+    mockApi({ ...base, "/instruments/1/forecast": FORECAST });
+    renderApp("/instrument/1");
+    await waitFor(() => expect(screen.getByTestId("price-chart").textContent).toContain("Median an, 0 Beispielpfade"));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Beispielpfade" }));
+    await waitFor(() => expect(screen.getByTestId("price-chart").textContent).toContain("3 Beispielpfade"));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Mittlerer Verlauf" }));
+    await waitFor(() => expect(screen.getByTestId("price-chart").textContent).toContain("Median aus"));
+    // ohne Korridor keine Linien: der Median wird nie allein gezeigt
+    fireEvent.click(screen.getByRole("checkbox", { name: "Mittlerer Verlauf" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Prognosekorridor" }));
+    await waitFor(() => expect(screen.getByTestId("price-chart").textContent).toContain("0 Prognoseschritte, 0 Szenario-Niveaus, 0 Muster, Median aus, 0 Beispielpfade"));
+    expect(screen.queryByRole("checkbox", { name: "Mittlerer Verlauf" })).toBeNull();
   });
   it("blendet den Korridor aus, wenn er abgeschaltet wird", async () => {
     mockApi({ ...base, "/instruments/1/forecast": FORECAST });

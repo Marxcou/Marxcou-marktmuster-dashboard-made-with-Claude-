@@ -1,6 +1,7 @@
 """Prognose-Kern (reines numpy): Korridor, Determinismus, ARIMA-Schätzung, Erstberührung, Backtest ohne Vorgriff.
 Synthetische Reihen mit bekannten Eigenschaften (Zufallsreihen mit festem Seed)."""
 import math
+from datetime import datetime
 
 import numpy as np
 import pytest
@@ -135,3 +136,29 @@ def test_diebold_mariano():
     assert p is not None and p < 0.001
     p_pos = fc.diebold_mariano(-d, 0)
     assert p_pos is not None and p_pos > 0.999
+
+
+def test_example_paths_follow_end_value_percentiles():
+    f = fc.forecast(fc.PRIMARY, gbm(), seed=5)
+    assert f.paths is not None
+    picked = fc.example_path_indices(f.paths)
+    assert [p for p, _ in picked] == list(fc.EXAMPLE_PERCENTILES)
+    ends = [float(f.paths[k, -1]) for _, k in picked]
+    assert ends == sorted(ends)  # 10. bis 90. Perzentil aufsteigend
+    all_ends = f.paths[:, -1]
+    for (p, _), end in zip(picked, ends, strict=True):
+        assert (all_ends <= end).mean() == pytest.approx(p / 100, abs=0.01)
+    # Median-Beispielpfad endet am Median der Endwerte, also in der Mitte des Korridors
+    assert ends[2] == pytest.approx(f.quantiles[3, -1], rel=1e-3)
+
+
+def test_example_path_rows_are_real_simulated_paths():
+    f = fc.forecast(fc.PRIMARY, gbm(), seed=5)
+    assert f.paths is not None
+    ts = fc.future_weekdays(datetime(2026, 9, 25), fc.HORIZON)
+    rows = fc.example_path_rows(f.paths, ts)
+    assert len(rows) == 5 and all(len(r["steps"]) == fc.HORIZON for r in rows)
+    k = dict(fc.example_path_indices(f.paths))[70]
+    row = next(r for r in rows if r["percentile"] == 70)
+    assert [s["close"] for s in row["steps"]] == [round(float(v), 4) for v in f.paths[k]]
+    assert row["steps"][0]["ts"] == ts[0].isoformat()

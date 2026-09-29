@@ -1,6 +1,7 @@
 """Statistische Prognosen als Quantil-Korridor und rollierender Backtest (reines numpy, ohne I/O).
 
-Grundregel 4: Ergebnis ist immer ein Satz Quantile je Schritt, nie eine einzelne Linie. Alles ist deterministisch:
+Grundregel 4: Ergebnis ist immer ein Satz Quantile je Schritt. Der Median (50-%-Quantil) wird als "mittlerer Verlauf"
+nur innerhalb dieses Korridors gezeigt, nie allein; Beispielpfade aus der Simulation ebenso. Alles ist deterministisch:
 der Zufalls-Seed der Simulation hängt nur vom Datenstand ab (gleiche Kerzen -> gleicher Korridor).
 
 Methoden:
@@ -189,6 +190,27 @@ def forecast(method: str, close: FloatArray, horizon: int = HORIZON, params: dic
     if method == COMPARISON:
         return Forecast(method, p, arima_quantiles(close, horizon, p))
     raise ValueError(f"Unbekannte Methode {method}")
+
+
+# --- Beispielpfade ---------------------------------------------------------------------------------------------
+
+# Aus den simulierten Pfaden werden die gezeigt, deren Endwert an diesen Perzentilen aller Endwerte liegt. So decken
+# die Beispiele die Breite der Verteilung ab, statt nur ähnliche Verläufe zu zeigen; keiner ist wahrscheinlicher.
+EXAMPLE_PERCENTILES: tuple[int, ...] = (10, 30, 50, 70, 90)
+
+
+def example_path_indices(paths: FloatArray, percentiles: Sequence[int] = EXAMPLE_PERCENTILES) -> list[tuple[int, int]]:
+    """(Perzentil, Pfadindex) je Perzentil: der Pfad, dessen Endwert an dieser Stelle der sortierten Endwerte liegt."""
+    n = paths.shape[0]
+    order = np.argsort(paths[:, -1], kind="stable")
+    return [(p, int(order[min(n - 1, round(p / 100 * (n - 1)))])) for p in percentiles]
+
+
+def example_path_rows(paths: FloatArray, ts: Sequence[datetime], digits: int = 4) -> list[dict[str, Any]]:
+    return [{"percentile": p,
+             "steps": [{"step": i + 1, "ts": ts[i].isoformat(), "close": round(float(paths[k, i]), digits)}
+                       for i in range(paths.shape[1])]}
+            for p, k in example_path_indices(paths)]
 
 
 # --- Muster-Szenarien -------------------------------------------------------------------------------------------

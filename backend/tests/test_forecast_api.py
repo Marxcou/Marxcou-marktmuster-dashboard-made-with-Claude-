@@ -69,6 +69,7 @@ def test_forecast_endpoint(client):
     body = client.get(f"/api/instruments/{iid}/forecast").json()
     assert body["empty_reason"] == "Die Prognose wurde für dieses Instrument noch nicht berechnet."
     assert body["steps"] == [] and body["backtest"]["status"] == "nicht_berechnet"
+    assert body["median_line"] is None and body["example_paths"] == []
     assert body["method"]["key"] == "monte_carlo_block_bootstrap" and body["method"]["description"]
 
     stats = run(iid)
@@ -96,8 +97,25 @@ def test_forecast_endpoint(client):
     assert comp["method_key"] == "arima_1_1_0" and len(comp["steps"]) == 20
     assert comp["backtest"]["status"] == "berechnet"
 
+    # Mittlerer Verlauf = 50-%-Quantil des Korridors, mit den Median-Fehlern aus dem Backtest je Horizont
+    ml = body["median_line"]
+    assert ml["quantile"] == "50" and "Median" in ml["description"] and "kein erwarteter Kurs" in ml["description"]
+    assert [e["horizon_bars"] for e in ml["errors"]] == [5, 10, 20]
+    by_h = {h["horizon_bars"]: h for h in bt["by_horizon"]}
+    for e in ml["errors"]:
+        mae = next(m for m in by_h[e["horizon_bars"]]["metrics"] if m["key"] == "median_abs_error")
+        assert e["model"] == mae["model"] and e["naive"] == mae["naive"] and e["sample_size"] > 0
+    # Beispielpfade: fünf echte simulierte Pfade, aufsteigend nach Endwert, innerhalb der Horizont-Schritte
+    ex = body["example_paths"]
+    assert [p["percentile"] for p in ex] == [10, 30, 50, 70, 90]
+    assert all(len(p["steps"]) == 20 and p["steps"][0]["ts"] == steps[0]["ts"] for p in ex)
+    ends = [p["steps"][-1]["close"] for p in ex]
+    assert ends == sorted(ends) and steps[-1]["quantiles"]["2.5"] <= ends[2] <= steps[-1]["quantiles"]["97.5"]
+    assert "nicht wahrscheinlicher" in body["example_paths_note"]
+
     short = client.get(f"/api/instruments/{iid}/forecast?horizon=5").json()
     assert len(short["steps"]) == 5 and short["horizon_bars"] == 5
+    assert all(len(p["steps"]) == 5 for p in short["example_paths"])
     assert client.get(f"/api/instruments/{iid}/forecast?horizon=21").status_code == 422
 
     with SessionLocal() as db:

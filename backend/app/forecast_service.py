@@ -27,6 +27,8 @@ TIMEFRAME = "1d"
 BAR_LIMIT = 2500
 BACKTEST_MAX_AGE = timedelta(hours=20)
 METHODS = (fc.PRIMARY, fc.COMPARISON)
+# Erhöhen, wenn neue gespeicherte Felder dazukommen (ohne Algorithmus-Änderung), damit bestehende Zeilen neu entstehen.
+OUTPUT_VERSION = 2
 
 NO_BARS_REASON = "Noch keine Kursdaten gespeichert."
 NOT_RUN_REASON = "Die Prognose wurde für dieses Instrument noch nicht berechnet."
@@ -176,7 +178,7 @@ def _row(db: Session, inst_id: int, method: str) -> Forecast:
 
 
 def _set_empty(row: Forecast, reason: str, n: int, now: datetime) -> None:
-    row.steps, row.pattern_levels, row.horizon = [], [], 0
+    row.steps, row.pattern_levels, row.example_paths, row.horizon = [], [], [], 0
     row.based_on_until = row.last_close = row.bars_from = row.fetched_at = None
     row.backtest_run_id, row.backtest_reason = None, None
     row.bar_count, row.source_ids, row.is_demo = n, [], False
@@ -214,7 +216,7 @@ def forecast_instrument(db: Session, inst: Instrument, now: datetime | None = No
                 run = new
                 stats["backtests"] += 1
         inputs = hashlib.sha256(json.dumps([ts[-1].isoformat(), float(close[-1]), n, params_hash(m),
-                                            signature, run.id if run else None]).encode()).hexdigest()
+                                            signature, run.id if run else None, OUTPUT_VERSION]).encode()).hexdigest()
         if row.inputs_hash == inputs and row.empty_reason is None:
             continue
         f = fc.forecast(m, close, fc.HORIZON, seed=seed)
@@ -227,6 +229,7 @@ def forecast_instrument(db: Session, inst: Instrument, now: datetime | None = No
             "Zu wenige Kerzen für einen Backtest (mindestens "
             f"{fc.BACKTEST_PARAMS['min_train_bars'] + max(fc.BACKTEST_PARAMS['horizons'])}, vorhanden {n}).")
         row.pattern_levels = pattern_levels(db, inst.id, f.paths) if f.paths is not None else []
+        row.example_paths = fc.example_path_rows(f.paths, future) if f.paths is not None else []
         row.bars_from, row.bar_count, row.source_ids, row.fetched_at = ts[0], n, source_ids, fetched
         row.empty_reason, row.is_demo, row.created_at = None, is_demo, now
         stats["forecasts"] += 1

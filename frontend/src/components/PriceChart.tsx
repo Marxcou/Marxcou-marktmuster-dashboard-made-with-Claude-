@@ -1,7 +1,7 @@
 import { ColorType, CrosshairMode, createChart, LineStyle, type IChartApi, type ISeriesApi, type SeriesMarker, type Time, type UTCTimestamp } from "lightweight-charts";
 import { useEffect, useRef } from "react";
-import type { Bar, ForecastStep, IndicatorEvent, PatternDetection, SRZone } from "../lib/api";
-import { BAND_FILL, BANDS, bandSeries, validSteps, type ScenarioLevel } from "../lib/forecast";
+import type { Bar, ForecastExamplePath, ForecastStep, IndicatorEvent, PatternDetection, SRZone } from "../lib/api";
+import { BAND_FILL, BANDS, bandSeries, EXAMPLE_COLOR, MEDIAN_COLOR, medianSeries, validExamplePaths, validSteps, type ScenarioLevel } from "../lib/forecast";
 import { EVENT_SHORT } from "../lib/analysis";
 import { type AlignedPoint, ascendingUnique, priceOnLine, snapTime, toTime } from "../lib/chartData";
 import type { ChartGroup } from "../lib/chartSync";
@@ -37,11 +37,11 @@ export function baseChartOptions(intraday: boolean, height: number) {
   };
 }
 
-export function PriceChart({ bars, kind, intraday, markers = [], onMarkerClick, overlays = [], patterns = [], zones = [], events = [], selectedPatternId = null, onPatternClick, group, forecast = [], scenarioLevels = [] }: {
+export function PriceChart({ bars, kind, intraday, markers = [], onMarkerClick, overlays = [], patterns = [], zones = [], events = [], selectedPatternId = null, onPatternClick, group, forecast = [], scenarioLevels = [], medianLine = false, examplePaths = [] }: {
   bars: Bar[]; kind: ChartKind; intraday: boolean; markers?: NewsMarker[]; onMarkerClick?: (clusterIds: number[]) => void;
   overlays?: PriceOverlay[]; patterns?: PatternDetection[]; zones?: SRZone[]; events?: IndicatorEvent[];
   selectedPatternId?: number | null; onPatternClick?: (id: number) => void; group?: ChartGroup;
-  forecast?: ForecastStep[]; scenarioLevels?: ScenarioLevel[];
+  forecast?: ForecastStep[]; scenarioLevels?: ScenarioLevel[]; medianLine?: boolean; examplePaths?: ForecastExamplePath[];
 }) {
   const clickRef = useRef(onMarkerClick);
   clickRef.current = onMarkerClick;
@@ -56,7 +56,8 @@ export function PriceChart({ bars, kind, intraday, markers = [], onMarkerClick, 
     const chart = createChart(ref.current, baseChartOptions(intraday, 420));
     chartRef.current = chart;
     const barTimes = bars.map((b) => toTime(b.ts_utc));
-    const barsKey = `${bars.length}:${bars[0]?.ts_utc}:${kind}`;
+    // Erscheint oder verschwindet der Korridor, wird neu eingepasst, damit er nicht rechts außerhalb des Sichtbereichs liegt.
+    const barsKey = `${bars.length}:${bars[0]?.ts_utc}:${kind}:${validSteps(forecast).length > 0}`;
 
     let main: ISeriesApi<"Candlestick"> | ISeriesApi<"Line">;
     if (kind === "candles") {
@@ -107,7 +108,7 @@ export function PriceChart({ bars, kind, intraday, markers = [], onMarkerClick, 
       }
     }
 
-    // Prognosekorridor (Grundregel 4): nur Bänder, keine Einzellinie. Jedes Band wird als Paar undurchsichtiger Flächen gezeichnet
+    // Prognosekorridor (Grundregel 4): Linien (Median, Beispielpfade) nur innerhalb der Bänder, nie allein. Jedes Band wird als Paar undurchsichtiger Flächen gezeichnet
     // (oben füllen, unten mit der Farbe des äußeren Bereichs überdecken), damit sich die 50/80/95-%-Bereiche sauber verschachteln.
     const fsteps = validSteps(forecast);
     const lastBar = bars[bars.length - 1];
@@ -121,6 +122,13 @@ export function PriceChart({ bars, kind, intraday, markers = [], onMarkerClick, 
       const [b95, b80, b50] = BANDS.map((b) => ({ up: future(bandSeries(fsteps, b).map((x) => ({ ts: x.ts, v: x.upper }))), lo: future(bandSeries(fsteps, b).map((x) => ({ ts: x.ts, v: x.lower }))) }));
       area(BAND_FILL[95], b95.up); area(BAND_FILL[80], b80.up); area(BAND_FILL[50], b50.up);
       area(BAND_FILL[80], b50.lo); area(BAND_FILL[95], b80.lo); area(BG, b95.lo);
+      // Beispielpfade dünn und blass, der mittlere Verlauf darüber gestrichelt. Keine Beschriftung am Endpunkt, damit er nicht wie ein Zielwert wirkt.
+      const line = (color: string, width: 1 | 2, dashed: boolean, data: { time: UTCTimestamp; value: number }[]) => {
+        const s = chart.addLineSeries({ color, lineWidth: width, lineStyle: dashed ? LineStyle.Dashed : LineStyle.Solid, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+        s.setData(data);
+      };
+      for (const p of validExamplePaths(examplePaths)) line(EXAMPLE_COLOR, 1, false, future(p.steps.map((s) => ({ ts: s.ts, v: s.close }))));
+      if (medianLine) line(MEDIAN_COLOR, 2, true, future(medianSeries(fsteps)));
       // Szenario-Niveaus des gewählten Musters laufen bis zum Ende des Horizonts, damit sie am Korridor ablesbar sind.
       const end = toTime(fsteps[fsteps.length - 1].ts);
       if (end != null && end > start) {
@@ -179,7 +187,7 @@ export function PriceChart({ bars, kind, intraday, markers = [], onMarkerClick, 
       chart.remove();
       chartRef.current = null;
     };
-  }, [bars, kind, intraday, markers, overlays, patterns, zones, events, selectedPatternId, group, forecast, scenarioLevels]);
+  }, [bars, kind, intraday, markers, overlays, patterns, zones, events, selectedPatternId, group, forecast, scenarioLevels, medianLine, examplePaths]);
 
   return <div ref={ref} data-testid="price-chart" className="w-full" role="img" aria-label="Kursdiagramm" />;
 }
