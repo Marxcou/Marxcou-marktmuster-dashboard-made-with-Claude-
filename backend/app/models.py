@@ -1,11 +1,12 @@
 """Kerntabellen für Phase 1. Jede Datenzeile trägt source_id und fetched_at (Grundregel 2).
 Weitere Tabellen (News, Muster, Prognosen, ...) kommen mit ihren Phasen per eigener Migration."""
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
 from sqlalchemy import (
     JSON,
     Boolean,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -246,3 +247,29 @@ class MoveNewsLink(Base):
     time_offset_minutes: Mapped[int] = mapped_column(Integer)  # Veröffentlichung minus Beginn der Kerze
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
     fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+class ApiUsage(Base):
+    """Abrufzähler je Quelle und UTC-Tag für Tageskontingente (übersteht Neustarts des Workers)."""
+    __tablename__ = "api_usage"
+    source_key: Mapped[str] = mapped_column(String(50), primary_key=True)
+    day: Mapped[date] = mapped_column(Date, primary_key=True)
+    calls: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class SentimentBatch(Base):
+    """Eine bei Anthropic eingereichte Batch-Anfrage für Stimmungen. reserved_usd ist der Höchstbetrag, der bis zum
+    Eintreffen der Ergebnisse gegen das Monatslimit gerechnet wird."""
+    __tablename__ = "sentiment_batches"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    batch_id: Mapped[str] = mapped_column(String(100), unique=True)
+    status: Mapped[str] = mapped_column(String(15), default="in_progress")  # in_progress | ended
+    reserved_usd: Mapped[float] = mapped_column(Float, default=0.0)
+    submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class SentimentBatchItem(Base):
+    __tablename__ = "sentiment_batch_items"
+    batch_id: Mapped[int] = mapped_column(ForeignKey("sentiment_batches.id"), primary_key=True)
+    cluster_id: Mapped[int] = mapped_column(ForeignKey("news_clusters.id"), primary_key=True, index=True)
+    # pending | succeeded | rejected (Antwort nicht belegbar) | errored | expired | canceled
+    status: Mapped[str] = mapped_column(String(10), default="pending")
