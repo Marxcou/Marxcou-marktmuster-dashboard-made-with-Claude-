@@ -10,6 +10,7 @@ from app.adapters.registry import load_builtin_adapters, news_adapters
 from app.alpaca_stream import start_stream_thread
 from app.analysis_service import analysis_job
 from app.db import SessionLocal
+from app.forecast_service import forecast_job
 from app.news_retention import retention_job
 from app.news_service import make_job, sentiment_job
 from app.pattern_service import pattern_job
@@ -44,6 +45,9 @@ def build_scheduler() -> BlockingScheduler:
     sched.add_job(analysis_job, "interval", seconds=300, id="analysis", max_instances=1)
     # 3B: Mustererkennung (alle Muster und Zonen, komplette Historie, deterministisch)
     sched.add_job(pattern_job, "interval", seconds=300, id="patterns", max_instances=1)
+    # 4A: Prognosen (Tageskerzen) und Prognose-Backtest; rechnet nur neu, wenn sich Kerzen oder Muster ändern
+    sched.add_job(forecast_job, "interval", seconds=900, id="forecasts", max_instances=1,
+                  next_run_time=datetime.now(UTC) + timedelta(minutes=2))
     sched.add_job(sentiment_job, "interval", seconds=300, id="sentiment", max_instances=1)
     sched.add_job(retention_job, "interval", seconds=86400, id="news-retention", max_instances=1,
                   next_run_time=datetime.now(UTC) + timedelta(minutes=5))

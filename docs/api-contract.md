@@ -292,3 +292,84 @@ Erkennung regelbasiert und deterministisch (`backend/app/analysis/`): gleiche Ke
 Zusätzlich je Zone: `sources` (Kursquellen der verwendeten Kerzen), `fetched_at`, `is_demo`. `kind` ist relativ zum letzten Schlusskurs: Zone unterhalb = `unterstuetzung`, oberhalb = `widerstand`, Kurs innerhalb = `im_bereich` ("Kurs innerhalb der Zone").
 
 `/patterns/catalog` liefert `{algo_version, params_hash, confidence_method, items: [...]}`; ein Eintrag: `{pattern_type, name, direction_if_confirmed, description, criteria: [{key, name, rule, required, weight}], params: [{key, value, unit, description}], algo_version}`.
+
+## Phase 4A: Prognosen, Szenarien, Prognose-Backtest (Backend)
+
+Prognosen gibt es nur als Korridor (Grundregel 4): je Schritt die Quantile 2,5/10/25/50/75/90/97,5 %, daraus die Bänder 50 % (25–75), 80 % (10–90) und 95 % (2,5–97,5). Es gibt **keinen** Endpunkt für eine einzelne Linie; der Median (`"50"`) ist nur die Mitte der Bänder und wird nicht allein gezeichnet. Alles ist aus gespeicherten, abgeschlossenen Tageskerzen berechnet (deterministisch, fester Zufalls-Seed je Datenstand). Fehlermaße stammen ausschließlich aus einem Backtest auf den gespeicherten Kerzen; ohne Lauf ist `backtest.status = "nicht_berechnet"` und alle Zahlen sind `null` (nie geschätzt).
+
+| Methode/Pfad | Auth | Zweck |
+|---|---|---|
+| GET `/instruments/{id}/forecast?timeframe=1d&horizon=20` | ja | `ForecastResponse`. `horizon` 1 bis 20 Kerzen (Standard 20) kürzt nur `steps`. Nur `timeframe=1d`; sonst 200 mit `empty_reason`. 404 nur bei unbekanntem Instrument |
+| GET `/forecasts/methods` | ja | Beschreibung aller Methoden: `{algo_version, items: [{key, name, description, assumptions[], limitations[], params}]}` |
+
+`ForecastResponse`:
+
+```json
+{
+  "instrument_id": 5, "timeframe": "1d",
+  "method": {"key": "monte_carlo_block_bootstrap", "name": "Monte-Carlo-Simulation (Block-Bootstrap)",
+             "description": "…", "assumptions": ["…"], "limitations": ["…"],
+             "params": {"lookback_bars": 750, "block_length": 10, "paths": 4000, "seed": 1234567}},
+  "horizon_bars": 20,
+  "based_on_until": "2026-09-28T00:00:00Z", "last_close": 151.2, "currency": "EUR",
+  "generated_at": "2026-09-28T20:10:00Z", "algo_version": "forecast-1", "params_hash": "a1b2c3d4", "is_demo": false,
+  "steps": [{"step": 1, "ts": "2026-09-29T00:00:00Z",
+             "quantiles": {"2.5": 146.0, "10": 148.1, "25": 149.8, "50": 151.2, "75": 152.7, "90": 154.3, "97.5": 156.5}}],
+  "bands": [{"level": 0.5, "lower": "25", "upper": "75"}, {"level": 0.8, "lower": "10", "upper": "90"},
+            {"level": 0.95, "lower": "2.5", "upper": "97.5"}],
+  "backtest": "ForecastBacktest …",
+  "comparison": [{"method_key": "arima_1_1_0", "name": "ARIMA(1,1,0) auf Log-Kursen", "description": "…",
+                  "steps": ["… wie oben"], "backtest": "ForecastBacktest …", "metrics": ["… = backtest.metrics"]}],
+  "pattern_scenarios": ["PatternScenarioLink …"],
+  "data_basis": {"bars_from": "…", "bars_to": "…", "bar_count": 1256, "last_fetched_at": "…", "sources": ["SourceRef …"]},
+  "note": "Statistische Szenarien aus historischen Schwankungen, keine Vorhersage und keine Anlageberatung.",
+  "empty_reason": null
+}
+```
+
+- **`steps[].ts`**: Handelstage vereinfacht als Werktage (Mo–Fr) nach `based_on_until`; Feiertage sind nicht berücksichtigt (steht in `method.limitations`).
+- **`method`** ist die Hauptmethode (Korridor im Chart). **`comparison`** enthält die Vergleichsmethode ARIMA(1,1,0) mit demselben Aufbau; Frontend kann sie im Methoden-Panel zeigen.
+- **`empty_reason`** z. B. "Noch keine Kursdaten gespeichert.", "Zu wenige Kerzen für eine Prognose (mindestens 250, vorhanden 80).", "Die Prognose wurde für dieses Instrument noch nicht berechnet.", "Prognosen gibt es derzeit nur für Tageskerzen." Dann ist `steps` leer und `method` trotzdem gesetzt (Beschreibung bleibt einsehbar).
+
+`ForecastBacktest` (rollierender Ursprung: an vielen vergangenen Tagen wird nur mit den bis dahin bekannten Kerzen prognostiziert und mit dem später tatsächlich eingetretenen Schlusskurs verglichen):
+
+```json
+{
+  "status": "berechnet", "run_id": 17, "sample_size": 142, "horizon_bars": 20,
+  "date_range": "2023-10-02 – 2026-08-31", "universe": "SAP (XETR), eigene Historie", "computed_at": "…", "is_demo": false,
+  "coverage": [{"nominal": 0.5, "observed": 0.47}, {"nominal": 0.8, "observed": 0.76}, {"nominal": 0.95, "observed": 0.93}],
+  "metrics": [
+    {"key": "median_abs_error", "name": "Mittlerer absoluter Fehler des Medians", "model": 4.1, "naive": 4.3, "unit": "%"},
+    {"key": "pinball_loss", "name": "Pinball-Verlust (Mittel über alle Quantile)", "model": 1.2, "naive": 2.1, "unit": "%"}
+  ],
+  "skill": 0.05, "dm_p_value": 0.21, "better_than_naive": false,
+  "verdict_text": "Beim Median nicht nachweisbar besser als die naive Referenz \"Kurs bleibt gleich\" (p = 0,21).",
+  "by_horizon": [{"horizon_bars": 5, "sample_size": 142, "coverage": ["…"], "metrics": ["…"], "skill": 0.01,
+                  "dm_p_value": 0.4, "better_than_naive": false}],
+  "method_note": "…", "note": null
+}
+```
+
+- Fehler in Prozent des Kurses am Prognoseursprung. `naive` = Referenz "Kurs bleibt gleich" (alle Quantile = letzter Schlusskurs). `skill = 1 − model/naive` beim Median-Fehler.
+- `better_than_naive`: `true` nur, wenn der Median-Fehler kleiner ist **und** der Diebold-Mariano-Test (einseitig, Newey-West-Varianz) p < 0,05 ergibt; sonst `false` und `verdict_text` sagt es offen. `null` bei zu kleiner Stichprobe (< 30 Ursprünge).
+- Hauptwerte gelten für `horizon_bars` (20); `by_horizon` für 5, 10, 20.
+- Ohne Lauf: `{"status": "nicht_berechnet", "run_id": null, "sample_size": null, …, "coverage": [], "metrics": [], "better_than_naive": null, "note": "Die Prognosegüte wurde für dieses Instrument noch nicht berechnet."}`.
+- Gespeichert in `backtest_runs` mit `kind = "forecast"`, `subject` = Methodenschlüssel, `universe` = Instrument; die Prognose verweist per `backtest_run_id` darauf.
+
+`PatternScenarioLink` (Verknüpfung mit den aktuellen Mustern aus 3B, nur `in_bildung`):
+
+```json
+{
+  "detection_id": 42, "pattern_type": "doppelboden", "name": "Doppelboden", "status": "in_bildung",
+  "scenarios": [
+    {"kind": "bestaetigung", "title": "Bestätigung", "trigger_level": 151.40,
+     "model_probability": 0.31, "model_probability_text": "In 31 % der simulierten Pfade schließt der Kurs innerhalb von 20 Handelstagen zuerst über 151,40.",
+     "historical": {"share": 0.58, "sample_size": 214, "text": "…"}},
+    {"kind": "scheitern", "title": "Scheitern", "trigger_level": 139.72, "model_probability": 0.12, "model_probability_text": "…", "historical": null}
+  ],
+  "neither_probability": 0.57,
+  "note": "Die Simulation kennt das Muster nicht; sie zeigt nur, wie oft die Niveaus bei historischer Schwankung zuerst erreicht würden. Die historische Quote stammt aus dem Muster-Backtest."
+}
+```
+
+`historical` ist dasselbe Objekt wie `scenarios[].historical` in `PatternDetection` (aus dem Muster-Backtest, sonst `null`).
