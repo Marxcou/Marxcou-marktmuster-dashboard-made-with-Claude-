@@ -113,7 +113,13 @@ docker compose up --build
 
 **Hinweis zu `.env`:** Schreibe keine Kommentare hinter einen Wert (`KEY=   # Text`). Docker Compose übernimmt den Kommentar sonst als Wert. Kommentare gehören in eine eigene Zeile darüber. Wenn du deine `.env` aus einer älteren `.env.example` kopiert hast, entferne solche Kommentare oder kopiere die Vorlage neu. Das Backend behandelt Werte, die mit `#` beginnen, als nicht gesetzt (Warnung im Log), und ungültige `IR_FEEDS`/`EQS_RSS_URL` erscheinen auf der Seite Quellen als "ungültig, deaktiviert".
 
-Dann im Browser `http://localhost:8080` öffnen (Port über `WEB_PORT`). Der erste Admin wird beim Start aus `ADMIN_EMAIL`/`ADMIN_PASSWORD` angelegt. Weitere Nutzer legt ein Admin an (`POST /api/users`); es gibt keine offene Registrierung.
+Dann im Browser `http://localhost:8080` öffnen (Port über `WEB_PORT`). Der erste Admin wird beim Start aus `ADMIN_EMAIL`/`ADMIN_PASSWORD` angelegt. Das geschieht nur beim allerersten Start, solange noch kein Admin existiert; die Platzhalter aus `.env.example` (`admin@example.com`, `change-me-now`) werden abgelehnt (Hinweis im Log des `api`-Containers). Ein vorhandener Admin wird nie automatisch überschrieben, auch nicht, wenn du das Passwort in der App geändert hast. Weicht `ADMIN_EMAIL` vom vorhandenen Admin ab, steht eine Warnung im Log.
+
+Hast du `.env` erst nach dem ersten Start angepasst und kommst nicht hinein, übernimmt dieser Befehl die Werte aus `.env` in die bestehende Datenbank (ohne sie zu löschen):
+
+```bash
+docker compose run --rm api python -m app.admin_cli
+``` Weitere Nutzer legt ein Admin an (`POST /api/users`); es gibt keine offene Registrierung.
 
 ### Windows: Zeilenenden
 
