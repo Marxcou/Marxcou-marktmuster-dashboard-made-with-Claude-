@@ -37,6 +37,69 @@ export interface SentimentStatus {
 }
 export interface NewsCounts { counts: Record<string, number>; empty_reason: string | null }
 
+// Phase 3. Die Typen spiegeln docs/api-contract.md, Abschnitte "Phase 3A" (Indikatoren) und "Phase 3B" (Muster).
+export interface IndicatorLines { value?: (number | null)[]; macd?: (number | null)[]; signal?: (number | null)[]; histogram?: (number | null)[]; middle?: (number | null)[]; upper?: (number | null)[]; lower?: (number | null)[] }
+export interface IndicatorSeries {
+  key: string; type: "sma" | "ema" | "rsi" | "macd" | "bollinger"; params: Record<string, number>; label: string; panel: "price" | "own";
+  formula?: string; range?: [number, number]; reference_lines?: number[]; lines: IndicatorLines;
+}
+export interface IndicatorsResponse {
+  instrument_id: number; timeframe: string; algo_version: string; timestamps: string[]; indicators: IndicatorSeries[];
+  sources: SourceRef[]; bars_fetched_at: string | null; computed_at?: string | null; empty_reason: string | null;
+}
+
+export type IndicatorEventType = "golden_cross" | "death_cross" | "rsi_divergence" | "bb_breakout" | "volume_spike";
+export interface EventCriterion { name: string; rule: string; required: string; actual: string; passed: boolean }
+export interface IndicatorEvent {
+  id: number; instrument_id: number; timeframe: string; type: IndicatorEventType; direction: "up" | "down" | null;
+  ts: string; start_ts: string | null; end_ts: string | null; confirmed_at: string | null; title: string; summary: string;
+  criteria: EventCriterion[]; values: Record<string, unknown>; params: Record<string, unknown>; algo_version: string;
+  historical_stats: Record<string, unknown> | null; historical_stats_reason: string | null;
+  sources: SourceRef[]; bars_fetched_at: string; detected_at: string;
+}
+export interface IndicatorEventsResponse { events: IndicatorEvent[]; next_cursor: string | null; empty_reason: string | null }
+
+export interface MoveNews { cluster_id: number; canonical_title: string; first_published_at: string; time_offset_minutes: number; item_count: number; sources: SourceRef[] }
+export interface NotableMove {
+  id: number; move_start: string; move_end: string; return_pct: number; return_z: number | null; volume_z: number | null; reasons: string[];
+  params: Record<string, unknown>; algo_version: string; sources: SourceRef[]; bars_fetched_at: string; news: MoveNews[];
+}
+export interface MoveLinksResponse { moves: NotableMove[]; note: string; empty_reason: string | null }
+
+export type PatternStatus = "in_bildung" | "bestaetigt" | "ungueltig";
+export interface KeyPoint { role: string; label: string; ts: string; price: number }
+export interface PatternLine { role: string; label: string; start: { ts: string; price: number }; end: { ts: string; price: number }; extend_right?: boolean }
+export interface Criterion {
+  key: string; name: string; rule: string; threshold: number | null; actual: number | null; unit: string | null; actual_text: string;
+  required: boolean; passed: boolean; sub_score: number; weight: number;
+}
+export interface ConfidenceBreakdownItem { key: string; name: string; weight: number; sub_score: number; contribution: number }
+export interface Confidence { score: number; method: string; breakdown: ConfidenceBreakdownItem[] }
+export interface ScenarioHistorical { share: number | null; sample_size: number | null; text: string | null }
+export interface Scenario { kind: string; title: string; trigger_level: number | null; trigger_rule: string; description: string; historical: ScenarioHistorical | null }
+export interface PatternBacktest {
+  status: "berechnet" | "nicht_berechnet"; run_id: number | null; hit_rate: number | null; sample_size: number | null; ci_low: number | null; ci_high: number | null;
+  base_rate: number | null; not_better_than_random: boolean | null; horizon_bars: number | null; min_move_pct: number | null;
+  universe: string | null; date_range: string | null; computed_at: string | null; survivorship_note: string | null; verdict_text: string | null; note?: string | null;
+}
+export interface DataBasis { bars_from: string; bars_to: string; bar_count: number; last_fetched_at: string; sources: SourceRef[] }
+export interface PatternDetection {
+  id: number; instrument_id: number; timeframe: string; pattern_type: string; name: string; direction_if_confirmed: "aufwärts" | "abwärts" | "offen";
+  status: PatternStatus; status_label: string; status_changed_at: string | null; confirmed_at: string | null; invalidated_at: string | null;
+  start_ts: string; end_ts: string; key_points: KeyPoint[]; lines: PatternLine[]; criteria: Criterion[]; confidence: Confidence;
+  confirmation_level: number | null; invalidation_level: number | null; scenarios: Scenario[]; backtest: PatternBacktest | null;
+  explanation: string; data_basis: DataBasis; params: Record<string, unknown>; algo_version: string; params_hash: string; detected_at: string;
+}
+export interface SRZone {
+  id: number; kind: "unterstuetzung" | "widerstand" | "im_bereich"; kind_label: string; lower: number; upper: number; center: number;
+  touch_count: number; first_touch: string; last_touch: string; explanation: string; confidence?: Confidence;
+}
+export interface PatternsResponse {
+  instrument: Instrument; timeframe: string; detections: PatternDetection[]; zones: SRZone[]; data_basis: DataBasis | null;
+  algo_version: string; params_hash: string; computed_at: string | null; empty_reason: string | null;
+}
+export interface PatternCounts { counts: Record<string, number>; empty_reason: string | null }
+
 let csrfToken = "";
 export const setCsrfToken = (t: string) => { csrfToken = t; };
 
