@@ -76,9 +76,9 @@ Alle Antworten enthalten `source`-Objekte (Grundregel 2). Stimmung und Cluster s
 
 Zusätzlich zu den bisherigen Feldern: `item_count_24h` (Anzahl in den letzten 24 h gespeicherter Meldungen, nur bei `kind == "news"`, sonst `null`). Neu in der Liste: die News-Quellen `finnhub_news`, `sec_edgar`, `alphavantage_news`, `marketaux`, `gdelt`, optional `eqs_news` und je ein `rss_<id>` pro RSS-Feed sowie die Stimmungsverfahren `sentiment_lexicon` (`kind: "reference"`) und `claude_sentiment` (`kind: "llm"`). Ohne Schlüssel bzw. ohne Freischaltung steht der Status `disabled` mit `last_error` (Grund).
 
-## Phase 3A: Indikatoren, Indikator-Ereignisse, News↔Kurs (Backend, Vertrag Stand: Entwurf für 3D)
+## Phase 3A: Indikatoren, Indikator-Ereignisse, News↔Kurs (Backend)
 
-Alle Werte sind aus gespeicherten Kerzen berechnet (reines Python, deterministisch, versionierte Parameter). Jede Antwort nennt die Kursquellen der Eingangskerzen (`sources`, `fetched_at`) und `algo_version` (Grundregel 2). Es gibt keine Kauf-/Verkaufssprache; Richtungen heißen `up`/`down` und beschreiben nur die Lage der Werte.
+Alle Werte sind aus gespeicherten Kerzen berechnet (reines Python, deterministisch, versionierte Parameter). Jede Antwort nennt die Kursquellen der Eingangskerzen (`sources`, `fetched_at`) und `algo_version` (Grundregel 2). Die Serien enthalten auch die laufende Kerze (wie `/bars`); Ereignisse und Bewegungen werten nur abgeschlossene Kerzen aus. Es gibt keine Kauf-/Verkaufssprache; Richtungen heißen `up`/`down` und beschreiben nur die Lage der Werte.
 
 ### Indikator-Serien für den Chart
 
