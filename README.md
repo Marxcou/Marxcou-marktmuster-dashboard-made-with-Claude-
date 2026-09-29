@@ -44,9 +44,33 @@ Der Worker sucht alle 5 Minuten für alle Watchlist-Instrumente (1d und 1h, nur 
 - **Muster:** Kopf-Schulter (auch invers), Doppelhoch/Doppelboden, Dreiecke (aufsteigend, absteigend, symmetrisch), Keile (steigend, fallend), Flaggen und Wimpel (nach Anstieg/Rückgang). Grundlage sind Wendepunkte per ZigZag mit ATR-Schwelle (`backend/app/analysis/pivots.py`).
 - **Unterstützungs- und Widerstandszonen** aus Häufungen von Wendepunkten (`backend/app/analysis/zones.py`).
 - **Erklärung je Erkennung:** Lage (Schlüsselpunkte, Linien, Zeitraum), jedes Kriterium mit Regel und tatsächlichem Wert, Konfidenz als gewichteter Mittelwert der Teilwerte mit Aufschlüsselung, Szenarien "Bestätigung"/"Scheitern" mit Kursniveau (keine Kursziele), Status (in Bildung, bestätigt, ungültig) mit Begründung.
-- **Historische Trefferquote:** kommt aus dem Muster-Backtest (3C, Tabelle `backtest_runs`). Bis dahin zeigt die API `"status": "nicht_berechnet"` ohne Zahlen.
+- **Historische Trefferquote:** kommt aus dem Muster-Backtest (siehe unten, Tabelle `backtest_runs`). Solange er nicht gelaufen ist, zeigt die API `"status": "nicht_berechnet"` ohne Zahlen.
 
 Alle Parameter mit Beschreibung stehen in `backend/app/analysis/params.py` und unter `GET /api/patterns/catalog`; jede Erkennung speichert die verwendeten Werte, `params_hash` und `algo_version`. Endpunkte: `GET /api/instruments/{id}/patterns`, `/api/patterns/{id}`, `/api/patterns/counts`. Tests mit synthetischen Kursreihen bekannten Ergebnisses: `backend/tests/test_patterns.py`, `test_pattern_api.py`.
+
+## Muster-Backtest (Phase 3C)
+
+Die historische Trefferquote je Mustertyp wird mit echten Tagesdaten von Stooq berechnet. Der Backtest ist ein einmaliger Job (nicht im Worker-Zeitplan) und braucht `STOOQ_API_KEY` in `.env`. Ohne Kursdaten speichert er nichts; bis zum ersten Lauf zeigt das Dashboard "nicht berechnet".
+
+```bash
+# erst mit zwei Werten ausprobieren, ohne etwas zu speichern
+docker compose run --rm worker python -m app.backtest_job --symbols SAP.XETR,AAPL.XNAS --dry-run
+# vollständiger Lauf (DAX-Auswahl und 100 US-Werte ab 2010), Ergebnis landet in der Datenbank
+docker compose run --rm worker python -m app.backtest_job
+```
+
+Ohne Docker: `cd backend && python -m app.backtest_job` (gleiche Optionen). Der vollständige Lauf lädt ca. 140 Tagesreihen (Stooq-Limit: 20 Abrufe je Minute, also ca. 7 Minuten) und rechnet ca. 1 CPU-Minute je Aktie, verteilt auf alle Kerne bis auf einen (`--workers`). Die geladenen Daten liegen 7 Tage im Zwischenspeicher `BACKTEST_CACHE_DIR`, ein zweiter Lauf fragt Stooq also nicht erneut. Weitere Optionen: `--start`, `--horizon` (Kerzen, Standard 20), `--min-move` (%, Standard 5), `--step`, `--window`, `--universe-file` (eigene Liste, je Zeile `SYMBOL,BÖRSE`), `python -m app.backtest_job --help`.
+
+So wird gerechnet (`backend/app/analysis/backtest.py`):
+
+- **Ohne Blick in die Zukunft:** Die Mustererkennung läuft schrittweise (alle 5 Kerzen) nur auf den Kerzen bis zum jeweiligen Tag (höchstens 500). Ein Fall ist ein bestätigtes Muster. Ausgangspunkt ist der Schlusskurs am Tag der Bestätigung oder, falls das Muster erst später sichtbar war, an diesem späteren Tag.
+- **Treffer:** Ein Schlusskurs innerhalb von 20 Kerzen liegt mindestens 5 % in Richtung des Musters (beim symmetrischen Dreieck in Richtung des Ausbruchs).
+- **Basisrate:** derselbe Test für jeden Handelstag derselben Aktien im selben Zeitraum, gewichtet wie die Fälle. Das 95-%-Intervall der Trefferquote kommt aus der Wilson-Formel. Liegt seine untere Grenze nicht über der Basisrate, zeigt das Dashboard "Historisch nicht besser als Zufall".
+- **Szenarien:** Für "Bestätigung"/"Scheitern" (bzw. "Ausbruch nach oben/unten") zählt, wie oft Muster, die in Bildung erkannt wurden, später bestätigt oder ungültig wurden.
+- **Ausgeschlossen:** Zeiträume mit einem Tagessprung über 40 % (z. B. nicht bereinigte Aktiensplits) und Fälle, nach denen noch keine 20 Kerzen vorliegen. Beides wird gezählt und gespeichert.
+- **Offen gesagt:** Die Aktienauswahl sind heutige Indexmitglieder (Survivorship Bias). Fälle derselben Aktie überschneiden sich zeitlich, das Intervall ist daher eher zu schmal. Die DAX-Liste in `backend/app/backtest_universe.py` ist nach bestem Wissen (Stand 2025) und sollte vor dem Lauf geprüft werden.
+
+Jeder Lauf speichert je Mustertyp eine Zeile in `backtest_runs` mit Parametern, Zeitraum, Quelle, Abrufzeit, verwendeten und fehlenden Werten. Das Dashboard zeigt immer den neuesten Lauf. Tests mit synthetischen Kursreihen bekannten Ergebnisses: `backend/tests/test_backtest.py`.
 
 ## Kursdaten (Phase 1B)
 

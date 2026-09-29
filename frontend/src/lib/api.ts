@@ -81,6 +81,8 @@ export interface PatternBacktest {
   status: "berechnet" | "nicht_berechnet"; run_id: number | null; hit_rate: number | null; sample_size: number | null; ci_low: number | null; ci_high: number | null;
   base_rate: number | null; not_better_than_random: boolean | null; horizon_bars: number | null; min_move_pct: number | null;
   universe: string | null; date_range: string | null; computed_at: string | null; survivorship_note: string | null; verdict_text: string | null; note?: string | null;
+  mean_return_pct?: number | null; median_return_pct?: number | null; base_mean_return_pct?: number | null; method?: string | null;
+  source?: { key: string; name: string; homepage: string; terms_url?: string; fetched_from?: string; fetched_to?: string } | null;
 }
 export interface DataBasis { bars_from: string; bars_to: string; bar_count: number; last_fetched_at: string; sources: SourceRef[] }
 export interface PatternDetection {

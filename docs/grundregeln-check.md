@@ -100,3 +100,20 @@ Offen/ehrlich:
 - Getestet mit synthetischen Kursreihen bekannten Ergebnisses und einer zufälligen Reihe (Laufzeit ca. 0,2 s für 1.300 Kerzen), nicht mit echten Kursdaten.
 - Mehrere Deutungen derselben Kursbewegung sind möglich (z. B. Doppelboden und Dreieck über denselben Wendepunkten); beide werden mit eigener Begründung gezeigt. Innerhalb einer Musterfamilie bleibt bei Überlappung nur die Erkennung mit der höchsten Konfidenz.
 - Erkennungen am rechten Rand können sich mit neuen Kerzen ändern (z. B. ein Dreieck bekommt einen weiteren Wendepunkt); sie werden dann neu berechnet und erhalten eine neue ID.
+
+## Phase 3C (Muster-Backtest)
+
+| Regel | Stand | Beleg |
+|---|---|---|
+| 1 Keine Empfehlungssprache | erfüllt | `test_grundregeln.py` läuft über den neuen Code. Ergebnistexte beschreiben nur Anteile ("In 35,3 % von 17 in Echtzeit erkannten Fällen wurde das Muster bestätigt", "Das 95-%-Intervall überdeckt die Basisrate"); keine Handlungsaufforderung |
+| 2 Quellentransparenz | erfüllt | Jeder Lauf speichert Quelle (Name, Link, Nutzungsbedingungen, Verzögerung), Abrufzeitraum, Zeitraum der Kerzen, verwendete und fehlende Werte mit Grund; die API liefert `source`, `method`, `universe`, `date_range`; das Panel zeigt sie unter "Wie wurde das berechnet?" |
+| 3 Erklärpflicht | erfüllt, sobald der Job mit echten Daten gelaufen ist | Trefferquote, Stichprobengröße, 95-%-Intervall, Basisrate, mittlere Veränderung und Szenario-Anteile je Mustertyp; "Historisch nicht besser als Zufall" auch dann, wenn die Quote unter der Basisrate liegt |
+| 4 Unsicherheit | erfüllt (für Muster) | Wilson-Intervall, Hinweis auf kleine Stichprobe (unter 30), Hinweis auf nicht unabhängige Fälle und Survivorship Bias |
+| 5 Hinweis auf jeder Seite | unverändert | Frontend-Layout |
+| 6 Keine erfundenen Daten | erfüllt | Der Job speichert nur, was eine echte Kursquelle geliefert hat, und bricht ohne Daten ohne Speichern ab (`test_job_without_data_stores_nothing`). Ohne Fälle bleibt die Quote `null`. Die laufende Tageskerze wird nicht verwendet. Tests nutzen synthetische Reihen nur in der Testdatenbank |
+
+Offen/ehrlich:
+- Noch nicht mit echten Daten gelaufen (hier gibt es keinen Stooq-Schlüssel). Bis Luca den Job startet, zeigt das Dashboard weiter "nicht berechnet".
+- Treffer-Definition (5 % in 20 Kerzen) und Parameter der Mustererkennung sind Festlegungen, nicht an Daten optimiert. Wer sie nach dem Ergebnis verändert, riskiert eine Überanpassung.
+- Ob Stooq Splits und Dividenden bereinigt, ist nicht geprüft; Sprünge über 40 % werden deshalb ausgeschlossen und gezählt.
+- Schrittweite 5 Kerzen: Ein Fall kann bis zu 4 Kerzen später beginnen als bei täglicher Auswertung (nie früher). `--step 1` ist genauer, aber ca. fünfmal langsamer.

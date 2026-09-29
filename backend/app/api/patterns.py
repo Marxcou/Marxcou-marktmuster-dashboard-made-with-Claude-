@@ -63,18 +63,24 @@ def backtest_block(run: BacktestRun | None) -> dict[str, Any]:
         return {"status": "nicht_berechnet", "run_id": None, "hit_rate": None, "sample_size": None, "ci_low": None,
                 "ci_high": None, "base_rate": None, "not_better_than_random": None, "horizon_bars": None,
                 "min_move_pct": None, "universe": None, "date_range": None, "computed_at": None,
-                "survivorship_note": None, "verdict_text": None, "note": NOT_COMPUTED_NOTE}
-    overlaps: bool | None = None
+                "survivorship_note": None, "verdict_text": None, "note": NOT_COMPUTED_NOTE,
+                "mean_return_pct": None, "median_return_pct": None, "base_mean_return_pct": None, "method": None,
+                "source": None}
+    # Nicht besser als Zufall: die untere Grenze des 95-%-Intervalls liegt nicht über der Basisrate
+    # (Intervall überdeckt die Basisrate oder liegt ganz darunter).
+    not_better: bool | None = None
     if run.ci_low is not None and run.ci_high is not None and run.base_rate is not None:
-        overlaps = run.ci_low <= run.base_rate <= run.ci_high
+        not_better = run.ci_low <= run.base_rate
     m = run.metrics or {}
     return {"status": "berechnet", "run_id": run.id, "hit_rate": run.hit_rate, "sample_size": run.sample_size,
             "ci_low": run.ci_low, "ci_high": run.ci_high, "base_rate": run.base_rate,
-            "not_better_than_random": overlaps, "horizon_bars": run.params.get("horizon_bars"),
+            "not_better_than_random": not_better, "horizon_bars": run.params.get("horizon_bars"),
             "min_move_pct": run.params.get("min_move_pct"), "universe": run.universe or None,
             "date_range": run.date_range or None, "computed_at": _iso(run.created_at),
             "survivorship_note": m.get("survivorship_note"), "verdict_text": m.get("verdict_text"),
-            "note": m.get("note")}
+            "note": m.get("note"), "mean_return_pct": m.get("mean_return_pct"),
+            "median_return_pct": m.get("median_return_pct"), "base_mean_return_pct": m.get("base_mean_return_pct"),
+            "method": m.get("method"), "source": m.get("source")}
 
 
 def detection_out(db: DB, d: PatternDetection, runs: dict[str, BacktestRun | None] | None = None) -> dict[str, Any]:

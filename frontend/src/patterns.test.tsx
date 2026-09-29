@@ -63,6 +63,16 @@ describe("Erklärpanel (Grundregel 3)", () => {
     render(<PatternPanel p={{ ...PATTERN, backtest: { ...BT, hit_rate: 0.51, ci_low: 0.44, ci_high: 0.58, not_better_than_random: true } }} />);
     expect(screen.getByTestId("not-better").textContent).toContain("nicht besser als Zufall");
   });
+  it("sagt es auch, wenn die Trefferquote unter der Basisrate liegt, und zeigt Methode, Quelle und mittlere Veränderung", () => {
+    render(<PatternPanel p={{ ...PATTERN, backtest: { ...BT, hit_rate: 0.3, ci_low: 0.24, ci_high: 0.37, not_better_than_random: true, verdict_text: "Die Trefferquote liegt unter der Basisrate.", mean_return_pct: -1.25, median_return_pct: -0.5, base_mean_return_pct: 0.8, method: "Walk-forward ohne Blick in die Zukunft.", source: { key: "stooq", name: "Stooq", homepage: "https://stooq.com", fetched_to: "2026-09-29T10:00:00Z" }, note: "Fälle sind nicht unabhängig." } }} />);
+    expect(screen.getByTestId("not-better").textContent).toContain("unter der Basisrate");
+    const t = screen.getByTestId("backtest").textContent ?? "";
+    expect(t).toContain("-1,3 %");
+    expect(t).toContain("+0,8 %");
+    expect(t).toContain("Walk-forward");
+    expect(t).toContain("Stooq");
+    expect(t).toContain("nicht unabhängig");
+  });
   it("warnt bei kleiner Stichprobe", () => {
     render(<PatternPanel p={{ ...PATTERN, backtest: { ...BT, sample_size: 12 } }} />);
     expect(screen.getByTestId("backtest").textContent).toContain("Kleine Stichprobe");
