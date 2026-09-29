@@ -118,6 +118,21 @@ Offen/ehrlich:
 - Treffer-Definition (5 % in 20 Kerzen) und Parameter der Mustererkennung sind Festlegungen, nicht an Daten optimiert. Wer sie nach dem Ergebnis verändert, riskiert eine Überanpassung.
 - Ob Stooq Splits und Dividenden bereinigt, ist nicht geprüft; Sprünge über 40 % werden deshalb ausgeschlossen und gezählt.
 - Schrittweite 5 Kerzen: Ein Fall kann bis zu 4 Kerzen später beginnen als bei täglicher Auswertung (nie früher). `--step 1` ist genauer, aber ca. fünfmal langsamer.
+## Fix: Backtest und Tagesdaten mit Yahoo, wenn Stooq fehlt
+
+| Regel | Stand | Beleg |
+|---|---|---|
+| 1 Keine Empfehlungssprache | erfüllt | Neue Texte nennen nur Quelle und fehlende Einrichtung; `test_grundregeln.py` läuft darüber |
+| 2 Quellentransparenz | erfüllt | Ein Backtest-Lauf nutzt genau eine Quelle, gespeichert in `metrics.source` und im Text "Tagesdaten von …"; die Musteransicht zeigt "Yahoo Finance (inoffiziell)" (`test_backtest_with_yahoo_records_yahoo_as_source`). Yahoo erscheint auf der Seite Quellen als inoffiziell mit Nutzungsbedingungen |
+| 3 Erklärpflicht | unverändert | |
+| 4 Unsicherheit | unverändert | |
+| 5 Hinweis auf jeder Seite | unverändert | |
+| 6 Keine erfundenen Daten | erfüllt | Ohne eingerichtete Quelle bricht der Job mit Hinweis ab (`test_job_refuses_without_any_daily_source`). Yahoo-Tage mit fehlenden Werten werden ausgelassen, HTML- oder Fehlerantworten werden nie als Kurse gelesen (`test_yahoo_unknown_symbol_is_empty_and_bad_answers_are_errors`) |
+
+Offen/ehrlich:
+- Der Yahoo-Abruf ist nur gegen nachgebaute Antworten getestet; aus dieser Umgebung ist Yahoo nicht erreichbar. Der erste echte Lauf bei Luca zeigt, ob der Endpunkt ohne Anmeldung liefert.
+- Yahoo-Kurse sind splitbereinigt, nicht dividendenbereinigt. Ergebnisse aus Stooq und Yahoo sind deshalb nicht exakt vergleichbar; jeder Lauf nennt seine Quelle.
+
 ## Phase 4A (Prognosen, Szenarien, Prognose-Backtest, Backend)
 
 | Regel | Stand | Beleg |

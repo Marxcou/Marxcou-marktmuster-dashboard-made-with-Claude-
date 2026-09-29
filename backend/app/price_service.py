@@ -27,7 +27,7 @@ log = logging.getLogger("price")
 INTRADAY_LOOKBACK = {"1m": timedelta(days=5), "5m": timedelta(days=30), "1h": timedelta(days=180)}
 DAILY_LOOKBACK = timedelta(days=365 * 5 + 2)
 # Reihenfolge bei mehreren Quellen für dieselbe Kerze: erste konfigurierte Quelle gewinnt
-SOURCE_PRIORITY = ["alpaca", "stooq"]
+SOURCE_PRIORITY = ["alpaca", "stooq", "yahoo"]
 NO_INTRADAY_REASON = (
     "Keine Intraday-Daten für XETRA im kostenlosen Tarif. Verfügbar sind Tagesdaten (Handelsende)."
 )

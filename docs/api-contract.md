@@ -22,11 +22,11 @@ Jeder Kurs/jede Kerze trägt `source` (`key`, `name`, `homepage`, `terms_url`, `
 ## Ergänzungen durch 1B (keine Änderung der Antwortformen)
 
 - **`empty_reason` bei `/bars`:** für XETRA-Instrumente und `timeframe` ≠ `1d` lautet er "Keine Intraday-Daten für XETRA im kostenlosen Tarif. Verfügbar sind Tagesdaten (Handelsende)." (`bars` ist dann leer). Sonst wie bisher, wenn noch keine Daten gespeichert sind.
-- **Mehrere Quellen pro Kerze:** `/bars` liefert je Zeitstempel (bei `1d` je Kalendertag) genau eine Kerze, bevorzugt von Alpaca vor Stooq. `source` nennt die tatsächliche Quelle.
-- **Quotes:** US: IEX-Echtzeit (`source.key` `alpaca`, Ausweichquelle `finnhub`), `delay_seconds` 0. XETRA: letzter Tagesschluss aus Stooq, `delay_seconds` `null`, `source.delay_text` "Handelsende (Tagesdaten)".
+- **Mehrere Quellen pro Kerze:** `/bars` liefert je Zeitstempel (bei `1d` je Kalendertag) genau eine Kerze, bevorzugt von Alpaca vor Stooq vor Yahoo. `source` nennt die tatsächliche Quelle.
+- **Quotes:** US: IEX-Echtzeit (`source.key` `alpaca`, Ausweichquelle `finnhub`), `delay_seconds` 0. XETRA: letzter Tagesschluss aus Stooq (oder Yahoo, wenn eingeschaltet), `delay_seconds` `null`, `source.delay_text` "Handelsende (Tagesdaten)".
 - **WS-Event `quote`:** `payload = {instrument_id, symbol, price, change_abs, change_pct, ts_utc, fetched_at, source_key, delay_seconds}`. Höchstens etwa alle 2 Sekunden je Symbol; das Frontend zeigt `ts_utc`/`fetched_at` als "letztes Update".
 - **`POST /watchlist`:** stößt im Hintergrund sofort einen Abruf der Historie an; die ersten Kerzen können ein paar Sekunden später erscheinen (leerer Chart mit `empty_reason` bis dahin).
-- **`/sources`:** enthält jetzt `alpaca`, `finnhub`, `stooq`, `openfigi`. Ohne API-Schlüssel steht der Status `disabled` mit `last_error` "API-Schlüssel nicht gesetzt".
+- **`/sources`:** enthält jetzt `alpaca`, `finnhub`, `stooq`, `yahoo`, `openfigi`. Ohne API-Schlüssel steht der Status `disabled` mit `last_error` "API-Schlüssel nicht gesetzt"; `yahoo` (`is_official: false`) ist `disabled` mit "In .env ausgeschaltet (YAHOO_ENABLED=false)", bis es eingeschaltet wird. Muster-Backtest-Läufe nennen in `source.key` `stooq` oder `yahoo`.
 
 ## Schnittstellen für die Folge-Workstreams
 

@@ -76,11 +76,12 @@ def load_builtin_adapters() -> None:
     from app.adapters.rss import build_rss_adapters
     from app.adapters.sec_edgar import SecEdgarAdapter
     from app.adapters.stooq import StooqAdapter
+    from app.adapters.yahoo import YahooAdapter
     from app.sentiment_claude import ClaudeSentimentSource
     from app.sentiment_lexicon import LexiconSentimentSource
 
     for adapter_cls in (
-        AlpacaAdapter, FinnhubAdapter, StooqAdapter, OpenFigiAdapter, FinnhubNewsAdapter, SecEdgarAdapter,
+        AlpacaAdapter, FinnhubAdapter, StooqAdapter, YahooAdapter, OpenFigiAdapter, FinnhubNewsAdapter, SecEdgarAdapter,
         AlphaVantageNewsAdapter, MarketauxAdapter, GdeltAdapter, IrFeedsAdapter,
         LexiconSentimentSource, ClaudeSentimentSource,
     ):

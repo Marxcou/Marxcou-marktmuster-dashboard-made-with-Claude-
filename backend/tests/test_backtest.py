@@ -252,10 +252,93 @@ def test_todays_running_bar_is_not_used(tmp_path):
     assert data.series[0].bars.ts[-1].date() < NOW.date()
 
 
-def test_job_refuses_without_stooq_key(monkeypatch, capsys):
+def test_job_refuses_without_any_daily_source(monkeypatch, capsys):
     monkeypatch.setattr("app.backtest_job.StooqAdapter.is_configured", lambda self: False)
+    monkeypatch.setattr("app.backtest_job.YahooAdapter.is_configured", lambda self: False)
     assert job_main(["--dry-run"]) == 2
-    assert "STOOQ_API_KEY" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "STOOQ_API_KEY" in err and "YAHOO_ENABLED=true" in err and "kein Backtest" in err
+
+
+def _capture_run(monkeypatch) -> list[str]:
+    used: list[str] = []
+
+    def fake_run(db, adapter, *args, **kw):  # type: ignore[no-untyped-def]
+        used.append(adapter.metadata().key)
+        raise ValueError("Für keinen Wert liegen Kursdaten vor.")
+
+    monkeypatch.setattr("app.backtest_job.run_pattern_backtest", fake_run)
+    return used
+
+
+def test_job_uses_yahoo_when_stooq_has_no_key(monkeypatch):
+    used = _capture_run(monkeypatch)
+    monkeypatch.setattr("app.backtest_job.StooqAdapter.is_configured", lambda self: False)
+    monkeypatch.setattr("app.backtest_job.YahooAdapter.is_configured", lambda self: True)
+    assert job_main(["--dry-run", "--symbols", "SAP.XETR"]) == 1
+    assert used == ["yahoo"]
+
+
+def test_job_prefers_stooq_and_honours_source_option(monkeypatch, capsys):
+    used = _capture_run(monkeypatch)
+    monkeypatch.setattr("app.backtest_job.StooqAdapter.is_configured", lambda self: True)
+    monkeypatch.setattr("app.backtest_job.YahooAdapter.is_configured", lambda self: True)
+    job_main(["--dry-run", "--symbols", "SAP.XETR"])
+    job_main(["--dry-run", "--symbols", "SAP.XETR", "--source", "yahoo"])
+    assert used == ["stooq", "yahoo"]
+    monkeypatch.setattr("app.backtest_job.YahooAdapter.is_configured", lambda self: False)
+    assert job_main(["--dry-run", "--source", "yahoo"]) == 2  # erzwungene Quelle nicht eingerichtet
+    assert "YAHOO_ENABLED=true" in capsys.readouterr().err
+
+
+def _yahoo_chart(series: list[tuple[datetime, float]]) -> dict[str, object]:
+    # Yahoo stempelt XETRA-Tageskerzen mit 07:00 UTC (Handelsbeginn), gmtoffset 7200 (Sommerzeit)
+    ts = [int((t.replace(hour=0) + timedelta(hours=7)).timestamp()) for t, _ in series]
+    c = [v for _, v in series]
+    return {"chart": {"error": None, "result": [{
+        "meta": {"symbol": "SAP.DE", "currency": "EUR", "gmtoffset": 7200},
+        "timestamp": ts,
+        "indicators": {"quote": [{"open": c, "high": [v * 1.002 for v in c], "low": [v * 0.998 for v in c],
+                                  "close": c, "volume": [1e6] * len(c)}]},
+    }]}}
+
+
+def test_backtest_with_yahoo_records_yahoo_as_source(client, tmp_path, monkeypatch):
+    import httpx
+
+    from app.adapters.yahoo import YahooAdapter
+    from app.config import get_settings
+
+    monkeypatch.setenv("YAHOO_ENABLED", "true")
+    get_settings.cache_clear()
+    charts = {"SAP.DE": _yahoo_chart(_series(RISE, NOW)), "SIE.DE": _yahoo_chart(_series(FAIL, NOW))}
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        ticker = req.url.path.rsplit("/", 1)[-1]
+        if ticker in charts:
+            return httpx.Response(200, json=charts[ticker])
+        return httpx.Response(404, json={"chart": {"result": None, "error": {"code": "Not Found"}}})
+
+    adapter = YahooAdapter(transport=httpx.MockTransport(handler), sleep=lambda _s: None)
+    get_settings.cache_clear()
+    assert adapter.is_configured()
+    universe = [("SAP", "XETR"), ("SIE", "XETR"), ("GONE", "XETR")]
+    cfg = BacktestConfig(warmup_bars=60, window_bars=200, step_bars=1, horizon_bars=20)
+    with SessionLocal() as db:
+        _, data = run_pattern_backtest(db, adapter, universe, "Testauswahl", START, cfg, 1, tmp_path, now=NOW)
+    assert [s.key for s in data.series] == ["SAP.XETR", "SIE.XETR"] and "GONE.XETR" in data.missing
+    with SessionLocal() as db:
+        dbl = next(r for r in db.scalars(select(BacktestRun)).all() if r.subject == "doppelboden")
+        assert dbl.sample_size == 2 and dbl.hit_rate == 0.5
+        assert dbl.metrics["source"]["key"] == "yahoo" and "inoffiziell" in dbl.metrics["source"]["name"]
+        assert "Yahoo Finance (inoffiziell)" in dbl.universe
+    assert (tmp_path / "yahoo" / "SAP.XETR.json").exists()
+    iid, _ = seed()
+    run_scan(iid)
+    login(client)
+    det = next(d for d in client.get(f"/api/instruments/{iid}/patterns").json()["detections"]
+               if d["pattern_type"] == "doppelboden")
+    assert det["backtest"]["source"]["name"] == "Yahoo Finance (inoffiziell)"
 
 
 def test_not_better_than_random_also_when_clearly_below_base_rate(client):
