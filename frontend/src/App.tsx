@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import { Skeleton } from "./components/Skeleton";
 import { Layout } from "./components/Layout";
 import { useAuth } from "./lib/auth";
 import { ChartPage } from "./pages/ChartPage";
@@ -12,7 +13,7 @@ import { Watchlist } from "./pages/Watchlist";
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { me, loading } = useAuth();
-  if (loading) return <p className="text-slate-400">Lade …</p>;
+  if (loading) return <div role="status" aria-label="Lade …" className="space-y-3"><Skeleton className="h-7 w-1/3" /><Skeleton className="h-24 w-full" /></div>;
   if (!me) return <Navigate to="/login" replace />;
   // Einmalpasswort: bis zum Passwortwechsel ist nur die Kontoseite erreichbar.
   if (me.user.must_change_password) return <Account forced />;

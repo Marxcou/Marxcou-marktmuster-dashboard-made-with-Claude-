@@ -40,7 +40,7 @@ export function AdminUsers() {
   return (
     <section className="space-y-6">
       <div>
-        <h1 className="mb-2 text-xl font-semibold">Benutzerverwaltung</h1>
+        <h1 className="mb-2 ">Benutzerverwaltung</h1>
         <p className="text-sm text-slate-400">Nur Administratoren. Es gibt keine offene Registrierung und keinen E-Mail-Versand: Einmalpasswörter werden genau einmal hier angezeigt und müssen von dir weitergegeben werden. Beim ersten Login muss der Nutzer ein eigenes Passwort festlegen. API-Schlüssel sind für keinen Nutzer sichtbar, sie liegen nur in der Server-Konfiguration.</p>
       </div>
       {shown && (

@@ -1,3 +1,4 @@
+import { CardSkeleton } from "../components/Skeleton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLiveEvents } from "../hooks/useLiveEvents";
 import { api, type Source } from "../lib/api";
@@ -18,23 +19,23 @@ export function Sources() {
 
   return (
     <section>
-      <h1 className="mb-2 text-xl font-semibold">Quellen</h1>
+      <h1 className="mb-2">Quellen</h1>
       <p className="mb-4 text-sm text-slate-400">Alle angebundenen Datenquellen mit Aktualisierungsintervall, Verzögerung und aktuellem Status. Die Liste wird aus den Adaptern des Backends erzeugt.</p>
-      {q.isLoading && <p className="text-slate-400">Lade Quellen …</p>}
+      {q.isLoading && <div className="grid gap-4 md:grid-cols-2"><CardSkeleton /><CardSkeleton /></div>}
       {q.isError && <p role="alert" className="text-rose-300" data-testid="sources-error">Die Quellenliste konnte nicht geladen werden (Backend nicht erreichbar). Der Status der Quellen ist daher unbekannt.</p>}
       {q.data && q.data.length === 0 && <p className="text-amber-300" data-testid="no-sources">Das Backend meldet keine angebundenen Quellen.</p>}
       <div className="grid gap-4 md:grid-cols-2">
         {q.data?.map((s) => {
           const st = STATUS[s.status] ?? STATUS.offline;
           return (
-            <article key={s.key} className="rounded-lg border border-slate-800 bg-slate-900 p-4" data-testid="source-card">
+            <article key={s.key} className="card" data-testid="source-card">
               <div className="flex items-start justify-between gap-2">
                 <h2 className="font-semibold"><a href={s.homepage} target="_blank" rel="noreferrer" className="underline">{s.name}</a></h2>
                 <span className={`rounded border px-2 py-0.5 text-xs ${st.cls}`} data-testid="source-status">{st.text}</span>
               </div>
               <p className="text-xs text-slate-400">{KIND[s.kind] ?? s.kind}{s.is_official ? " · offizielle Quelle" : " · inoffizielle Quelle"}</p>
               <p className="mt-2 text-sm">{s.description}</p>
-              <dl className="mt-3 grid grid-cols-[auto,1fr] gap-x-3 gap-y-1 text-sm">
+              <dl className="mt-3 grid grid-cols-[auto,minmax(0,1fr)] [&_dd]:break-words gap-x-3 gap-y-1 text-sm">
                 <dt className="text-slate-400">Intervall</dt><dd>{s.update_interval}</dd>
                 <dt className="text-slate-400">Verzögerung</dt><dd>{s.delay_text}</dd>
                 <dt className="text-slate-400">API-Schlüssel</dt><dd>{s.requires_key ? "erforderlich" : "nicht erforderlich"}</dd>
