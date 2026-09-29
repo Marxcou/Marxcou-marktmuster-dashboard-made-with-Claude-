@@ -166,3 +166,20 @@ Offen/ehrlich:
 - Gebaut gegen den Vertrag aus dem Branch `phase-4a-forecasts` und mit simulierten Antworten geprüft (Vitest, Sichtprüfung der verschachtelten Bänder im Browser mit Testdaten), nicht gegen das laufende Backend.
 - Die Einordnung "nahe am Sollwert" der Abdeckung (Abweichung bis 5 Prozentpunkte) und die Warnschwelle "kleine Stichprobe" (unter 30) sind Annahmen der Oberfläche.
 - Die Horizonte 5/10/20 folgen dem Backend-Limit von 20 Kerzen. `GET /forecasts/methods` wird noch nicht genutzt; die Methodenbeschreibung kommt aus der Prognose-Antwort.
+
+## Phase 5B (Tests: Ende-zu-Ende, Muster-Regression)
+
+| Regel | Stand | Beleg |
+|---|---|---|
+| 1 Keine Empfehlungssprache | zusätzlich geprüft | `e2e/grundregeln.spec.ts` liest den sichtbaren Text jeder Seite und sucht die Wortliste aus `backend/app/grundregeln.py` (einzige Quelle); zusätzlich Panels für Muster und Prognose |
+| 2 Quellentransparenz | zusätzlich geprüft | E2E öffnet die Quellenangaben von Kurs, Chart und Meldungen (Anbieter, Verzögerung, Abrufzeit, Nutzungsbedingungen) und prüft die Seite Quellen: Intervall, Verzögerung, Status, Grund bei deaktivierten oder nicht erreichbaren Quellen |
+| 3 Erklärpflicht | zusätzlich geprüft | E2E: Name, Lage mit Zeitraum, Kriterientabelle mit Werten, Konfidenz samt Berechnung, mindestens zwei Szenarien, beide Niveaus, Backtest mit Stichprobe. Regressionstest: jede Erkennung jedes Fixtures erfüllt die Erklärpflicht |
+| 4 Unsicherheit | zusätzlich geprüft | E2E: Legende 50/80/95 %, Methode, Abdeckung und Fehlermaße gegen "Kurs bleibt gleich" |
+| 5 Hinweis auf jeder Seite | automatisiert | E2E prüft auf Anmeldung, Watchlist, Chart, Nachrichten, Quellen und unbekannter Seite den exakten Wortlaut; entfernt man den Hinweis, schlägt der Test fehl (ausprobiert) |
+| 6 Keine erfundenen Daten | erfüllt | E2E-Daten sind nur mit `DEMO_MODE=true` anlegbar, heißen "Beispieldaten", tragen `is_demo` und zeigen das Banner; keine Anbieter-Zugriffe im Testlauf |
+
+Offen/ehrlich:
+- Die Testdaten und der Muster-Backtest in den E2E-Läufen sind erfundene Beispielwerte; sie prüfen die Darstellung, nicht die Qualität der Erkennung oder der Prognose.
+- Das Zeichnen im Chart (Canvas) prüft kein Test inhaltlich, nur dass es gerendert wird; Muster-Markierungen und Korridor-Flächen bleiben eine Sichtprüfung.
+- Die Golden-Datei hält den heutigen Stand der (unabgestimmten) Standardparameter fest. Sie sagt "unverändert", nicht "richtig".
+- Beim Schreiben der Tests fielen drei Fehler auf und wurden behoben: Abmelden hatte keine Wirkung (`qc.clear()` entfernte die Abfrage "me"), jede Zugriffszeile im uvicorn-Log scheiterte an der Log-Bereinigung, und eine neu hinzugefügte Aktie zeigte bis zum nächsten Abruf "0 Muster".

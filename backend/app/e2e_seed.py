@@ -41,10 +41,12 @@ log = logging.getLogger("e2e_seed")
 BARS = 420
 LABEL = "Beispieldaten"
 
-# Kursverlauf: langsamer Vorlauf, dann Doppelboden (Tiefs bei ~100 und ~100,3, Nackenlinie ~110), bestätigter Ausbruch.
+# Kursverlauf: langsamer Vorlauf, dann Doppelboden (Tiefs bei ~100 und ~100,3, Nackenlinie ~110). DEMOA: bestätigter
+# Ausbruch (Chart-Tests), DEMOB: noch in Bildung (Zähler auf der Watchlist).
 ANCHORS: dict[str, list[tuple[int, float]]] = {
     "DEMOA": [(0, 140), (250, 120), (280, 100), (295, 110), (310, 100.3), (335, 118), (360, 125), (BARS - 1, 124)],
-    "DEMOB": [(0, 60), (200, 80), (BARS - 1, 95)],
+    # Doppelboden noch in Bildung (zählt als "aktuell erkanntes Muster" auf der Watchlist-Karte)
+    "DEMOB": [(0, 140), (350, 120), (380, 100), (395, 110), (410, 100.3), (BARS - 1, 106)],
 }
 NAMES = {"DEMOA": "Demo Beispiel AG", "DEMOB": "Demo Muster Holding"}
 

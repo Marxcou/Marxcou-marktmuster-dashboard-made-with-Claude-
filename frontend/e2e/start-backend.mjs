@@ -24,6 +24,11 @@ const env = {
   SESSION_SECRET: "e2e-only-secret-not-for-production-use-0123456789",
   // Keine Schlüssel der Umgebung durchreichen: die Tests dürfen nie echte Anbieter ansprechen.
   YAHOO_ENABLED: "false",
+  // Hermetisch: jeder Ausgangsverkehr (GDELT-Statusabruf, OpenFIGI-Suche, ...) läuft ins Leere und scheitert sofort als
+  // Quellenfehler. Die Tests dürfen nie echte Anbieter erreichen, auch nicht ohne Schlüssel.
+  HTTP_PROXY: "http://127.0.0.1:9", HTTPS_PROXY: "http://127.0.0.1:9", ALL_PROXY: "http://127.0.0.1:9",
+  http_proxy: "http://127.0.0.1:9", https_proxy: "http://127.0.0.1:9", all_proxy: "http://127.0.0.1:9",
+  NO_PROXY: "127.0.0.1,localhost", no_proxy: "127.0.0.1,localhost",
   ...Object.fromEntries(["FINNHUB_API_KEY", "ALPACA_API_KEY_ID", "ALPACA_API_SECRET_KEY", "STOOQ_API_KEY", "OPENFIGI_API_KEY",
     "MARKETAUX_API_KEY", "ALPHAVANTAGE_API_KEY", "ANTHROPIC_API_KEY", "SEC_EDGAR_CONTACT_EMAIL", "RSS_ENABLED_FEEDS",
     "EQS_RSS_URL", "IR_FEEDS"].map((k) => [k, ""])),

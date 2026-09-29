@@ -8,7 +8,7 @@ test("Watchlist zeigt Karte mit Kurs, Tagesveränderung, Meldungen und Mustern s
   await expect(card.getByText(/\d[\d.]*,\d{2}\s?€/).first()).toBeVisible();
   await expect(card.getByText("Beispieldaten (Demo-Modus)")).toBeVisible();
   await expect(card.getByTestId("news-count")).toContainText("Nachrichten (letzte 24 Stunden): 1");
-  await expect(card.getByTestId("pattern-count")).toContainText("Aktuell erkannte Muster: 1");
+  await expect(card.getByTestId("pattern-count")).toContainText(/Aktuell erkannte Muster: \d+/);
   await card.getByText("Quelle: Demo-Kursquelle (Beispieldaten)").click();
   await expect(card.getByText("Abgerufen:")).toBeVisible();
 });
@@ -19,8 +19,11 @@ test("Suche findet per Ticker, Name und ISIN-Feld; Hinzufügen und Entfernen", a
   const hit = page.getByTestId("search-results").getByRole("listitem").filter({ hasText: DEMO_SYMBOL_2 });
   await expect(hit).toBeVisible();
   await hit.getByRole("button", { name: "Zur Watchlist" }).click();
-  await expect(page.getByTestId("instrument-card").filter({ hasText: DEMO_SYMBOL_2 })).toBeVisible();
+  const added = page.getByTestId("instrument-card").filter({ hasText: DEMO_SYMBOL_2 });
+  await expect(added).toBeVisible();
   await expect(hit.getByText("In Watchlist")).toBeVisible();
+  // das im Hintergrund berechnete Muster (in Bildung) erscheint als Zähler auf der Karte
+  await expect(added.getByTestId("pattern-count")).toContainText("Aktuell erkannte Muster: 1");
 
   await page.getByRole("button", { name: `${DEMO_SYMBOL_2} aus Watchlist entfernen` }).click();
   await expect(page.getByTestId("instrument-card").filter({ hasText: DEMO_SYMBOL_2 })).toHaveCount(0);

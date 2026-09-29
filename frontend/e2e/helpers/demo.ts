@@ -2,7 +2,7 @@
 import { expect, type APIRequestContext } from "@playwright/test";
 
 export const DEMO_SYMBOL = "DEMOA"; // Doppelboden, Meldungen, Prognose
-export const DEMO_SYMBOL_2 = "DEMOB"; // ohne Muster und Meldungen, zum Hinzufügen in Tests
+export const DEMO_SYMBOL_2 = "DEMOB"; // Doppelboden in Bildung, ohne Meldungen, zum Hinzufügen in Tests
 
 export interface DemoInstrument { id: number; symbol: string; name: string }
 

@@ -20,7 +20,7 @@ test("Prognosekorridor mit Wahrscheinlichkeitsbereichen, Methode und Backtest", 
   await panel.getByTestId("forecast-method").locator("summary").click();
   await expect(panel.getByTestId("forecast-method")).toContainText(/Monte|Bootstrap|Verfahren/i);
   // Backtest-Fehlermaße gegen die naive Referenz
-  const bt = panel.getByTestId("forecast-backtest");
+  const bt = panel.getByTestId("forecast-backtest").first();
   await expect(bt).toBeVisible();
   await expect(bt).toContainText("Kurs bleibt gleich");
   await expect(bt.getByTestId("coverage-table")).toBeVisible();

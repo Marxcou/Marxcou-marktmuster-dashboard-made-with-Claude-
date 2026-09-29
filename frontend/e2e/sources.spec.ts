@@ -27,7 +27,15 @@ test("Demo-Quellen sind online und ausdrücklich als Beispieldaten benannt", asy
 });
 
 test("Quellen ohne Schlüssel erscheinen als deaktiviert mit Grund statt zu verschwinden", async ({ page }) => {
+  await expect(page.getByTestId("source-card").first()).toBeVisible();
   const disabled = page.getByTestId("source-card").filter({ has: page.getByTestId("source-status").filter({ hasText: "deaktiviert" }) });
   expect(await disabled.count()).toBeGreaterThanOrEqual(1);
   await expect(disabled.first()).toContainText("Letzter Fehler");
+});
+
+test("nicht erreichbare Quelle wird als offline mit Grund gezeigt, nicht verschwiegen", async ({ page }) => {
+  // Der Testlauf hat keinen Netzzugang zu Anbietern (siehe start-backend.mjs): GDELT braucht keinen Schlüssel und fällt aus.
+  const gdelt = page.getByTestId("source-card").filter({ hasText: "GDELT" });
+  await expect(gdelt.getByTestId("source-status")).toHaveText("offline");
+  await expect(gdelt).toContainText("Letzter Fehler");
 });

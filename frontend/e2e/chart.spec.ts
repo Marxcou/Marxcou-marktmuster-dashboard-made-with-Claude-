@@ -10,9 +10,11 @@ test("Chart zeigt Kurs, Kennzeichnung als Beispieldaten, letzten Datenpunkt und 
   const info = page.getByTestId("last-update");
   await expect(info).toContainText("Letzter Datenpunkt:");
   await expect(info).toContainText("Beispieldaten (Demo-Modus)");
-  await page.getByText("Quelle: Demo-Kursquelle (Beispieldaten)").last().click();
-  await expect(page.getByText("Verzögerung:").last()).toBeVisible();
-  await expect(page.getByText("Nutzungsbedingungen").last()).toBeVisible();
+  const tip = page.locator('[data-testid="last-update"] ~ [data-testid="source-tip"]');
+  await tip.getByText("Quelle: Demo-Kursquelle (Beispieldaten)").click();
+  await expect(tip.getByText("Verzögerung:")).toBeVisible();
+  await expect(tip.getByText("Abgerufen:")).toBeVisible();
+  await expect(tip.getByRole("link", { name: "Nutzungsbedingungen" })).toBeVisible();
   // Lightweight Charts rendert in ein Canvas
   await expect(page.getByTestId("price-chart").locator("canvas").first()).toBeVisible();
 });
@@ -44,9 +46,9 @@ test("Indikatoren sind zuschaltbar und nennen Formel und Datenbasis", async ({ p
   await expect(info.getByRole("listitem").first()).toBeVisible();
 });
 
-test("Nachrichten-Marker sind mit Quellen aufgeführt", async ({ page }) => {
+test("Nachrichten-Marker stehen auf der Zeitachse, ohne Ursachenbehauptung", async ({ page }) => {
   const section = page.getByTestId("chart-news");
-  await expect(section.getByText("Beispielmeldung").first()).toBeVisible();
+  await expect(section).toContainText("keine Aussage über eine Ursache der Kursbewegung");
 });
 
 test("Indikator-Ereignisse und Kursbewegungen erscheinen ohne Kausalitätsbehauptung", async ({ page }) => {

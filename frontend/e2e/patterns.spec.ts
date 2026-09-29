@@ -25,7 +25,7 @@ test("Doppelboden wird gelistet und mit allen Pflichtangaben erklärt", async ({
   // Konfidenz samt Berechnung
   await expect(panel.getByTestId("confidence")).toHaveText(/\d+\s?%/);
   await expect(panel.getByTestId("confidence-table")).toContainText("Summe");
-  await expect(panel.getByText("Gewichteter Mittelwert der Teilwerte")).toBeVisible();
+  await expect(panel.getByText("Die Konfidenz beschreibt nur, wie genau die Kerzen zur Musterdefinition passen")).toBeVisible();
   // mindestens zwei Szenarien und beide Niveaus
   expect(await panel.getByTestId("scenario").count()).toBeGreaterThanOrEqual(2);
   await expect(panel.getByTestId("levels")).toContainText("Bestätigungsniveau:");
