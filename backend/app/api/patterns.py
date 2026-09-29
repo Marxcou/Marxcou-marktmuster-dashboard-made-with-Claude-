@@ -24,12 +24,14 @@ from app.models import (
     SupportResistanceZone,
     WatchlistItem,
 )
+from app.onboarding import is_pending
 from app.price_service import NO_INTRADAY_REASON, has_intraday
 
 router = APIRouter(prefix="/api", tags=["patterns"])
 
 TIMEFRAMES = ("1d", "1h")
 NOT_COMPUTED_NOTE = "Die historische Trefferquote für dieses Muster wurde noch nicht berechnet."
+PENDING_REASON = "Die Mustererkennung wird gerade berechnet. Die Ansicht aktualisiert sich automatisch."
 NOT_RUN_REASON = "Die Mustererkennung wurde für dieses Instrument noch nicht ausgeführt."
 NO_MATCH_REASON = "Aktuell erfüllt kein Muster alle Kriterien."
 
@@ -165,12 +167,14 @@ def get_patterns(instrument_id: int, db: DB, _u: CurrentUser, timeframe: str = "
     base: dict[str, Any] = {
         "instrument": InstrumentOut.model_validate(inst, from_attributes=True).model_dump(),
         "timeframe": timeframe, "detections": [], "zones": [], "data_basis": None, "algo_version": ALGO_VERSION,
-        "params_hash": params_hash(default_params()), "computed_at": None, "empty_reason": None,
+        "params_hash": params_hash(default_params()), "computed_at": None, "empty_reason": None, "pending": False,
     }
     if timeframe != "1d" and not has_intraday(inst.exchange):
         return {**base, "empty_reason": NO_INTRADAY_REASON}
     scan = db.get(PatternScan, (instrument_id, timeframe))
     if scan is None:
+        if is_pending(db, instrument_id):
+            return {**base, "empty_reason": PENDING_REASON, "pending": True}
         return {**base, "empty_reason": NOT_RUN_REASON}
     stmt = select(PatternDetection).where(PatternDetection.instrument_id == instrument_id,
                                           PatternDetection.timeframe == timeframe)

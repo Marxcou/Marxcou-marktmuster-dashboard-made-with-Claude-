@@ -1,4 +1,6 @@
 // Dünne API-Schicht. Der Vertrag steht in docs/api-contract.md, die Typen hier spiegeln ihn.
+// Abfrageabstand, solange das Backend eine Erstberechnung meldet ("pending").
+export const PENDING_POLL_MS = 4_000;
 export interface SourceRef { key: string; name: string; homepage: string; terms_url: string; delay_text: string }
 export interface Instrument { id: number; symbol: string; name: string; isin: string | null; exchange: string; currency: string }
 export interface Quote {
@@ -10,7 +12,7 @@ export interface Bar {
   ts_utc: string; open: number; high: number; low: number; close: number; volume: number | null;
   fetched_at: string; is_demo: boolean; source: SourceRef;
 }
-export interface BarsResponse { instrument: Instrument; timeframe: string; bars: Bar[]; empty_reason: string | null }
+export interface BarsResponse { instrument: Instrument; timeframe: string; bars: Bar[]; empty_reason: string | null; pending?: boolean }
 export interface User { id: number; email: string; display_name: string; role: string }
 export interface Me { user: User; csrf_token: string }
 export interface Meta { demo_mode: boolean; timezone: string; disclaimer: string }
@@ -98,7 +100,7 @@ export interface SRZone {
 }
 export interface PatternsResponse {
   instrument: Instrument; timeframe: string; detections: PatternDetection[]; zones: SRZone[]; data_basis: DataBasis | null;
-  algo_version: string; params_hash: string; computed_at: string | null; empty_reason: string | null;
+  algo_version: string; params_hash: string; computed_at: string | null; empty_reason: string | null; pending?: boolean;
 }
 export interface PatternCounts { counts: Record<string, number>; empty_reason: string | null }
 
@@ -124,7 +126,7 @@ export interface ForecastResponse {
   instrument_id: number; timeframe: string; method: ForecastMethod | null; horizon_bars: number; based_on_until: string | null;
   last_close: number | null; currency?: string; generated_at: string | null; algo_version: string; params_hash?: string; is_demo?: boolean; steps: ForecastStep[];
   bands?: { level: number; lower: QuantileKey; upper: QuantileKey }[]; backtest: ForecastBacktest | null; comparison?: ForecastComparison[];
-  pattern_scenarios?: PatternScenarioLink[]; data_basis: DataBasis | null; note?: string | null; empty_reason: string | null;
+  pattern_scenarios?: PatternScenarioLink[]; data_basis: DataBasis | null; note?: string | null; empty_reason: string | null; pending?: boolean;
 }
 
 let csrfToken = "";

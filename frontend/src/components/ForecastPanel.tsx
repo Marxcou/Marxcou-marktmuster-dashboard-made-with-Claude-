@@ -109,7 +109,8 @@ export function ForecastPanel({ data, loading, error, horizon, onHorizon, curren
       {data?.is_demo && <p className="mt-2 text-xs font-semibold text-fuchsia-300" data-testid="forecast-demo">Beispieldaten (Demo-Modus): keine echte Prognose.</p>}
       {loading && <p className="mt-2 text-sm text-slate-400">Lade Prognose …</p>}
       {error && <p role="alert" className="mt-2 text-sm text-rose-300">Prognose konnte nicht geladen werden (Backend nicht erreichbar).</p>}
-      {data?.empty_reason && <p className="mt-2 text-sm text-amber-300" data-testid="no-forecast">Kein Prognosekorridor: {data.empty_reason}</p>}
+      {data?.pending && <p className="mt-2 text-sm text-slate-300" role="status" data-testid="forecast-pending">Prognose wird berechnet: {data.empty_reason}</p>}
+      {data?.empty_reason && !data.pending && <p className="mt-2 text-sm text-amber-300" data-testid="no-forecast">Kein Prognosekorridor: {data.empty_reason}</p>}
       {data && !data.empty_reason && steps.length === 0 && <p className="mt-2 text-sm text-amber-300" data-testid="no-forecast">Kein Prognosekorridor: Das Backend hat keine vollständigen Wahrscheinlichkeitsbereiche geliefert.</p>}
 
       {data && steps.length > 0 && (

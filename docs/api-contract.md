@@ -373,3 +373,7 @@ Prognosen gibt es nur als Korridor (Grundregel 4): je Schritt die Quantile 2,5/1
 ```
 
 `historical` ist dasselbe Objekt wie `scenarios[].historical` in `PatternDetection` (aus dem Muster-Backtest, sonst `null`).
+
+## Erstberechnung nach dem Hinzufügen zur Watchlist
+
+`POST /watchlist` startet im Hintergrund sofort Kursabruf, Mustererkennung, Indikator-Ereignisse und Prognose für das Instrument (statt auf die periodischen Jobs zu warten). Bis dahin melden `GET /instruments/{id}/bars`, `/patterns` und `/forecast` zusätzlich `pending: true` (mit `empty_reason` im Klartext), wenn das Instrument in den letzten 15 Minuten auf eine Watchlist gesetzt wurde und das Ergebnis noch fehlt. Danach gilt wieder der normale Leerzustand mit Grund. Nicht verfügbare Zeitraster (z. B. XETRA-Intraday im kostenlosen Tarif) sind nie `pending`, sondern nennen ihren Grund.

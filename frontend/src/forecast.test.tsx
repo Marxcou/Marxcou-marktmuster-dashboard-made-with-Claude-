@@ -152,3 +152,33 @@ describe("Chart-Seite Phase 4", () => {
     expect((await screen.findByTestId("no-forecast")).textContent).toContain("nur für Tageskerzen");
   });
 });
+
+describe("Erstberechnung nach dem Hinzufügen", () => {
+  it("zeigt im Prognose-Panel einen neutralen Wartezustand statt einer Fehlermeldung", () => {
+    const pending: ForecastResponse = { ...EMPTY, pending: true, empty_reason: "Die Prognose wird gerade berechnet. Die Ansicht aktualisiert sich automatisch." };
+    render(<ForecastPanel data={pending} loading={false} error={false} horizon={20} onHorizon={() => {}} currency="EUR" pattern={null} />);
+    expect(screen.getByTestId("forecast-pending").textContent).toContain("wird berechnet");
+    expect(screen.queryByTestId("no-forecast")).toBeNull();
+  });
+});
+
+describe("Chart-Seite: Wartezustand und nicht verfügbare Zeiträume", () => {
+  const XETRA = { ...INSTRUMENT, exchange: "XETR", symbol: "NVD", currency: "EUR" };
+  const base = { "/auth/me": ME, "/instruments/1": { ...XETRA, quote: null } };
+
+  it("nennt beim frisch hinzugefügten Wert 'Kursdaten werden abgerufen' statt einer leeren Ansicht", async () => {
+    mockApi({ ...base, "/instruments/1/bars": { instrument: XETRA, timeframe: "1d", bars: [], pending: true, empty_reason: "Kursdaten werden gerade abgerufen. Die Ansicht aktualisiert sich automatisch." } });
+    renderApp("/instrument/1");
+    await waitFor(() => expect(screen.getByTestId("bars-pending").textContent).toContain("Kursdaten werden abgerufen"));
+    expect(screen.queryByTestId("no-bars")).toBeNull();
+  });
+
+  it("nennt für XETRA-Intraday den Grund (kostenloser Tarif) und zeigt keinen Wartezustand", async () => {
+    const reason = "Keine Intraday-Daten für XETRA im kostenlosen Tarif. Verfügbar sind Tagesdaten (Handelsende).";
+    mockApi({ ...base, "/instruments/1/bars": { instrument: XETRA, timeframe: "1h", bars: [], pending: false, empty_reason: reason } });
+    renderApp("/instrument/1");
+    fireEvent.click(await screen.findByRole("button", { name: "1W" }));
+    await waitFor(() => expect(screen.getByTestId("no-bars").textContent).toContain("kostenlosen Tarif"));
+    expect(screen.queryByTestId("bars-pending")).toBeNull();
+  });
+});

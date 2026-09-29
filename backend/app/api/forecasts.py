@@ -14,10 +14,12 @@ from app.bars import aware
 from app.deps import DB, CurrentUser
 from app.forecast_service import METHOD_NOTE, NOT_RUN_REASON, TIMEFRAME, params_hash
 from app.models import BacktestRun, Forecast, Instrument, PatternDetection
+from app.onboarding import is_pending
 
 router = APIRouter(prefix="/api", tags=["forecasts"])
 
 NOTE = "Statistische Szenarien aus historischen Schwankungen, keine Vorhersage und keine Anlageberatung."
+PENDING_REASON = "Die Prognose wird gerade berechnet. Die Ansicht aktualisiert sich automatisch."
 ONLY_DAILY_REASON = "Prognosen gibt es derzeit nur für Tageskerzen."
 BACKTEST_NOT_COMPUTED = "Die Prognosegüte wurde für dieses Instrument noch nicht berechnet."
 SCENARIO_NOTE = (
@@ -118,10 +120,12 @@ def get_forecast(instrument_id: int, db: DB, _u: CurrentUser, timeframe: str = "
         Forecast.instrument_id == instrument_id, Forecast.timeframe == TIMEFRAME))}
     main = rows.get(fc.PRIMARY) if timeframe == TIMEFRAME else None
     comp = rows.get(fc.COMPARISON) if timeframe == TIMEFRAME else None
+    pending = False
     if timeframe != TIMEFRAME:
         reason: str | None = ONLY_DAILY_REASON
     elif main is None:
-        reason = NOT_RUN_REASON
+        pending = is_pending(db, instrument_id)
+        reason = PENDING_REASON if pending else NOT_RUN_REASON
     else:
         reason = main.empty_reason
     has_data = main is not None and reason is None
@@ -150,7 +154,7 @@ def get_forecast(instrument_id: int, db: DB, _u: CurrentUser, timeframe: str = "
         else backtest_out(None),
         "comparison": comparison,
         "pattern_scenarios": pattern_scenarios(db, main) if has_data and main else [],
-        "data_basis": data_basis, "note": NOTE, "empty_reason": reason,
+        "data_basis": data_basis, "note": NOTE, "empty_reason": reason, "pending": pending,
     }
 
 

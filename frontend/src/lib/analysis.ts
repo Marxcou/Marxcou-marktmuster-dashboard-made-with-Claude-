@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  api, type IndicatorEventsResponse, type IndicatorEventType, type IndicatorsResponse, type MoveLinksResponse, type PatternCounts, type PatternsResponse,
+  api, PENDING_POLL_MS, type IndicatorEventsResponse, type IndicatorEventType, type IndicatorsResponse, type MoveLinksResponse, type PatternCounts, type PatternsResponse,
 } from "./api";
 
 export const ANALYSIS_MISSING = "Die Analyse-Schnittstelle des Backends ist noch nicht verfügbar. Es werden keine Daten angezeigt.";
@@ -71,7 +71,7 @@ export const usePatterns = (id: string | undefined, timeframe: string | null, st
     queryKey: ["patterns", id, timeframe, start, includeInvalid], enabled: !!id && timeframe != null,
     queryFn: () => orMissing<PatternsResponse>(`/instruments/${id}/patterns?timeframe=${timeframe}${includeInvalid ? "&include_invalid=true" : ""}${start ? `&start=${encodeURIComponent(start)}` : ""}`,
       { instrument: { id: Number(id), symbol: "", name: "", isin: null, exchange: "", currency: "" }, timeframe: timeframe ?? "", detections: [], zones: [], data_basis: null, algo_version: "", params_hash: "", computed_at: null, empty_reason: null }),
-    refetchInterval: 60_000,
+    refetchInterval: (q) => (q.state.data?.pending ? PENDING_POLL_MS : 60_000),
   });
 
 export const usePatternCounts = () =>

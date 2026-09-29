@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { api, type ForecastMetric, type ForecastResponse, type ForecastStep, type PatternDetection, type QuantileKey } from "./api";
+import { api, PENDING_POLL_MS, type ForecastMetric, type ForecastResponse, type ForecastStep, type PatternDetection, type QuantileKey } from "./api";
 
 export const FORECAST_MISSING = "Die Prognose-Schnittstelle des Backends ist noch nicht verfügbar. Es wird kein Korridor angezeigt.";
 
@@ -32,7 +32,7 @@ export const useForecast = (id: string | undefined, timeframe: string | null, ho
         throw e;
       }
     },
-    refetchInterval: 5 * 60_000,
+    refetchInterval: (q) => (q.state.data?.pending ? PENDING_POLL_MS : 5 * 60_000),
   });
 
 // Schritte, die alle Quantile als endliche Zahlen liefern; alles andere wird verworfen statt aufgefüllt.
