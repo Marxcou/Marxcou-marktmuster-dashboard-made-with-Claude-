@@ -154,6 +154,10 @@ cd backend && pip install -e ".[dev]" && pytest && ruff check . && mypy app
 cd frontend && npm ci && npm test && npm run build
 ```
 
+## Serverbetrieb (Phase 5)
+
+Für den Dauerbetrieb auf einem Server (Tailscale oder öffentliche HTTPS-Adresse mit automatischem Zertifikat), Aktualisieren mit `./deploy/update.sh`, nächtliche Datenbank-Sicherung und Wiederherstellung: siehe [docs/betrieb.md](docs/betrieb.md). Mit `APP_ENV=production` startet die API nur mit eigenen Werten für `SESSION_SECRET` und `ADMIN_PASSWORD`.
+
 ## Aufbau
 
 `backend/` (FastAPI, Worker, Alembic, Adapter), `frontend/` (Vite, React, TypeScript, Tailwind), `docs/api-contract.md` (API-Vertrag), `docs/grundregeln-check.md` (Selbstprüfung je Phase).
