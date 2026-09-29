@@ -106,8 +106,8 @@ Der Worker holt Daten nur für Aktien, die auf mindestens einer Watchlist stehen
 Gemessen mit `backend/scripts/bench.py` (40 Instrumente, 35 davon auf Watchlists, 1500 Tageskerzen, je Zeitraster mehrere tausend Kerzen, 20.000 Meldungen; Ergebnisse in `docs/performance.md`):
 
 - Die Worker-Jobs für Muster und Analysen rechnen nur noch neu, wenn es neue abgeschlossene Kerzen gibt (oder sich Parameter/Algorithmus-Version ändern). Ein Lauf ohne neue Kerzen dauert dadurch etwa 2 s statt 12 s (Muster) bzw. 9 s (Analysen). Die Erkennung ist deterministisch, das Ergebnis wäre identisch.
-- `quote_job` und `intraday_job` fragen die US-Quellen nur zwischen 04:00 und 20:30 Uhr New York, Montag bis Freitag, ab. Nachts und am Wochenende entfallen die Anfragen (Rate-Limits der freien Tarife). XETRA-Tagesdaten laufen unverändert stündlich.
-- Die Ereignis-Warteschlange (`events`) wird im täglichen Aufräum-Job auf 24 Stunden gekürzt. Vorher wuchs sie mit jeder Kursaktualisierung unbegrenzt.
+- `quote_job` und `intraday_job` fragen je Instrument nur innerhalb der Handelszeit seiner Börse ab (`backend/app/market_hours.py`, jeweils eigene Zeitzone): US Mo bis Fr 04:00 bis 20:30 New York, XETRA Mo bis Fr 08:00 bis 18:30 Berlin. Feiertage sind nicht modelliert. Heute holt nur der US-Teil Intraday-Daten (XETRA hat im kostenlosen Tarif nur Tagesdaten, die stündlich unverändert laufen); die XETRA-Zeiten gelten, sobald ein Intraday-Anbieter dazukommt.
+- Die Ereignis-Warteschlange (`events`) wird im täglichen Aufräum-Job auf 24 Stunden gekürzt. Vorher wuchs sie mit jeder Kursaktualisierung unbegrenzt. Sie ist nur die Zustellung an offene WebSocket-Verbindungen (`/ws`) und keine Datenquelle: Kurse, Meldungen, Muster, Ereignisse und Backtests sind in ihren eigenen Tabellen mit Quelle und Abrufzeit gespeichert und werden nicht angetastet.
 - Ein Fehler bei einem Instrument stoppt in den Kurs-Jobs nicht mehr die übrigen Instrumente (wie schon bei Mustern, Analysen und Prognosen), er landet im Log.
 
 ## Starten (Docker Compose)

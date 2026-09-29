@@ -19,7 +19,7 @@ from app.adapters.http import SourceError
 from app.adapters.registry import price_adapters
 from app.db import SessionLocal
 from app.events import publish
-from app.market_hours import us_session_active
+from app.market_hours import session_active
 from app.models import Instrument, PriceBar, Quote, Source, WatchlistItem
 from app.sources_sync import sync_sources
 
@@ -193,10 +193,10 @@ def quote_from_daily(db: Session, inst: Instrument) -> bool:
 # --- Jobs (vom Worker eingehängt) ---
 
 def quote_job() -> None:
-    if not us_session_active():
-        return
     with SessionLocal() as db:
         for inst in watched_instruments(db):
+            if not session_active(inst.exchange):
+                continue
             try:
                 refresh_quote(db, inst)
             except Exception:  # noqa: BLE001 - ein Instrument darf die anderen nicht stoppen
@@ -205,11 +205,9 @@ def quote_job() -> None:
 
 
 def intraday_job() -> None:
-    if not us_session_active():
-        return
     with SessionLocal() as db:
         for inst in watched_instruments(db):
-            if has_intraday(inst.exchange):
+            if has_intraday(inst.exchange) and session_active(inst.exchange):
                 try:
                     backfill_instrument(db, inst, ("1m", "5m", "1h"))
                 except Exception:  # noqa: BLE001
