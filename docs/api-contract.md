@@ -43,7 +43,7 @@ Alle Antworten enthalten `source`-Objekte (Grundregel 2). Stimmung und Cluster s
 | GET `/news?instrument_id&source&sentiment&since&until&limit&cursor` | ja | `{items: NewsCluster[], total, next_cursor, empty_reason}`. `source` = Quellen-`key` (Cluster mit mindestens einer Meldung dieser Quelle). `sentiment` = `positiv\|neutral\|negativ`. Sortierung: `first_published_at` absteigend. `limit` max. 100 (Standard 25). `cursor` ist undurchsichtig (aus `next_cursor`) |
 | GET `/instruments/{id}/news?since&until&limit&cursor` | ja | Wie `/news` für ein Instrument (Chart-Marker: Zeitpunkt = `first_published_at`) |
 | GET `/news/counts?since` | ja | `{counts: {"<instrument_id>": n}, empty_reason}`: Anzahl Cluster je Instrument der Watchlist des Nutzers seit `since` (Standard: 24 h) |
-| GET `/news/sentiment-status` | ja | Welches Verfahren aktuell aktiv ist: `{active_method: "claude"\|"lexicon", claude_configured, budget_usd, spent_usd, month, fallback_reason}`. `fallback_reason` ist z. B. "Kein API-Schlüssel gesetzt" oder "Monatslimit erreicht", sonst `null` |
+| GET `/news/sentiment-status` | ja | Welches Verfahren aktuell aktiv ist: `{active_method: "claude"\|"lexicon", claude_configured, budget_usd, spent_usd, month, fallback_reason}`. `fallback_reason` ist z. B. "Kein API-Schlüssel gesetzt" oder "Monatslimit erreicht", sonst `null`. Zusätzlich `claude_mode` (`batch`\|`direct`) und `pending_batches` (Anzahl offener Claude-Batches; im Modus `batch` steht bis zum Ergebnis die Lexikon-Stimmung) |
 | WS `news` | Cookie | `payload = {cluster_id, canonical_title, first_published_at, item_count, instrument_ids, is_new}` bei neuem Cluster bzw. wenn eine weitere Quelle zu einem Cluster kommt |
 
 `NewsCluster`:

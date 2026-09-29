@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     alphavantage_api_key: str = ""
     anthropic_api_key: str = ""
     claude_monthly_budget_usd: float = 10.0
+    claude_use_batch: bool = True  # Stimmung per Batch-API (halber Preis, Ergebnis nach Minuten bis Stunden)
+    news_retention_days: int = 90  # ältere Meldungen werden gelöscht; 0 = nie löschen
 
 
 @lru_cache

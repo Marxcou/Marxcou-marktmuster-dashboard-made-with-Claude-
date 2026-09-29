@@ -1,5 +1,5 @@
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
@@ -14,7 +14,10 @@ from app.adapters.marketaux import MarketauxAdapter
 from app.adapters.news_common import clean_excerpt, company_search_name
 from app.adapters.rss import EQS, FEEDS, RssFeedAdapter, build_rss_adapters, parse_feed
 from app.adapters.sec_edgar import SecEdgarAdapter
+from app.api_usage import calls_today
 from app.config import get_settings
+from app.db import Base, SessionLocal, engine
+from app.models import ApiUsage
 
 SINCE = datetime(2026, 9, 27, tzinfo=UTC)
 NOSLEEP = {"sleep": lambda _s: None}
@@ -29,6 +32,14 @@ def keys(monkeypatch):
     get_settings.cache_clear()
     yield
     get_settings.cache_clear()
+
+
+@pytest.fixture(autouse=True)
+def usage_tables():
+    Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
+    yield
+    Base.metadata.drop_all(engine)
 
 
 def mock(handler):
@@ -111,8 +122,29 @@ def test_alphavantage_parses_feed_and_respects_daily_budget():
     a = AlphaVantageNewsAdapter(transport=mock(handler), **NOSLEEP)
     recs = a.fetch_news(["AAPL"], SINCE)
     assert recs[0].symbols == ("AAPL",) and recs[0].published_at == datetime(2026, 9, 28, 12, tzinfo=UTC)
-    a._calls = 20
+    assert calls_today("alphavantage_news") == 1
+    with SessionLocal() as db:
+        row = db.get(ApiUsage, ("alphavantage_news", datetime.now(UTC).date()))
+        row.calls = 20
+        db.commit()
     assert a.fetch_news(["AAPL"], SINCE) == [] and len(calls) == 1
+
+
+def test_daily_counter_survives_a_restart_and_resets_next_day():
+    handler = lambda r: httpx.Response(200, json={"data": []})  # noqa: E731
+    MarketauxAdapter(transport=mock(handler), **NOSLEEP).fetch_news(["AAPL"], SINCE)
+    assert calls_today("marketaux") == 1
+    restarted = MarketauxAdapter(transport=mock(handler), **NOSLEEP)  # neuer Prozess: Zähler kommt aus der Datenbank
+    restarted.fetch_news(["AAPL"], SINCE)
+    assert calls_today("marketaux") == 2
+    with SessionLocal() as db:
+        db.add(ApiUsage(source_key="marketaux", day=datetime.now(UTC).date() - timedelta(days=1), calls=90))
+        db.commit()
+    assert calls_today("marketaux") == 2  # gestrige Zählung zählt nicht
+    with SessionLocal() as db:
+        db.get(ApiUsage, ("marketaux", datetime.now(UTC).date())).calls = 90
+        db.commit()
+    assert restarted.fetch_news(["AAPL"], SINCE) == [] and calls_today("marketaux") == 90
 
 
 def test_marketaux_uses_de_suffix_and_entity_tags():

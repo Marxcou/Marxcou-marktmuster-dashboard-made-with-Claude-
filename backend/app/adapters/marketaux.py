@@ -7,6 +7,7 @@ import httpx
 from app.adapters.base import AdapterMetadata, NewsAdapter, NewsRecord, NewsTarget
 from app.adapters.http import PassiveHealth, ResilientHttp, SourceError
 from app.adapters.news_common import clean_excerpt, clean_title, xetra_symbol
+from app.api_usage import calls_today, count_call
 from app.config import get_settings
 
 DAILY_LIMIT = 90  # Reserve unter den 100 Anfragen pro Tag
@@ -20,8 +21,6 @@ class MarketauxAdapter(PassiveHealth, NewsAdapter):
     def __init__(self, transport: httpx.BaseTransport | None = None, **kw: Any) -> None:
         self._token = get_settings().marketaux_api_key
         self.http = ResilientHttp(base_url="https://api.marketaux.com", rate_per_min=20, transport=transport, **kw)
-        self._day = datetime.now(UTC).date()
-        self._calls = 0  # nur im Arbeitsspeicher: ein Neustart setzt den Zähler zurück
         self._cursor = 0
 
     def metadata(self) -> AdapterMetadata:
@@ -45,15 +44,12 @@ class MarketauxAdapter(PassiveHealth, NewsAdapter):
         return self._fetch(symbols, since)
 
     def _fetch(self, symbols: list[str], since: datetime) -> list[NewsRecord]:
-        today = datetime.now(UTC).date()
-        if today != self._day:
-            self._day, self._calls = today, 0
-        if not symbols or self._calls >= DAILY_LIMIT:
+        if not symbols or calls_today(self.key) >= DAILY_LIMIT:
             return []
         start = self._cursor % len(symbols)
         chunk = (symbols[start:] + symbols[:start])[:CHUNK]
         self._cursor += CHUNK
-        self._calls += 1
+        count_call(self.key)
         resp = self.http.request("GET", "/v1/news/all", params={
             "symbols": ",".join(chunk), "filter_entities": "true", "language": "en,de",
             "published_after": since.strftime("%Y-%m-%dT%H:%M:%S"), "limit": 3, "api_token": self._token})
