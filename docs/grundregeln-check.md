@@ -101,3 +101,19 @@ Offen/ehrlich:
 - Getestet mit synthetischen Kursreihen bekannten Ergebnisses und einer zufälligen Reihe (Laufzeit ca. 0,2 s für 1.300 Kerzen), nicht mit echten Kursdaten.
 - Mehrere Deutungen derselben Kursbewegung sind möglich (z. B. Doppelboden und Dreieck über denselben Wendepunkten); beide werden mit eigener Begründung gezeigt. Innerhalb einer Musterfamilie bleibt bei Überlappung nur die Erkennung mit der höchsten Konfidenz.
 - Erkennungen am rechten Rand können sich mit neuen Kerzen ändern (z. B. ein Dreieck bekommt einen weiteren Wendepunkt); sie werden dann neu berechnet und erhalten eine neue ID.
+
+## Phase 4B (Frontend: Prognosekorridor, Szenario-Niveaus, Methoden- und Backtest-Panel)
+
+| Regel | Stand | Beleg |
+|---|---|---|
+| 1 Keine Empfehlungssprache | erfüllt | `test_grundregeln.py` läuft über den neuen Code. Bänder sind einfarbig blau abgestuft, Szenario-Niveaus nur beschriftet ("Bestätigung", "Scheitern"), keine Ampeln, keine Kursziele |
+| 2 Quellentransparenz | erfüllt | Das Panel nennt Datenstand, Erstellzeit, Verfahren und Version und zeigt die Kursquellen als `SourceTip` |
+| 3 Erklärpflicht | unverändert | Szenario-Niveaus kommen aus `PatternDetection`; der Vergleich mit dem Korridor nennt nur die Lage, keine Wahrscheinlichkeit; simulierte Pfadanteile und historische Quote stehen getrennt und beschriftet nebeneinander |
+| 4 Unsicherheit | erfüllt (Anzeige) | Nur Bänder 50/80/95 % (`PriceChart`: verschachtelte Flächen, keine Linie, auch kein Median). Methode, Annahmen, Grenzen, Parameter, Abdeckung, Fehlermaße gegen "Kurs bleibt gleich", Signifikanztest und Ergebnis je Horizont sind einsehbar; "historisch nicht nachweisbar besser" wird offen genannt (`forecast.test.tsx`) |
+| 5 Hinweis auf jeder Seite | unverändert | Layout |
+| 6 Keine erfundenen Daten | erfüllt | Fehlende Prognose (mit `empty_reason`), unvollständige Schritte (verworfen), fehlender Backtest, nicht-tägliche Kerzen und Demodaten werden ausdrücklich gezeigt; nie Platzhalterwerte |
+
+Offen/ehrlich:
+- Gebaut gegen den Vertrag aus dem Branch `phase-4a-forecasts` und mit simulierten Antworten geprüft (Vitest, Sichtprüfung der verschachtelten Bänder im Browser mit Testdaten), nicht gegen das laufende Backend.
+- Die Einordnung "nahe am Sollwert" der Abdeckung (Abweichung bis 5 Prozentpunkte) und die Warnschwelle "kleine Stichprobe" (unter 30) sind Annahmen der Oberfläche.
+- Die Horizonte 5/10/20 folgen dem Backend-Limit von 20 Kerzen. `GET /forecasts/methods` wird noch nicht genutzt; die Methodenbeschreibung kommt aus der Prognose-Antwort.
