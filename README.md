@@ -48,6 +48,17 @@ Der Worker sucht alle 5 Minuten für alle Watchlist-Instrumente (1d und 1h, nur 
 
 Alle Parameter mit Beschreibung stehen in `backend/app/analysis/params.py` und unter `GET /api/patterns/catalog`; jede Erkennung speichert die verwendeten Werte, `params_hash` und `algo_version`. Endpunkte: `GET /api/instruments/{id}/patterns`, `/api/patterns/{id}`, `/api/patterns/counts`. Tests mit synthetischen Kursreihen bekannten Ergebnisses: `backend/tests/test_patterns.py`, `test_pattern_api.py`.
 
+## Prognosen und Prognosegüte (Phase 4A, Backend)
+
+Der Worker rechnet alle 15 Minuten für alle Watchlist-Instrumente (nur abgeschlossene Tageskerzen, ab 250 Kerzen) einen Prognose-Korridor über 20 Handelstage, aber nur neu, wenn sich Kerzen, Muster oder Backtest geändert haben:
+
+- **Hauptmethode:** Monte-Carlo-Simulation per Block-Bootstrap (4.000 Pfade aus Blöcken von 10 historischen Tagesrenditen der letzten 750 Tage, Trend entfernt). Ergebnis sind nur Quantile (2,5/10/25/50/75/90/97,5 %) je Tag, also die Bänder 50/80/95 %; es gibt keine einzelne Prognoselinie.
+- **Vergleich:** ARIMA(1,1,0) auf Log-Kursen (eigene numpy-Umsetzung, Kleinste-Quadrate, normalverteilte Fehler).
+- **Prognose-Backtest:** rollierender Ursprung auf der eigenen Historie (alle 5 Tage ein Prüfzeitpunkt, bis 300), ohne Vorgriff. Gemessen werden Abdeckung der Bänder, mittlerer absoluter Fehler des Medians und Pinball-Verlust, jeweils gegen die naive Referenz "Kurs bleibt gleich", für 5, 10 und 20 Tage. "Besser als naiv" gilt nur bei kleinerem Fehler und Diebold-Mariano-Test p < 0,05; sonst steht offen "nicht nachweisbar genauer". Ergebnisse liegen in `backtest_runs` (`kind = "forecast"`).
+- **Muster-Szenarien:** für Muster "in Bildung" der Anteil simulierter Pfade, die das Bestätigungs- bzw. Ungültigkeitsniveau zuerst erreichen, neben der historischen Quote aus dem Muster-Backtest. Die Simulation kennt das Muster nicht; das steht in der Antwort.
+
+Code: `backend/app/analysis/forecast.py` (reines numpy, deterministischer Seed je Datenstand), `backend/app/forecast_service.py`, `backend/app/api/forecasts.py`. Endpunkte: `GET /api/instruments/{id}/forecast`, `GET /api/forecasts/methods`. Tests: `backend/tests/test_forecast.py`, `test_forecast_api.py`.
+
 ## Kursdaten (Phase 1B)
 
 | Quelle | Umfang | Schlüssel in `.env` |

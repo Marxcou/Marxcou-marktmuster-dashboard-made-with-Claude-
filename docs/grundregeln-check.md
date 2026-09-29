@@ -100,3 +100,21 @@ Offen/ehrlich:
 - Getestet mit synthetischen Kursreihen bekannten Ergebnisses und einer zufälligen Reihe (Laufzeit ca. 0,2 s für 1.300 Kerzen), nicht mit echten Kursdaten.
 - Mehrere Deutungen derselben Kursbewegung sind möglich (z. B. Doppelboden und Dreieck über denselben Wendepunkten); beide werden mit eigener Begründung gezeigt. Innerhalb einer Musterfamilie bleibt bei Überlappung nur die Erkennung mit der höchsten Konfidenz.
 - Erkennungen am rechten Rand können sich mit neuen Kerzen ändern (z. B. ein Dreieck bekommt einen weiteren Wendepunkt); sie werden dann neu berechnet und erhalten eine neue ID.
+
+## Phase 4A (Prognosen, Szenarien, Prognose-Backtest, Backend)
+
+| Regel | Stand | Beleg |
+|---|---|---|
+| 1 Keine Empfehlungssprache | erfüllt | `test_grundregeln.py` läuft über den neuen Code. Texte beschreiben nur Anteile simulierter Pfade und Fehlermaße ("schließt zuerst über 151,40"); keine Kursziele, kein Einzelwert als Erwartung |
+| 2 Quellentransparenz | erfüllt | Jede Prognose speichert `source_ids`, `fetched_at`, Zeitraum und Kerzenanzahl; die API liefert `data_basis` mit Quellen. Backtest-Läufe speichern Zeitraum, Instrument, Parameter und `source_ids` |
+| 3 Erklärpflicht | unverändert, ergänzt | Muster-Szenarien zeigen zusätzlich den simulierten Anteil neben der historischen Quote aus dem Muster-Backtest, mit dem Hinweis, dass die Simulation das Muster nicht kennt |
+| 4 Unsicherheit | erfüllt (Backend) | Die API liefert nur Quantile je Schritt (Bänder 50/80/95 %), keinen Linien-Endpunkt. Methode mit Annahmen und Grenzen (`/forecasts/methods`), Abdeckung, Median-Fehler und Pinball-Verlust gegen "Kurs bleibt gleich", Diebold-Mariano-p-Wert und ein offenes Urteil, wenn das Modell nicht besser ist (Tests `test_backtest_random_walk_is_not_better_than_naive`, `test_backtest_detects_skill_on_predictable_series`) |
+| 5 Hinweis auf jeder Seite | unverändert | Frontend-Layout; die API liefert zusätzlich `note` ("keine Vorhersage und keine Anlageberatung") |
+| 6 Keine erfundenen Daten | erfüllt | Fehlermaße nur aus einem Backtest auf gespeicherten Kerzen, sonst `"nicht_berechnet"` mit `null`; unter 30 Prüfzeitpunkten kein Urteil (`better_than_naive: null`); die laufende Kerze geht nie ein; veraltete Muster-Wahrscheinlichkeiten werden nicht gezeigt; Demodaten werden als `is_demo` markiert |
+
+Offen/ehrlich:
+- Getestet nur mit synthetischen Reihen (Zufallspfade mit festem Seed, AR(1)-Reihen). Echte Abdeckung und Fehlermaße gibt es erst nach einem Lauf mit echten Kursdaten auf Lucas Rechner.
+- Auf einem reinen Zufallspfad ist die Hauptmethode beim Median erwartungsgemäß nicht besser als "Kurs bleibt gleich" (Trend wird entfernt). Ihr Nutzen liegt in der Breite der Bänder; das sagt `method_note` offen.
+- Parameter (750 Tage Rückblick, Blocklänge 10, 20 Tage Horizont, Prüfzeitpunkt alle 5 Tage) sind übliche Festlegungen, nicht optimiert. ARIMA ist bewusst nur (1,1,0) ohne Ordnungswahl, damit keine zusätzliche Bibliothek (statsmodels) nötig ist.
+- Künftige Handelstage sind als Werktage gezählt; Feiertage fehlen. Bei schrägen Musterlinien wird das Niveau der letzten Kerze über den Horizont konstant gehalten.
+- Überlappende Horizonte machen die Prüfzeitpunkte abhängig; der Diebold-Mariano-Test berücksichtigt das per Newey-West, das Konfidenzniveau bleibt trotzdem eine Näherung.

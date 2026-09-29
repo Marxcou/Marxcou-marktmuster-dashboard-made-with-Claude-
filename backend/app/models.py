@@ -384,3 +384,33 @@ class BacktestRun(Base):
     code_version: Mapped[str] = mapped_column(String(40), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     __table_args__ = (Index("ix_backtest_runs_lookup", "kind", "subject", "timeframe", "algo_version", "created_at"),)
+
+
+class Forecast(Base):
+    """Letzte Prognose je Instrument, Zeitraster und Methode (Grundregel 4: nur Quantile je Schritt).
+    backtest_run_id verweist auf den Prognose-Backtest (backtest_runs, kind='forecast'). pattern_levels enthält
+    für die Hauptmethode die simulierten Anteile, mit denen Muster-Niveaus zuerst erreicht werden."""
+    __tablename__ = "forecasts"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id"), index=True)
+    timeframe: Mapped[str] = mapped_column(String(3))
+    method: Mapped[str] = mapped_column(String(40))
+    horizon: Mapped[int] = mapped_column(Integer, default=0)
+    based_on_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_close: Mapped[float | None] = mapped_column(Float, nullable=True)
+    steps: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    params: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    params_hash: Mapped[str] = mapped_column(String(16))
+    algo_version: Mapped[str] = mapped_column(String(20))
+    inputs_hash: Mapped[str] = mapped_column(String(64), default="")
+    backtest_run_id: Mapped[int | None] = mapped_column(ForeignKey("backtest_runs.id"), nullable=True)
+    backtest_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    pattern_levels: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    bars_from: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    bar_count: Mapped[int] = mapped_column(Integer, default=0)
+    source_ids: Mapped[list[int]] = mapped_column(JSON, default=list)
+    fetched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    empty_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    __table_args__ = (UniqueConstraint("instrument_id", "timeframe", "method"),)
