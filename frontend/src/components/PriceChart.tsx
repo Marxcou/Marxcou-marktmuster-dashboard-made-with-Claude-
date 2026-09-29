@@ -1,6 +1,7 @@
 import { ColorType, CrosshairMode, createChart, LineStyle, type IChartApi, type ISeriesApi, type SeriesMarker, type Time, type UTCTimestamp } from "lightweight-charts";
 import { useEffect, useRef } from "react";
-import type { Bar, IndicatorEvent, PatternDetection, SRZone } from "../lib/api";
+import type { Bar, ForecastStep, IndicatorEvent, PatternDetection, SRZone } from "../lib/api";
+import { BAND_FILL, BANDS, bandSeries, validSteps, type ScenarioLevel } from "../lib/forecast";
 import { EVENT_SHORT } from "../lib/analysis";
 import { type AlignedPoint, ascendingUnique, priceOnLine, snapTime, toTime } from "../lib/chartData";
 import type { ChartGroup } from "../lib/chartSync";
@@ -13,6 +14,7 @@ export type ChartKind = "candles" | "line";
 const berlin = (opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", ...opts });
 const PATTERN_COLOR = "#a78bfa";
 const EVENT_COLOR = "#22d3ee";
+const BG = "#0f172a";
 
 export function baseChartOptions(intraday: boolean, height: number) {
   return {
@@ -35,10 +37,11 @@ export function baseChartOptions(intraday: boolean, height: number) {
   };
 }
 
-export function PriceChart({ bars, kind, intraday, markers = [], onMarkerClick, overlays = [], patterns = [], zones = [], events = [], selectedPatternId = null, onPatternClick, group }: {
+export function PriceChart({ bars, kind, intraday, markers = [], onMarkerClick, overlays = [], patterns = [], zones = [], events = [], selectedPatternId = null, onPatternClick, group, forecast = [], scenarioLevels = [] }: {
   bars: Bar[]; kind: ChartKind; intraday: boolean; markers?: NewsMarker[]; onMarkerClick?: (clusterIds: number[]) => void;
   overlays?: PriceOverlay[]; patterns?: PatternDetection[]; zones?: SRZone[]; events?: IndicatorEvent[];
   selectedPatternId?: number | null; onPatternClick?: (id: number) => void; group?: ChartGroup;
+  forecast?: ForecastStep[]; scenarioLevels?: ScenarioLevel[];
 }) {
   const clickRef = useRef(onMarkerClick);
   clickRef.current = onMarkerClick;
@@ -104,6 +107,30 @@ export function PriceChart({ bars, kind, intraday, markers = [], onMarkerClick, 
       }
     }
 
+    // Prognosekorridor (Grundregel 4): nur Bänder, keine Einzellinie. Jedes Band wird als Paar undurchsichtiger Flächen gezeichnet
+    // (oben füllen, unten mit der Farbe des äußeren Bereichs überdecken), damit sich die 50/80/95-%-Bereiche sauber verschachteln.
+    const fsteps = validSteps(forecast);
+    const lastBar = bars[bars.length - 1];
+    if (fsteps.length > 0 && lastBar) {
+      const start = toTime(lastBar.ts_utc);
+      const future = (pts: { ts: string; v: number }[]) => ascendingUnique([{ time: start, value: lastBar.close }, ...pts.map((p) => ({ time: toTime(p.ts), value: p.v })).filter((p) => p.time > start)]);
+      const area = (color: string, data: { time: UTCTimestamp; value: number }[]) => {
+        const s = chart.addAreaSeries({ topColor: color, bottomColor: color, lineColor: color, lineWidth: 1, lastValueVisible: false, priceLineVisible: false, crosshairMarkerVisible: false });
+        s.setData(data);
+      };
+      const [b95, b80, b50] = BANDS.map((b) => ({ up: future(bandSeries(fsteps, b).map((x) => ({ ts: x.ts, v: x.upper }))), lo: future(bandSeries(fsteps, b).map((x) => ({ ts: x.ts, v: x.lower }))) }));
+      area(BAND_FILL[95], b95.up); area(BAND_FILL[80], b80.up); area(BAND_FILL[50], b50.up);
+      area(BAND_FILL[80], b50.lo); area(BAND_FILL[95], b80.lo); area(BG, b95.lo);
+      // Szenario-Niveaus des gewählten Musters laufen bis zum Ende des Horizonts, damit sie am Korridor ablesbar sind.
+      const end = toTime(fsteps[fsteps.length - 1].ts);
+      if (end != null && end > start) {
+        for (const l of scenarioLevels) {
+          const s = chart.addLineSeries({ color: l.color, lineWidth: 1, lineStyle: LineStyle.Dashed, lastValueVisible: true, priceLineVisible: false, crosshairMarkerVisible: false, title: l.label });
+          s.setData([{ time: start, value: l.price }, { time: end, value: l.price }]);
+        }
+      }
+    }
+
     // Marker: Nachrichten (nur zeitliches Zusammenfallen, keine Aussage über Ursache), Indikator-Ereignisse, Musterbeginn.
     const newsByTime = new Map<number, number[]>();
     for (const m of markers) {
@@ -152,7 +179,7 @@ export function PriceChart({ bars, kind, intraday, markers = [], onMarkerClick, 
       chart.remove();
       chartRef.current = null;
     };
-  }, [bars, kind, intraday, markers, overlays, patterns, zones, events, selectedPatternId, group]);
+  }, [bars, kind, intraday, markers, overlays, patterns, zones, events, selectedPatternId, group, forecast, scenarioLevels]);
 
   return <div ref={ref} data-testid="price-chart" className="w-full" role="img" aria-label="Kursdiagramm" />;
 }

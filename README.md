@@ -15,6 +15,7 @@ Der Worker ruft je Quelle in eigenem Intervall Meldungen zu den Aktien aller Wat
 | Marketaux | `MARKETAUX_API_KEY` | 100 Anfragen/Tag: Aktien werden reihum abgefragt, höchstens 90 Anfragen/Tag |
 | Alpha Vantage News (optional) | `ALPHAVANTAGE_API_KEY` | 25 Anfragen/Tag, höchstens 20 genutzt |
 | GDELT | keiner | verrauscht: Meldungen ohne Firmenname oder Ticker im Titel werden verworfen |
+| Investor-Relations-Feeds | `IR_FEEDS` | **standardmäßig aus**: Adresse und Nutzungsbedingungen je IR-Seite zuerst prüfen |
 | RSS-Feeds, EQS | `RSS_ENABLED_FEEDS`, `EQS_RSS_URL` | **standardmäßig aus**: Adresse und Nutzungsbedingungen zuerst prüfen |
 
 Quellen ohne Schlüssel bzw. ohne Freischaltung erscheinen auf der Seite Quellen als "deaktiviert" mit Grund; ein Ausfall einer Quelle beeinträchtigt die anderen nicht.
@@ -71,6 +72,10 @@ So wird gerechnet (`backend/app/analysis/backtest.py`):
 - **Offen gesagt:** Die Aktienauswahl sind heutige Indexmitglieder (Survivorship Bias). Fälle derselben Aktie überschneiden sich zeitlich, das Intervall ist daher eher zu schmal. Die DAX-Liste in `backend/app/backtest_universe.py` ist nach bestem Wissen (Stand 2025) und sollte vor dem Lauf geprüft werden.
 
 Jeder Lauf speichert je Mustertyp eine Zeile in `backtest_runs` mit Parametern, Zeitraum, Quelle, Abrufzeit, verwendeten und fehlenden Werten. Das Dashboard zeigt immer den neuesten Lauf. Tests mit synthetischen Kursreihen bekannten Ergebnisses: `backend/tests/test_backtest.py`.
+
+## Prognosekorridor im Frontend (Phase 4B)
+
+Auf der Chart-Seite (Tageskerzen) lässt sich der **Prognosekorridor** zuschalten: drei verschachtelte Wahrscheinlichkeitsbereiche (50, 80 und 95 %) hinter der letzten Kerze, nie eine Einzellinie. Darunter das Panel mit den Werten am Ende des Horizonts (5, 10 oder 20 Kerzen), "Wie wird das berechnet?" (Methode, Annahmen, Grenzen, Parameter), der **Prognosegüte** aus dem Backtest (Abdeckung der Bänder, Fehlermaße gegen die naive Referenz "Kurs bleibt gleich", Stichprobe, Signifikanztest) und dem Vergleichsverfahren ARIMA. Wird ein Muster gewählt, erscheinen seine Bestätigungs- und Ungültigkeitsniveaus als Linien bis zum Ende des Korridors, dazu Lage im Korridor, simulierte Pfadanteile und die historische Quote aus dem Muster-Backtest nebeneinander. Fehlt die Prognose oder der Backtest, steht das mit Grund da; ist die Methode nicht nachweisbar besser als die Referenz, steht auch das. Code: `frontend/src/components/ForecastPanel.tsx`, `frontend/src/lib/forecast.ts`, Tests `frontend/src/forecast.test.tsx`; Vertrag: `docs/api-contract.md`, Abschnitt "Phase 4A".
 
 ## Kursdaten (Phase 1B)
 

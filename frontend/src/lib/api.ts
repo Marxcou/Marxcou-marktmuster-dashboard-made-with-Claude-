@@ -102,6 +102,31 @@ export interface PatternsResponse {
 }
 export interface PatternCounts { counts: Record<string, number>; empty_reason: string | null }
 
+// Phase 4. Die Typen spiegeln docs/api-contract.md, Abschnitt "Phase 4A".
+// Prognosen gibt es ausschließlich als Quantile je Schritt (Grundregel 4), keine Einzellinie.
+export type QuantileKey = "2.5" | "10" | "25" | "50" | "75" | "90" | "97.5";
+export interface ForecastStep { step?: number; ts: string; quantiles: Record<QuantileKey, number> }
+export interface ForecastMethod { key: string; name: string; description: string; assumptions?: string[]; limitations?: string[]; params?: Record<string, unknown> }
+export interface ForecastCoverage { nominal: number; observed: number }
+export interface ForecastMetric { key: string; name?: string; model: number | null; naive: number | null; unit?: string | null }
+export interface ForecastHorizonResult { horizon_bars: number; sample_size: number | null; coverage?: ForecastCoverage[]; metrics?: ForecastMetric[]; skill: number | null; dm_p_value: number | null; better_than_naive: boolean | null }
+export interface ForecastBacktest {
+  status: "berechnet" | "nicht_berechnet"; run_id: number | null; sample_size: number | null; date_range: string | null; universe: string | null;
+  horizon_bars: number | null; computed_at?: string | null; is_demo?: boolean; note?: string | null; coverage?: ForecastCoverage[]; metrics?: ForecastMetric[];
+  skill?: number | null; dm_p_value?: number | null; better_than_naive: boolean | null; verdict_text: string | null; by_horizon?: ForecastHorizonResult[]; method_note?: string | null;
+}
+export interface ForecastComparison { method_key: string; name: string; description?: string; steps: ForecastStep[]; backtest?: ForecastBacktest | null; metrics?: ForecastMetric[] }
+export interface PatternScenarioItem {
+  kind: string; title: string; trigger_level: number | null; model_probability: number | null; model_probability_text: string | null; historical: ScenarioHistorical | null;
+}
+export interface PatternScenarioLink { detection_id: number; pattern_type: string; name: string; status: PatternStatus; scenarios: PatternScenarioItem[]; neither_probability: number | null; note: string }
+export interface ForecastResponse {
+  instrument_id: number; timeframe: string; method: ForecastMethod | null; horizon_bars: number; based_on_until: string | null;
+  last_close: number | null; currency?: string; generated_at: string | null; algo_version: string; params_hash?: string; is_demo?: boolean; steps: ForecastStep[];
+  bands?: { level: number; lower: QuantileKey; upper: QuantileKey }[]; backtest: ForecastBacktest | null; comparison?: ForecastComparison[];
+  pattern_scenarios?: PatternScenarioLink[]; data_basis: DataBasis | null; note?: string | null; empty_reason: string | null;
+}
+
 let csrfToken = "";
 export const setCsrfToken = (t: string) => { csrfToken = t; };
 

@@ -46,6 +46,7 @@ Offen/ehrlich: Die Adapter wurden gegen simulierte Antworten (Mock-Transport) ge
 
 Offen/ehrlich:
 - Alle Adapter wurden nur gegen simulierte Antworten getestet (Mock-Transport); es liegen keine Schlüssel in dieser Umgebung, und die Sandbox erreicht keine Medien-Feeds. Endpunkte und Felder folgen der Anbieterdokumentation aus dem Gedächtnis; ein Lauf mit echten Schlüsseln ist der nächste Prüfschritt.
+- Investor-Relations-Feeds (`IR_FEEDS`): keine Adresse ist voreingestellt, Feeds sind aus, bis Luca Adresse und Nutzungsbedingungen je IR-Seite geprüft und eingetragen hat.
 - RSS-Adressen und Nutzungsbedingungen (tagesschau, CNBC, MarketWatch, Handelsblatt, EQS) sind **nicht verifiziert**. Die Feeds sind deshalb standardmäßig aus und müssen bewusst freigeschaltet werden.
 - Das Stimmungs-Lexikon ist eine eigene kleine Wortliste, nicht Loughran-McDonald (Lizenzbedingungen des Originals nicht geprüft). Die Trefferqualität wurde nicht gegen gelabelte Daten gemessen.
 - Tageskontingente (Marketaux, Alpha Vantage) werden im Arbeitsspeicher gezählt; ein Neustart des Workers setzt den Zähler zurück.
@@ -117,3 +118,19 @@ Offen/ehrlich:
 - Treffer-Definition (5 % in 20 Kerzen) und Parameter der Mustererkennung sind Festlegungen, nicht an Daten optimiert. Wer sie nach dem Ergebnis verändert, riskiert eine Überanpassung.
 - Ob Stooq Splits und Dividenden bereinigt, ist nicht geprüft; Sprünge über 40 % werden deshalb ausgeschlossen und gezählt.
 - Schrittweite 5 Kerzen: Ein Fall kann bis zu 4 Kerzen später beginnen als bei täglicher Auswertung (nie früher). `--step 1` ist genauer, aber ca. fünfmal langsamer.
+
+## Phase 4B (Frontend: Prognosekorridor, Szenario-Niveaus, Methoden- und Backtest-Panel)
+
+| Regel | Stand | Beleg |
+|---|---|---|
+| 1 Keine Empfehlungssprache | erfüllt | `test_grundregeln.py` läuft über den neuen Code. Bänder sind einfarbig blau abgestuft, Szenario-Niveaus nur beschriftet ("Bestätigung", "Scheitern"), keine Ampeln, keine Kursziele |
+| 2 Quellentransparenz | erfüllt | Das Panel nennt Datenstand, Erstellzeit, Verfahren und Version und zeigt die Kursquellen als `SourceTip` |
+| 3 Erklärpflicht | unverändert | Szenario-Niveaus kommen aus `PatternDetection`; der Vergleich mit dem Korridor nennt nur die Lage, keine Wahrscheinlichkeit; simulierte Pfadanteile und historische Quote stehen getrennt und beschriftet nebeneinander |
+| 4 Unsicherheit | erfüllt (Anzeige) | Nur Bänder 50/80/95 % (`PriceChart`: verschachtelte Flächen, keine Linie, auch kein Median). Methode, Annahmen, Grenzen, Parameter, Abdeckung, Fehlermaße gegen "Kurs bleibt gleich", Signifikanztest und Ergebnis je Horizont sind einsehbar; "historisch nicht nachweisbar besser" wird offen genannt (`forecast.test.tsx`) |
+| 5 Hinweis auf jeder Seite | unverändert | Layout |
+| 6 Keine erfundenen Daten | erfüllt | Fehlende Prognose (mit `empty_reason`), unvollständige Schritte (verworfen), fehlender Backtest, nicht-tägliche Kerzen und Demodaten werden ausdrücklich gezeigt; nie Platzhalterwerte |
+
+Offen/ehrlich:
+- Gebaut gegen den Vertrag aus dem Branch `phase-4a-forecasts` und mit simulierten Antworten geprüft (Vitest, Sichtprüfung der verschachtelten Bänder im Browser mit Testdaten), nicht gegen das laufende Backend.
+- Die Einordnung "nahe am Sollwert" der Abdeckung (Abweichung bis 5 Prozentpunkte) und die Warnschwelle "kleine Stichprobe" (unter 30) sind Annahmen der Oberfläche.
+- Die Horizonte 5/10/20 folgen dem Backend-Limit von 20 Kerzen. `GET /forecasts/methods` wird noch nicht genutzt; die Methodenbeschreibung kommt aus der Prognose-Antwort.
