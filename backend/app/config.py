@@ -1,6 +1,11 @@
+import logging
 from functools import lru_cache
+from typing import Any
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+log = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -36,6 +41,19 @@ class Settings(BaseSettings):
     claude_monthly_budget_usd: float = 10.0
     claude_use_batch: bool = True  # Stimmung per Batch-API (halber Preis, Ergebnis nach Minuten bis Stunden)
     news_retention_days: int = 90  # ältere Meldungen werden gelöscht; 0 = nie löschen
+
+    @model_validator(mode="before")
+    @classmethod
+    def _ignore_comment_values(cls, data: Any) -> Any:
+        """Ein Wert, der mit "#" beginnt, ist ein Kommentar, den Docker Compose bei "KEY=   # Text" als Wert übergibt.
+        Er zählt als nicht gesetzt (Standardwert). Nur der Name wird protokolliert, nie der Wert."""
+        if not isinstance(data, dict):
+            return data
+        cleaned = {k: v for k, v in data.items() if not (isinstance(v, str) and v.strip().startswith("#"))}
+        for k in sorted(set(data) - set(cleaned)):
+            log.warning("%s enthält nur einen Kommentar (beginnt mit '#') und gilt als nicht gesetzt. "
+                        "In .env keine Kommentare hinter dem Wert schreiben.", k.upper())
+        return cleaned
 
 
 @lru_cache

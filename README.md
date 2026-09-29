@@ -108,6 +108,8 @@ cp .env.example .env        # .env liegt im Projektwurzelverzeichnis, neben dock
 docker compose up --build
 ```
 
+**Hinweis zu `.env`:** Schreibe keine Kommentare hinter einen Wert (`KEY=   # Text`). Docker Compose übernimmt den Kommentar sonst als Wert. Kommentare gehören in eine eigene Zeile darüber. Wenn du deine `.env` aus einer älteren `.env.example` kopiert hast, entferne solche Kommentare oder kopiere die Vorlage neu. Das Backend behandelt Werte, die mit `#` beginnen, als nicht gesetzt (Warnung im Log), und ungültige `IR_FEEDS`/`EQS_RSS_URL` erscheinen auf der Seite Quellen als "ungültig, deaktiviert".
+
 Dann im Browser `http://localhost:8080` öffnen (Port über `WEB_PORT`). Der erste Admin wird beim Start aus `ADMIN_EMAIL`/`ADMIN_PASSWORD` angelegt. Weitere Nutzer legt ein Admin an (`POST /api/users`); es gibt keine offene Registrierung.
 
 ### Windows: Zeilenenden
