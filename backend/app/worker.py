@@ -8,6 +8,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 from app.adapters.registry import load_builtin_adapters, news_adapters
 from app.alpaca_stream import start_stream_thread
+from app.analysis_service import analysis_job
 from app.db import SessionLocal
 from app.news_service import make_job, sentiment_job
 from app.price_service import daily_job, intraday_job, quote_job
@@ -37,6 +38,8 @@ def build_scheduler() -> BlockingScheduler:
             key = adapter.metadata().key
             sched.add_job(make_job(key), "interval", seconds=adapter.poll_seconds, id=f"news-{key}",
                           max_instances=1, next_run_time=datetime.now(UTC) + timedelta(seconds=10))
+    # Phase 3A: Indikator-Ereignisse und Kursbewegungen<->Meldungen (Meldungen kommen auch nachträglich)
+    sched.add_job(analysis_job, "interval", seconds=300, id="analysis", max_instances=1)
     sched.add_job(sentiment_job, "interval", seconds=300, id="sentiment", max_instances=1)
     return sched
 

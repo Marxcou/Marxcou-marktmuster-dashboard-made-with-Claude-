@@ -9,9 +9,10 @@ from sqlalchemy import or_, select
 
 from app.adapters.http import SourceError
 from app.adapters.registry import price_adapters
+from app.bars import load_bars
 from app.deps import DB, CurrentUser
-from app.models import Instrument, PriceBar, Quote, Source
-from app.price_service import NO_INTRADAY_REASON, SOURCE_PRIORITY, has_intraday, upsert_instrument
+from app.models import Instrument, Quote, Source
+from app.price_service import NO_INTRADAY_REASON, has_intraday, upsert_instrument
 
 log = logging.getLogger("instruments")
 
@@ -129,21 +130,7 @@ def get_bars(
     inst = db.get(Instrument, instrument_id)
     if inst is None:
         raise HTTPException(404, "Instrument nicht gefunden")
-    stmt = (select(PriceBar, Source).join(Source, Source.id == PriceBar.source_id)
-            .where(PriceBar.instrument_id == instrument_id, PriceBar.timeframe == timeframe))
-    if start:
-        stmt = stmt.where(PriceBar.ts_utc >= start)
-    if end:
-        stmt = stmt.where(PriceBar.ts_utc <= end)
-    rows = db.execute(stmt.order_by(PriceBar.ts_utc.desc()).limit(limit * 2)).all()
-    # Liefern mehrere Quellen dieselbe Kerze, zeigt der Chart nur eine (Quelle mit höchster Priorität).
-    rank = {k: i for i, k in enumerate(SOURCE_PRIORITY)}
-    best: dict[object, tuple[PriceBar, Source]] = {}
-    for b, s in rows:
-        slot = b.ts_utc.date() if timeframe == "1d" else b.ts_utc
-        if slot not in best or rank.get(s.key, 99) < rank.get(best[slot][1].key, 99):
-            best[slot] = (b, s)
-    chosen = sorted(best.values(), key=lambda t: t[0].ts_utc)[-limit:]
+    chosen = load_bars(db, instrument_id, timeframe, start, end, limit)
     bars = [
         BarOut(ts_utc=b.ts_utc, open=b.open, high=b.high, low=b.low, close=b.close, volume=b.volume,
                fetched_at=b.fetched_at, is_demo=b.is_demo, source=_ref(s))

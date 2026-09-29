@@ -14,6 +14,7 @@ dependencies = [
   "httpx>=0.27",
   "websockets>=12",
   "defusedxml>=0.7",
+  "numpy>=1.26",
 ]
 
 [project.optional-dependencies]

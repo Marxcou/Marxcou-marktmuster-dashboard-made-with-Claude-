@@ -183,3 +183,66 @@ class LlmUsage(Base):
     input_tokens: Mapped[int] = mapped_column(Integer, default=0)
     output_tokens: Mapped[int] = mapped_column(Integer, default=0)
     cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class IndicatorEvent(Base):
+    """Indikator-Ereignis mit Erklärung (Kriterien mit tatsächlichen Werten). source_id ist die Quelle der
+    Markierungs-Kerze, source_ids alle Quellen der verwendeten Kerzen; fetched_at der späteste Abruf davon."""
+    __tablename__ = "indicator_events"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id"), index=True)
+    timeframe: Mapped[str] = mapped_column(String(3))
+    # golden_cross | death_cross | rsi_divergence | bb_breakout | volume_spike
+    type: Mapped[str] = mapped_column(String(20))
+    direction: Mapped[str] = mapped_column(String(4), default="none")  # up | down | none
+    ts_utc: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    start_ts: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    end_ts: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    confirmed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    title: Mapped[str] = mapped_column(String(200))
+    summary: Mapped[str] = mapped_column(Text)
+    criteria: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
+    values: Mapped[dict[str, Any]] = mapped_column(JSON)
+    params: Mapped[dict[str, Any]] = mapped_column(JSON)
+    algo_version: Mapped[str] = mapped_column(String(40))
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
+    source_ids: Mapped[list[int]] = mapped_column(JSON)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    detected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
+    __table_args__ = (
+        UniqueConstraint("instrument_id", "timeframe", "type", "direction", "ts_utc", "algo_version"),
+        Index("ix_indicator_events_lookup", "instrument_id", "timeframe", "ts_utc"),
+    )
+
+
+class NotableMove(Base):
+    """Auffällige Kursbewegung (Rendite- oder Volumen-z-Wert über Schwelle)."""
+    __tablename__ = "notable_moves"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id"), index=True)
+    timeframe: Mapped[str] = mapped_column(String(3))
+    move_start: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    move_end: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    return_pct: Mapped[float] = mapped_column(Float)
+    return_z: Mapped[float | None] = mapped_column(Float, nullable=True)
+    volume_z: Mapped[float | None] = mapped_column(Float, nullable=True)
+    reasons: Mapped[list[str]] = mapped_column(JSON)
+    params: Mapped[dict[str, Any]] = mapped_column(JSON)
+    algo_version: Mapped[str] = mapped_column(String(40))
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
+    source_ids: Mapped[list[int]] = mapped_column(JSON)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    detected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
+    __table_args__ = (UniqueConstraint("instrument_id", "timeframe", "move_start", "algo_version"),)
+
+
+class MoveNewsLink(Base):
+    """Zeitliche Übereinstimmung Bewegung <-> Meldungscluster. Keine Aussage über Ursache."""
+    __tablename__ = "move_news_links"
+    move_id: Mapped[int] = mapped_column(ForeignKey("notable_moves.id", ondelete="CASCADE"), primary_key=True)
+    cluster_id: Mapped[int] = mapped_column(ForeignKey("news_clusters.id"), primary_key=True)
+    time_offset_minutes: Mapped[int] = mapped_column(Integer)  # Veröffentlichung minus Beginn der Kerze
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
