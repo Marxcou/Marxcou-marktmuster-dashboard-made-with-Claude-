@@ -11,6 +11,7 @@ from app.alpaca_stream import start_stream_thread
 from app.analysis_service import analysis_job
 from app.db import SessionLocal
 from app.forecast_service import forecast_job
+from app.log_redaction import install as install_log_redaction
 from app.news_retention import retention_job
 from app.news_service import make_job, sentiment_job
 from app.pattern_service import pattern_job
@@ -55,6 +56,7 @@ def build_scheduler() -> BlockingScheduler:
 
 
 def main() -> None:
+    install_log_redaction()
     logging.basicConfig(level=logging.INFO)
     load_builtin_adapters()
     log.info("Worker gestartet")

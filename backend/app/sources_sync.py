@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.adapters.registry import all_adapters
+from app.log_redaction import redact
 from app.models import Source
 
 log = logging.getLogger(__name__)
@@ -20,10 +21,11 @@ def sync_sources(db: Session) -> None:
         row.requires_key, row.is_official = meta.requires_key, meta.is_official
         try:
             if not adapter.is_configured():
-                row.status, row.last_error = "disabled", adapter.disabled_reason
+                reason = adapter.disabled_reason
+                row.status, row.last_error = "disabled", redact(reason) if reason else reason
             else:
                 h = adapter.health()
-                row.status, row.last_error = h.status, h.message
+                row.status, row.last_error = h.status, redact(h.message) if h.message else h.message
                 if h.last_success_at:
                     row.last_success_at = h.last_success_at
         except Exception as exc:  # eine defekte Quelle darf den Start und die anderen Quellen nicht stoppen

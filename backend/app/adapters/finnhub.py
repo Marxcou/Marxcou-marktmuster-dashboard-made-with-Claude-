@@ -1,12 +1,15 @@
 """Finnhub (kostenlos): US-Kurs als Ausweichquelle, wenn Alpaca nicht liefert."""
+import logging
 from datetime import UTC, datetime
 from typing import Any
 
 import httpx
 
 from app.adapters.base import AdapterMetadata, BarRecord, PriceAdapter, QuoteRecord, Timeframe
-from app.adapters.http import ProbedHealth, ResilientHttp, SourceError
+from app.adapters.http import ProbedHealth, ResilientHttp, SourceError, is_header_safe
 from app.config import get_settings
+
+log = logging.getLogger(__name__)
 
 
 class FinnhubAdapter(ProbedHealth, PriceAdapter):
@@ -14,8 +17,12 @@ class FinnhubAdapter(ProbedHealth, PriceAdapter):
     supported_exchanges = ("XNYS", "XNAS")
 
     def __init__(self, transport: httpx.BaseTransport | None = None, **kw: Any) -> None:
-        self._token = get_settings().finnhub_api_key
-        self.http = ResilientHttp(base_url="https://finnhub.io/api/v1", rate_per_min=50, transport=transport, **kw)
+        self._token = get_settings().finnhub_api_key.strip()
+        if self._token and not is_header_safe(self._token):
+            log.warning("FINNHUB_API_KEY: unzulässige Zeichen, Finnhub bleibt deaktiviert")
+            self._token = ""
+        self.http = ResilientHttp(base_url="https://finnhub.io/api/v1", rate_per_min=50, transport=transport,
+                                  headers={"X-Finnhub-Token": self._token} if self._token else None, **kw)
 
     def metadata(self) -> AdapterMetadata:
         return AdapterMetadata(
@@ -31,7 +38,7 @@ class FinnhubAdapter(ProbedHealth, PriceAdapter):
         return bool(self._token)
 
     def _probe(self) -> None:
-        self.http.request("GET", "/quote", params={"symbol": "AAPL", "token": self._token})
+        self.http.request("GET", "/quote", params={"symbol": "AAPL"})
 
     def fetch_bars(
         self, symbol: str, exchange: str, timeframe: Timeframe, start: datetime, end: datetime
@@ -39,7 +46,7 @@ class FinnhubAdapter(ProbedHealth, PriceAdapter):
         return []  # bewusst nicht unterstützt (siehe Beschreibung)
 
     def fetch_quote(self, symbol: str, exchange: str) -> QuoteRecord | None:
-        resp = self.http.request("GET", "/quote", params={"symbol": symbol, "token": self._token})
+        resp = self.http.request("GET", "/quote", params={"symbol": symbol})
         try:
             q = resp.json()
             price, ts = float(q["c"]), int(q["t"])

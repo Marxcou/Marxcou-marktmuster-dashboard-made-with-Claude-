@@ -59,7 +59,8 @@ def test_company_search_name_drops_legal_form():
 
 def test_finnhub_news_maps_fields_and_tags_symbol():
     def handler(req: httpx.Request) -> httpx.Response:
-        assert req.url.params["symbol"] == "AAPL" and req.url.params["token"] == "test-key"
+        assert req.url.params["symbol"] == "AAPL" and "token" not in req.url.params
+        assert req.headers["X-Finnhub-Token"] == "test-key"
         return httpx.Response(200, json=[
             {"id": 7, "datetime": 1790600000, "headline": "Apple <b>beats</b> estimates", "summary": "Kurz",
              "url": "https://example.com/a", "source": "Reuters", "related": "AAPL"},

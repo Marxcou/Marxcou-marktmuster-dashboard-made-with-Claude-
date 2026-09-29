@@ -10,6 +10,7 @@ from app.bootstrap import ensure_admin
 from app.db import SessionLocal
 from app.deps import SESSION_COOKIE
 from app.events import poll
+from app.log_redaction import install as install_log_redaction
 from app.models import Event
 from app.security import load_session
 from app.sources_sync import sync_sources
@@ -24,6 +25,7 @@ async def lifespan(_app: FastAPI):  # type: ignore[no-untyped-def]
     yield
 
 
+install_log_redaction()
 app = FastAPI(title="Marktmuster-Dashboard API", lifespan=lifespan)
 for r in (meta.router, auth.router, users.router, instruments.router, watchlist.router, news.router,
           indicators.router, patterns.router, forecasts.router):
