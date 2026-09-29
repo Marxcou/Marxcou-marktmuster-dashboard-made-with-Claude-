@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { api, PENDING_POLL_MS, type ForecastMetric, type ForecastResponse, type ForecastStep, type PatternDetection, type QuantileKey } from "./api";
+import { api, PENDING_POLL_MS, type ForecastExamplePath, type ForecastMetric, type ForecastResponse, type ForecastStep, type PatternDetection, type QuantileKey } from "./api";
 
 export const FORECAST_MISSING = "Die Prognose-Schnittstelle des Backends ist noch nicht verfügbar. Es wird kein Korridor angezeigt.";
 
@@ -16,6 +16,17 @@ export const BANDS: BandSpec[] = [
   { level: 80, lower: "10", upper: "90" },
   { level: 50, lower: "25", upper: "75" },
 ];
+
+// Mittlerer Verlauf (Median je Schritt) und Beispielpfade: nur Linien innerhalb des Korridors, ohne Endwert-Beschriftung.
+export const MEDIAN_COLOR = "#f1f5f9";
+export const EXAMPLE_COLOR = "rgba(203, 213, 225, 0.4)";
+
+export const medianSeries = (steps: ForecastStep[]) => validSteps(steps).map((s) => ({ ts: s.ts, v: s.quantiles["50"] }));
+
+// Nur Pfade mit durchgehend endlichen Werten; unvollständige werden verworfen statt aufgefüllt (Grundregel 6).
+export const validExamplePaths = (paths: ForecastExamplePath[] | undefined): ForecastExamplePath[] =>
+  (paths ?? []).filter((p) => p.steps.length > 0 && p.steps.every((s) => Number.isFinite(s.close)))
+    .map((p) => ({ ...p, steps: [...p.steps].sort((a, b) => a.ts.localeCompare(b.ts)) }));
 
 export const useForecast = (id: string | undefined, timeframe: string | null, horizon: number, enabled: boolean) =>
   useQuery({

@@ -28,6 +28,23 @@ test("Prognosekorridor mit Wahrscheinlichkeitsbereichen, Methode und Backtest", 
   expect(findForbidden(await panel.innerText())).toBeNull();
 });
 
+test("Mittlerer Verlauf mit Backtest-Fehler und Beispielpfade nur zusammen mit dem Korridor", async ({ page }) => {
+  const panel = page.getByTestId("forecast-panel");
+  const median = panel.getByTestId("median-line");
+  await expect(median).toContainText("Mittlerer Verlauf der Modellverteilung");
+  await expect(median).toContainText("kein erwarteter Kurs");
+  await expect(median.getByTestId("median-error-table")).toContainText("Referenz „Kurs bleibt gleich“");
+  await expect(panel.getByTestId("example-paths")).toContainText("nicht wahrscheinlicher");
+  const examples = page.getByLabel("Beispielpfade");
+  await examples.check({ force: true });
+  await expect(examples).toBeChecked();
+  await expect(page.getByTestId("forecast-line-legend")).not.toContainText("(ausgeblendet)");
+  expect(findForbidden(await panel.innerText())).toBeNull();
+  // ohne Korridor gibt es auch keine Linien-Schalter
+  await page.getByLabel("Prognosekorridor").first().uncheck({ force: true });
+  await expect(page.getByLabel("Mittlerer Verlauf")).toHaveCount(0);
+});
+
 test("Horizont umschaltbar", async ({ page }) => {
   const group = page.getByRole("group", { name: "Prognosehorizont" });
   await expect(group.getByRole("button").first()).toBeVisible();

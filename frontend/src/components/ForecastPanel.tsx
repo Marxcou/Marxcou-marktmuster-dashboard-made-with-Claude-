@@ -1,5 +1,5 @@
-import type { ForecastBacktest, ForecastResponse, ForecastStep, PatternDetection } from "../lib/api";
-import { BAND_FILL, BANDS, HORIZONS, coverageNote, levelPosition, metricName, metricVsNaive, scenarioLevels, validSteps } from "../lib/forecast";
+import type { ForecastBacktest, ForecastMedianLine, ForecastResponse, ForecastStep, PatternDetection } from "../lib/api";
+import { BAND_FILL, BANDS, EXAMPLE_COLOR, HORIZONS, MEDIAN_COLOR, validExamplePaths, coverageNote, levelPosition, metricName, metricVsNaive, scenarioLevels, validSteps } from "../lib/forecast";
 import { formatDate, formatDateTime, formatNumber, formatShare } from "../lib/format";
 import { AiExplanation } from "./AiExplanation";
 import { SourceTip } from "./SourceTip";
@@ -67,6 +67,36 @@ export function ForecastBacktestBlock({ b }: { b: ForecastBacktest | null }) {
   );
 }
 
+const MEDIAN_FALLBACK = "Die Linie verbindet je Handelstag den Median (50-%-Quantil) des Korridors: die Hälfte der simulierten Kurse liegt darüber, die Hälfte darunter. Sie ist die Mitte des Korridors, kein erwarteter Kurs.";
+
+// Mittlerer Verlauf (Grundregel 4): nur als Mitte des Korridors, immer mit dem Backtest-Fehler dieser Linie je Horizont.
+function MedianLineBlock({ line, shown }: { line: ForecastMedianLine | null | undefined; shown: boolean }) {
+  const errors = line?.errors ?? [];
+  return (
+    <div data-testid="median-line">
+      <h3 className="text-sm font-semibold"><span className="mr-2 inline-block w-5 border-t-2 border-dashed align-middle" style={{ borderColor: MEDIAN_COLOR }} />{line?.name ?? "Mittlerer Verlauf der Modellverteilung"}</h3>
+      <p className="mt-1 text-xs text-slate-300">{line?.description ?? MEDIAN_FALLBACK}</p>
+      {!shown && <p className="mt-1 text-xs text-slate-400">Im Chart ausgeblendet (Schalter „Mittlerer Verlauf“).</p>}
+      {errors.length > 0 ? (
+        <table className="mt-2 w-full text-xs" data-testid="median-error-table">
+          <caption className="pb-1 text-left text-slate-400">So weit lag der tatsächliche Schlusskurs im Backtest im Mittel von dieser Linie entfernt (in Prozent des Kurses am Prognoseursprung)</caption>
+          <thead><tr className="text-left text-slate-400"><th className="py-1">Nach</th><th>Abweichung der Linie</th><th>Referenz „Kurs bleibt gleich“</th><th>Stichprobe</th></tr></thead>
+          <tbody>{errors.map((e) => (
+            <tr key={e.horizon_bars} className="border-t border-slate-800">
+              <td className="py-1">{e.horizon_bars} Handelstagen</td>
+              <td>{e.model != null ? `± ${formatNumber(e.model, 2)} %` : "nicht verfügbar"}</td>
+              <td>{e.naive != null ? `± ${formatNumber(e.naive, 2)} %` : "nicht verfügbar"}</td>
+              <td>{e.sample_size ?? "?"} Prognosen</td>
+            </tr>
+          ))}</tbody>
+        </table>
+      ) : (
+        <p className="mt-2 text-xs text-amber-300" data-testid="median-error-missing">Abweichung dieser Linie im Backtest: nicht verfügbar, weil noch kein Prognose-Backtest vorliegt.</p>
+      )}
+    </div>
+  );
+}
+
 function HorizonTable({ steps, currency, lastClose }: { steps: ForecastStep[]; currency: string; lastClose: number | null }) {
   const last = steps[steps.length - 1];
   return (
@@ -87,9 +117,11 @@ function HorizonTable({ steps, currency, lastClose }: { steps: ForecastStep[]; c
   );
 }
 
-export function ForecastPanel({ data, loading, error, horizon, onHorizon, currency, pattern }: {
+export function ForecastPanel({ data, loading, error, horizon, onHorizon, currency, pattern, showMedian = true, showExamples = false }: {
   data: ForecastResponse | undefined; loading: boolean; error: boolean; horizon: number; onHorizon: (h: number) => void; currency: string; pattern: PatternDetection | null;
+  showMedian?: boolean; showExamples?: boolean;
 }) {
+  const examples = validExamplePaths(data?.example_paths);
   const steps = validSteps(data?.steps ?? []);
   currency = data?.currency ?? currency;
   const last = steps[steps.length - 1];
@@ -105,7 +137,7 @@ export function ForecastPanel({ data, loading, error, horizon, onHorizon, curren
           ))}
         </div>
       </div>
-      <p className="mt-1 text-xs text-slate-400" data-testid="forecast-note">{data?.note ? `${data.note} ` : ""}Der Korridor zeigt, in welchem Bereich Kurse nach dem gewählten Verfahren mit den genannten Wahrscheinlichkeiten liegen könnten. Er ist keine Einzelprognose, kein Kursverlauf und keine Aussage, was geschehen wird.</p>
+      <p className="mt-1 text-xs text-slate-400" data-testid="forecast-note">{data?.note ? `${data.note} ` : ""}Der Korridor zeigt, in welchem Bereich Kurse nach dem gewählten Verfahren mit den genannten Wahrscheinlichkeiten liegen könnten. Die gestrichelte Linie ist seine Mitte (Median), keine Einzelprognose und keine Aussage, was geschehen wird.</p>
 
       {data?.is_demo && <p className="mt-2 text-xs font-semibold text-fuchsia-300" data-testid="forecast-demo">Beispieldaten (Demo-Modus): keine echte Prognose.</p>}
       {loading && <p className="mt-2 text-sm text-slate-400">Lade Prognose …</p>}
@@ -123,7 +155,19 @@ export function ForecastPanel({ data, loading, error, horizon, onHorizon, curren
           <ul className="flex flex-wrap gap-3 text-xs" data-testid="forecast-legend" aria-label="Legende der Wahrscheinlichkeitsbereiche">
             {[...BANDS].reverse().map((b) => (<li key={b.level}><span className="mr-1 inline-block h-3 w-5 align-middle" style={{ background: BAND_FILL[b.level] }} />{b.level} %-Bereich</li>))}
           </ul>
+          <ul className="flex flex-wrap gap-3 text-xs" data-testid="forecast-line-legend" aria-label="Legende der Linien im Korridor">
+            <li><span className="mr-1 inline-block w-5 border-t-2 border-dashed align-middle" style={{ borderColor: MEDIAN_COLOR }} />Mittlerer Verlauf (Median){!showMedian && " (ausgeblendet)"}</li>
+            {examples.length > 0 && <li><span className="mr-1 inline-block w-5 border-t align-middle" style={{ borderColor: EXAMPLE_COLOR }} />Beispielpfade ({examples.length}){!showExamples && " (ausgeblendet)"}</li>}
+          </ul>
           <HorizonTable steps={steps} currency={currency} lastClose={data.last_close} />
+          <MedianLineBlock line={data.median_line} shown={showMedian} />
+          {examples.length > 0 && (
+            <div data-testid="example-paths">
+              <h3 className="text-sm font-semibold"><span className="mr-2 inline-block w-5 border-t align-middle" style={{ borderColor: EXAMPLE_COLOR }} />Beispielpfade aus der Simulation</h3>
+              <p className="mt-1 text-xs text-slate-300">{data.example_paths_note ?? "Einzelne simulierte Verläufe als Beispiele; keiner ist wahrscheinlicher als die übrigen."}</p>
+              {!showExamples && <p className="mt-1 text-xs text-slate-400">Im Chart einblenden mit dem Schalter „Beispielpfade“.</p>}
+            </div>
+          )}
 
           {pattern && levels.length > 0 && (
             <div data-testid="scenario-levels">

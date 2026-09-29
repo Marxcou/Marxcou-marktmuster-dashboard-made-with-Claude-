@@ -429,6 +429,8 @@ class Forecast(Base):
     backtest_run_id: Mapped[int | None] = mapped_column(ForeignKey("backtest_runs.id"), nullable=True)
     backtest_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     pattern_levels: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    # Nur Hauptmethode: einige simulierte Pfade als Beispiele (analysis.forecast.example_path_rows)
+    example_paths: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     bars_from: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     bar_count: Mapped[int] = mapped_column(Integer, default=0)
     source_ids: Mapped[list[int]] = mapped_column(JSON, default=list)

@@ -71,6 +71,8 @@ export function ChartPage() {
   const detections = patterns.data?.detections ?? [];
   const selectedDetection = detections.find((d) => d.id === selectedPattern) ?? null;
   const [showForecast, setShowForecast] = useState(true);
+  const [showMedian, setShowMedian] = useState(true);
+  const [showExamples, setShowExamples] = useState(false);
   const [horizon, setHorizon] = useState(20);
   const fcTf = forecastTimeframe(range.timeframe);
   const forecast = useForecast(id, fcTf, horizon, showForecast);
@@ -151,6 +153,14 @@ export function ChartPage() {
           <label className={`seg shrink-0 cursor-pointer ${showForecast ? "seg-on" : ""}`}>
             <input type="checkbox" className="sr-only" checked={showForecast} onChange={() => setShowForecast((v) => !v)} />Prognosekorridor
           </label>
+          {showForecast && fcTf != null && (<>
+            <label className={`seg shrink-0 cursor-pointer ${showMedian ? "seg-on" : ""}`} title="Median je Tag innerhalb des Korridors">
+              <input type="checkbox" className="sr-only" checked={showMedian} onChange={() => setShowMedian((v) => !v)} />Mittlerer Verlauf
+            </label>
+            <label className={`seg shrink-0 cursor-pointer ${showExamples ? "seg-on" : ""}`} title="Einzelne simulierte Verläufe als Beispiele">
+              <input type="checkbox" className="sr-only" checked={showExamples} onChange={() => setShowExamples((v) => !v)} />Beispielpfade
+            </label>
+          </>)}
         </div>
       </div>
 
@@ -173,7 +183,8 @@ export function ChartPage() {
           <PriceChart bars={shown} kind={kind} intraday={intraday} markers={markers} onMarkerClick={setSelected}
             overlays={overlays} patterns={detections} zones={patterns.data?.zones ?? []} events={events.data?.events ?? []}
             selectedPatternId={selectedPattern} onPatternClick={setSelectedPattern} group={group}
-            forecast={showForecast ? forecastSteps : []} scenarioLevels={showForecast ? levels : []} />
+            forecast={showForecast ? forecastSteps : []} scenarioLevels={showForecast ? levels : []}
+            medianLine={showForecast && showMedian} examplePaths={showForecast && showExamples ? forecast.data?.example_paths ?? [] : []} />
           {ownPanels.map((i) => (
             <div key={i.key} className="mt-2">
               <p className="text-xs text-slate-400">{i.label}</p>
@@ -225,7 +236,7 @@ export function ChartPage() {
         <div id="sec-prognose" className="scroll-mt-28 mt-6" data-testid="chart-forecast">
           {fcTf == null
             ? <p className="text-sm text-amber-300" data-testid="no-forecast">Prognosekorridore gibt es nur für Tageskerzen. Für den Zeitraum {range.label} (Kerzen {range.timeframe}) wird keiner berechnet.</p>
-            : <ForecastPanel data={forecast.data} loading={forecast.isLoading} error={forecast.isError} horizon={horizon} onHorizon={setHorizon} currency={inst.data?.currency ?? "EUR"} pattern={selectedDetection} />}
+            : <ForecastPanel data={forecast.data} loading={forecast.isLoading} error={forecast.isError} horizon={horizon} onHorizon={setHorizon} currency={inst.data?.currency ?? "EUR"} pattern={selectedDetection} showMedian={showMedian} showExamples={showExamples} />}
         </div>
       )}
 

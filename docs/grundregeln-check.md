@@ -185,3 +185,18 @@ Offen/ehrlich:
 - Beim Schreiben der Tests fielen drei Fehler auf und wurden behoben: Abmelden hatte keine Wirkung (`qc.clear()` entfernte die Abfrage "me"), jede Zugriffszeile im uvicorn-Log scheiterte an der Log-Bereinigung, und eine neu hinzugefügte Aktie zeigte bis zum nächsten Abruf "0 Muster".
 
 Erklärtexte (KI, Punkt 6 der Spezifikation): Regel 1 wird zur Laufzeit erzwungen (`explain_facts.validate`: Wortliste aus `grundregeln.py` plus Wendungen wie "empfehlen"; bei Treffer gilt die Vorlage). Regel 3/4: der Text nennt nur Werte der Erkennung bzw. Prognose; jede Zahl und jedes Datum wird gegen die Werte geprüft, Trefferquote fehlt = der Text sagt das. Regel 6: keine KI-Texte für Demodaten; KI-Text und Vorlage sind getrennt gekennzeichnet (Tests `test_explanations.py`, `aiExplanation.test.tsx`, E2E `patterns.spec.ts`). Offen: ob die Texte für Laien verständlich sind, ist mit echtem Schlüssel noch nicht beurteilt.
+
+## Mittlerer Verlauf und Beispielpfade in der Prognose
+
+| Regel | Stand | Beleg |
+|---|---|---|
+| 1 Keine Empfehlungssprache | erfüllt | Linie heißt "Mittlerer Verlauf der Modellverteilung", Beschreibung sagt "kein erwarteter Kurs". Kein Endwert-Label im Chart (`lastValueVisible: false`), der Median am Horizont steht nicht als Einzelzahl im Panel (`forecast.test.tsx`). `test_grundregeln.py` und E2E-Wortliste laufen über den neuen Text |
+| 2 Quellentransparenz | unverändert | Linie und Pfade stammen aus derselben Prognose wie der Korridor (gleicher Datenstand, gleiche Quellen) |
+| 3 Erklärpflicht | unverändert | |
+| 4 Unsicherheit | erfüllt | Median und Beispielpfade werden nur zusammen mit dem Korridor gezeichnet; ohne Korridor verschwinden auch die Schalter (Vitest und E2E). Neben der Linie steht ihr Backtest-Fehler je Horizont mit Stichprobe und Referenz "Kurs bleibt gleich"; fehlt der Backtest, steht "nicht verfügbar". Beispielpfade sind als gleich unwahrscheinliche Beispiele beschriftet und nach Perzentil des Endwerts gewählt, nicht nach Aussehen |
+| 5 Hinweis auf jeder Seite | unverändert | Layout |
+| 6 Keine erfundenen Daten | erfüllt | Beispielpfade sind echte Pfade der gespeicherten Simulation (Test vergleicht Werte), unvollständige werden verworfen; Median ist das vorhandene 50-%-Quantil |
+
+Offen/ehrlich:
+- Der Median der Hauptmethode ist wegen der Trendentfernung fast waagerecht. Das ist Absicht: die Methode hat historisch keine nachweisbare Richtungsinformation, eine geschwungene Linie wäre erfunden.
+- Das Zeichnen im Canvas ist nur per Screenshot geprüft.

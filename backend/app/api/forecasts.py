@@ -1,5 +1,6 @@
 """Prognosen als Quantil-Korridor, Prognose-Backtest und Verknüpfung mit Muster-Szenarien. Vertrag: docs/api-contract.md
-(Phase 4A). Es gibt keinen Endpunkt für eine einzelne Linie (Grundregel 4); Fehlermaße stammen nur aus
+(Phase 4A). Es gibt keinen Endpunkt für eine einzelne Linie (Grundregel 4): der mittlere Verlauf (Median) und die
+Beispielpfade kommen nur zusammen mit dem Korridor und den Fehlermaßen des Medians; Fehlermaße stammen nur aus
 backtest_runs (kind='forecast'), sonst status "nicht_berechnet" mit null-Werten (Grundregel 6)."""
 from datetime import datetime
 from typing import Any
@@ -25,6 +26,18 @@ BACKTEST_NOT_COMPUTED = "Die Prognosegüte wurde für dieses Instrument noch nic
 SCENARIO_NOTE = (
     "Die Simulation kennt das Muster nicht; sie zeigt nur, wie oft die Niveaus bei historischer Schwankung zuerst "
     "erreicht würden. Die historische Quote stammt aus dem Muster-Backtest."
+)
+MEDIAN_NAME = "Mittlerer Verlauf der Modellverteilung"
+MEDIAN_DESCRIPTION = (
+    "Die Linie verbindet je Handelstag den Median (50-%-Quantil) aller simulierten Kurse: die Hälfte der simulierten "
+    "Pfade liegt an diesem Tag darüber, die Hälfte darunter. Sie ist die Mitte des Korridors, kein erwarteter Kurs: "
+    "der tatsächliche Verlauf weicht fast immer von ihr ab, wie weit, zeigen die Bänder und die Backtest-Fehler. "
+    "Weil der historische Durchschnittstrend entfernt wird, verläuft sie meist nahe am letzten Schlusskurs."
+)
+EXAMPLE_PATHS_NOTE = (
+    "Einzelne simulierte Verläufe, ausgewählt nach ihrem Endwert (10., 30., 50., 70. und 90. Perzentil aller "
+    "simulierten Endwerte). Sie zeigen, wie unruhig ein möglicher Verlauf innerhalb des Korridors aussehen kann. Jeder "
+    "einzelne ist ein Beispiel und nicht wahrscheinlicher als die übrigen simulierten Pfade."
 )
 LEVELS_STALE = "Noch nicht berechnet: das Muster wurde nach der letzten Prognose aktualisiert."
 
@@ -142,6 +155,8 @@ def get_forecast(instrument_id: int, db: DB, _u: CurrentUser, timeframe: str = "
                            "description": fc.method_info(fc.COMPARISON, _clean(comp.params))["description"],
                            "method": fc.method_info(fc.COMPARISON, _clean(comp.params)),
                            "steps": _steps(comp, horizon), "backtest": comp_bt, "metrics": comp_bt["metrics"]})
+    backtest = (backtest_out(_run(db, main), main.backtest_reason if main else None) if has_data
+                else backtest_out(None))
     return {
         "instrument_id": instrument_id, "timeframe": timeframe, "method": method,
         "horizon_bars": min(horizon, main.horizon) if has_data and main else 0,
@@ -150,12 +165,39 @@ def get_forecast(instrument_id: int, db: DB, _u: CurrentUser, timeframe: str = "
         "generated_at": _iso(main.created_at) if main else None, "algo_version": fc.ALGO_VERSION,
         "params_hash": params_hash(fc.PRIMARY), "is_demo": bool(main.is_demo) if has_data and main else False,
         "steps": _steps(main, horizon) if has_data else [], "bands": fc.BANDS,
-        "backtest": backtest_out(_run(db, main), main.backtest_reason if main else None) if has_data
-        else backtest_out(None),
+        "backtest": backtest,
+        "median_line": median_line(backtest) if has_data else None,
+        "example_paths": example_paths(main, horizon) if has_data else [],
+        "example_paths_note": EXAMPLE_PATHS_NOTE,
         "comparison": comparison,
         "pattern_scenarios": pattern_scenarios(db, main) if has_data and main else [],
         "data_basis": data_basis, "note": NOTE, "empty_reason": reason, "pending": pending,
     }
+
+
+def median_errors(bt: dict[str, Any]) -> list[dict[str, Any]]:
+    """Fehler des Medians je Horizont aus dem Prognose-Backtest (Prozent des Kurses am Ursprung)."""
+    out: list[dict[str, Any]] = []
+    for h in bt.get("by_horizon") or []:
+        m = next((x for x in h.get("metrics") or [] if x.get("key") == "median_abs_error"), None)
+        if m is None:
+            continue
+        out.append({"horizon_bars": h["horizon_bars"], "sample_size": h.get("sample_size"), "model": m.get("model"),
+                    "naive": m.get("naive"), "unit": m.get("unit", "%"),
+                    "better_than_naive": h.get("better_than_naive")})
+    return out
+
+
+def median_line(bt: dict[str, Any]) -> dict[str, Any]:
+    return {"quantile": "50", "name": MEDIAN_NAME, "description": MEDIAN_DESCRIPTION, "errors": median_errors(bt)}
+
+
+def example_paths(row: Forecast | None, horizon: int) -> list[dict[str, Any]]:
+    if row is None or row.empty_reason:
+        return []
+    return [{"percentile": e["percentile"],
+             "label": f"Beispielpfad (Endwert am {e['percentile']}. Perzentil der Simulation)",
+             "steps": list(e["steps"][:horizon])} for e in row.example_paths or []]
 
 
 def _clean(params: dict[str, Any]) -> dict[str, Any]:
