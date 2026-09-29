@@ -1,5 +1,5 @@
 import type { PatternBacktest, PatternDetection } from "../lib/api";
-import { formatDate, formatDateTime, formatNumber, formatShare } from "../lib/format";
+import { formatDate, formatDateTime, formatNumber, formatPercentPoints, formatShare } from "../lib/format";
 import { STATUS_TEXT } from "../lib/analysis";
 import { SourceTip } from "./SourceTip";
 
@@ -34,15 +34,30 @@ export function BacktestBlock({ b }: { b: PatternBacktest | null }) {
       <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-300 sm:grid-cols-4">
         <div><dt className="text-slate-400">Stichprobengröße</dt><dd>{b.sample_size}</dd></div>
         <div><dt className="text-slate-400">95-%-Intervall</dt><dd>{b.ci_low != null && b.ci_high != null ? `${formatShare(b.ci_low)} bis ${formatShare(b.ci_high)}` : "nicht verfügbar"}</dd></div>
-        <div><dt className="text-slate-400">Basisrate (zufällige Starttage)</dt><dd>{b.base_rate != null ? formatShare(b.base_rate) : "nicht verfügbar"}</dd></div>
+        <div><dt className="text-slate-400">Basisrate (alle Handelstage)</dt><dd>{b.base_rate != null ? formatShare(b.base_rate) : "nicht verfügbar"}</dd></div>
         <div><dt className="text-slate-400">Backtest-Lauf</dt><dd>{b.computed_at ? formatDate(b.computed_at) : `Nr. ${b.run_id ?? "?"}`}</dd></div>
       </dl>
       {b.not_better_than_random && <p className="mt-2 font-semibold text-amber-300" data-testid="not-better">Historisch nicht besser als Zufall.{b.verdict_text ? ` ${b.verdict_text}` : ""}</p>}
       {b.not_better_than_random === false && b.verdict_text && <p className="mt-2 text-xs text-slate-300">{b.verdict_text}</p>}
+      {b.mean_return_pct != null && b.horizon_bars != null && (
+        <p className="mt-2 text-xs text-slate-300" data-testid="backtest-return">
+          Mittlere Veränderung {b.horizon_bars} Kerzen nach dem Ausgangspunkt, in Richtung des Musters gerechnet: {formatPercentPoints(b.mean_return_pct)}
+          {b.median_return_pct != null && ` (Median ${formatPercentPoints(b.median_return_pct)})`}
+          {b.base_mean_return_pct != null && `; alle Handelstage: ${formatPercentPoints(b.base_mean_return_pct)}`}.
+        </p>
+      )}
       {b.sample_size < MIN_SAMPLE_HINT && <p className="mt-1 text-xs text-amber-300">Kleine Stichprobe (weniger als {MIN_SAMPLE_HINT} Fälle): die Aussagekraft ist gering.</p>}
       <p className="mt-2 text-xs text-slate-400">
         {b.universe && `Datenbasis: ${b.universe}. `}{b.date_range && `Zeitraum: ${b.date_range}. `}{b.survivorship_note}
       </p>
+      {b.note && <p className="mt-1 text-xs text-slate-400">{b.note}</p>}
+      {(b.method || b.source) && (
+        <details className="mt-1 text-xs text-slate-400">
+          <summary className="cursor-pointer">Wie wurde das berechnet?</summary>
+          {b.method && <p className="mt-1">{b.method}</p>}
+          {b.source && <p className="mt-1">Quelle: <a className="underline" href={b.source.homepage} target="_blank" rel="noreferrer">{b.source.name}</a>{b.source.fetched_to && `, abgerufen ${formatDate(b.source.fetched_to)}`}</p>}
+        </details>
+      )}
     </div>
   );
 }

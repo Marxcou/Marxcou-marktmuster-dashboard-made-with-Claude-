@@ -11,3 +11,4 @@ __pycache__/
 node_modules/
 dist/
 *.egg-info/
+backtest-cache/
