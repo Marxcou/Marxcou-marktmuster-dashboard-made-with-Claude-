@@ -17,7 +17,12 @@ export function Login() {
     try {
       await login(email, password);
     } catch (err) {
-      setError(err instanceof Error && err.message === "unauthorized" ? "E-Mail oder Passwort ist falsch." : "Anmeldung nicht möglich. Ist das Backend erreichbar?");
+      const msg = err instanceof Error ? err.message : "";
+      setError(
+        msg === "unauthorized" ? "E-Mail oder Passwort falsch."
+          : msg.startsWith("HTTP ") ? `Anmeldung nicht möglich: Server-Antwort ${msg}.`
+          : "Anmeldung nicht möglich. Ist das Backend erreichbar?",
+      );
     } finally {
       setBusy(false);
     }
