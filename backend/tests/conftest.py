@@ -1,7 +1,7 @@
 import os
 
 os.environ["DATABASE_URL"] = "sqlite:///./test.db"
-os.environ["ADMIN_EMAIL"] = "admin@example.com"
+os.environ["ADMIN_EMAIL"] = "admin@dashboard-test.org"
 os.environ["ADMIN_PASSWORD"] = "admin-password-123"
 os.environ["DEMO_MODE"] = "false"
 
@@ -27,7 +27,7 @@ def client():
     Base.metadata.drop_all(engine)
 
 
-def login(client: TestClient, email="admin@example.com", password="admin-password-123") -> str:
+def login(client: TestClient, email="admin@dashboard-test.org", password="admin-password-123") -> str:
     r = client.post("/api/auth/login", json={"email": email, "password": password})
     assert r.status_code == 200, r.text
     return r.json()["csrf_token"]
