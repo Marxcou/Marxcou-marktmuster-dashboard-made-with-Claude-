@@ -5,6 +5,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import func, select
+from sqlalchemy.orm import Session
 
 from app.deps import DB, AdminUser
 from app.models import User
@@ -44,14 +45,14 @@ class PasswordReset(BaseModel):
     temporary_password: str
 
 
-def _get(db, user_id: int) -> User:
+def _get(db: Session, user_id: int) -> User:
     user = db.get(User, user_id)
     if user is None:
         raise HTTPException(404, "Benutzer nicht gefunden")
     return user
 
 
-def _active_admins(db) -> int:
+def _active_admins(db: Session) -> int:
     return db.scalar(select(func.count()).select_from(User).where(User.role == "admin", User.is_active.is_(True))) or 0
 
 
@@ -61,7 +62,7 @@ def list_users(db: DB, _admin: AdminUser) -> list[User]:
 
 
 @router.post("", response_model=UserCreated, status_code=201)
-def create_user(body: UserCreate, db: DB, _admin: AdminUser) -> dict:
+def create_user(body: UserCreate, db: DB, _admin: AdminUser) -> dict[str, object]:
     email = body.email.lower()
     if db.scalar(select(User).where(User.email == email)):
         raise HTTPException(409, "E-Mail ist bereits vergeben")
