@@ -53,7 +53,8 @@ def ensure_admin(db: Session) -> None:
         if email not in {a.email for a in admins}:
             log.warning(
                 "ADMIN_EMAIL aus .env (%s) passt zu keinem vorhandenen Admin (%s). Die .env-Zugangsdaten werden "
-                "nur beim allerersten Start übernommen. Zum Übernehmen: docker compose run --rm api python -m app.admin_cli",
+                "nur beim allerersten Start übernommen. "
+                "Zum Übernehmen: docker compose run --rm api python -m app.admin_cli",
                 email, ", ".join(a.email for a in admins))
         return
     if is_placeholder(email, s.admin_password):

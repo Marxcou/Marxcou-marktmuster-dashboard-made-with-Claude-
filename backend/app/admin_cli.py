@@ -15,8 +15,8 @@ def main() -> int:
         print("ADMIN_EMAIL und ADMIN_PASSWORD müssen in .env gesetzt sein.", file=sys.stderr)
         return 1
     if is_placeholder(s.admin_email, s.admin_password):
-        print("ADMIN_EMAIL/ADMIN_PASSWORD enthalten noch die Platzhalter aus .env.example. Bitte eigene Werte eintragen.",
-              file=sys.stderr)
+        print("ADMIN_EMAIL/ADMIN_PASSWORD enthalten noch die Platzhalter aus .env.example. "
+              "Bitte eigene Werte eintragen.", file=sys.stderr)
         return 1
     with SessionLocal() as db:
         result = apply_admin_credentials(db, s.admin_email, s.admin_password)
