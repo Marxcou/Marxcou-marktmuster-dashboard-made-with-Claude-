@@ -1,1 +1,1 @@
-"""Reine Analysefunktionen (numpy, ohne I/O). Gleiche Kerzen + gleiche Parameter ergeben dasselbe Ergebnis."""
+"""Reine Analysefunktionen (numpy, kein I/O, deterministisch). Persistenz und Abruf liegen in analysis_service.py."""

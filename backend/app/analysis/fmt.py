@@ -1,26 +1,31 @@
-"""Deutsche Formatierung für die Erklärtexte (de-DE, Europe/Berlin)."""
+"""Zahlen- und Datumsformat de-DE für die Erklärtexte (Zeitzone Europe/Berlin)."""
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 BERLIN = ZoneInfo("Europe/Berlin")
+CURRENCY = {"EUR": "€", "USD": "$"}
 
 
-def num(x: float, decimals: int = 2) -> str:
-    s = f"{x:,.{decimals}f}"
-    return s.replace(",", " ").replace(".", ",").replace(" ", ".")
+def num(x: float, digits: int = 2) -> str:
+    s = f"{x:,.{digits}f}"
+    return s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
 
 
-def price(x: float) -> str:
-    return num(x, 4 if abs(x) < 1 else 2)
+def price(x: float, currency: str | None = None) -> str:
+    """Kurs mit Währungszeichen; ohne Währung (Mustererkennung, instrumentenneutral) nur die Zahl,
+    unter 1 mit vier Nachkommastellen."""
+    if currency is None:
+        return num(x, 4 if abs(x) < 1 else 2)
+    return f"{num(x)} {CURRENCY.get(currency, currency)}"
 
 
-def pct(x: float, decimals: int = 2) -> str:
-    return f"{num(x, decimals)} %"
+def pct(x: float, digits: int = 2) -> str:
+    return f"{num(x, digits)} %"
 
 
-def date(ts: datetime, timeframe: str) -> str:
-    local = ts.astimezone(BERLIN)
-    if timeframe == "1d":
-        # Tageskerzen tragen das Handelsdatum (UTC-Mitternacht); das Datum selbst wird nicht verschoben.
-        return ts.strftime("%d.%m.%Y")
-    return local.strftime("%d.%m.%Y %H:%M")
+def day(ts: datetime) -> str:
+    return ts.astimezone(BERLIN).strftime("%d.%m.%Y")
+
+
+def stamp(ts: datetime, timeframe: str) -> str:
+    return day(ts) if timeframe == "1d" else ts.astimezone(BERLIN).strftime("%d.%m.%Y %H:%M")

@@ -33,7 +33,7 @@ class Context:
     timeframe: str
 
     def date(self, idx: int) -> str:
-        return fmt.date(self.bars.ts[idx], self.timeframe)
+        return fmt.stamp(self.bars.ts[idx], self.timeframe)
 
 
 @dataclass(frozen=True)
