@@ -1,6 +1,7 @@
 import type { PatternBacktest, PatternDetection } from "../lib/api";
 import { formatDate, formatDateTime, formatNumber, formatPercentPoints, formatShare } from "../lib/format";
 import { STATUS_TEXT } from "../lib/analysis";
+import { AiExplanation } from "./AiExplanation";
 import { SourceTip } from "./SourceTip";
 
 const MIN_SAMPLE_HINT = 30;
@@ -85,6 +86,7 @@ export function PatternPanel({ p, onClose }: { p: PatternDetection; onClose?: ()
       )}
 
       {p.explanation && <p className="mt-3 text-sm" data-testid="pattern-explanation">{p.explanation}</p>}
+      <AiExplanation kind="pattern" id={p.id} />
 
       <section className="mt-4" aria-labelledby={`k-${p.id}`}>
         <h3 id={`k-${p.id}`} className="mb-1 font-semibold">Schlüsselpunkte</h3>

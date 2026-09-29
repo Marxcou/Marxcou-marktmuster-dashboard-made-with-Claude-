@@ -6,6 +6,7 @@ import { alignSeries, priceOnLine, snapTime, toTime } from "./lib/chartData";
 import { indicatorQuery } from "./lib/analysis";
 import type { IndicatorEvent, PatternDetection } from "./lib/api";
 
+vi.mock("./components/AiExplanation", () => ({ AiExplanation: () => <div data-testid="ai-explanation" /> }));
 vi.mock("./components/PriceChart", () => ({
   PriceChart: (p: { patterns: unknown[]; overlays: unknown[]; events: unknown[]; zones: unknown[]; onPatternClick: (id: number) => void }) => (
     <button data-testid="price-chart" onClick={() => p.onPatternClick(42)}>{p.patterns.length} Muster, {p.overlays.length} Linien, {p.events.length} Ereignisse, {p.zones.length} Zonen</button>

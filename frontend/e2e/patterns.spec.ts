@@ -17,6 +17,11 @@ test("Doppelboden wird gelistet und mit allen Pflichtangaben erklärt", async ({
   await expect(panel.getByRole("heading", { name: "Doppelboden" })).toBeVisible();
   await expect(panel.getByTestId("pattern-range")).toContainText(/Lage im Chart: \d{2}\.\d{2}\.\d{4} bis \d{2}\.\d{2}\.\d{4}/);
   await expect(panel.getByTestId("pattern-status")).toContainText("Bestätigt");
+  // Erklärtext in einfachen Worten: ohne Schlüssel bzw. mit Demodaten als Vorlage gekennzeichnet, nie als KI ausgegeben
+  const ai = panel.getByTestId("ai-explanation");
+  await expect(ai.getByTestId("ai-explanation-text")).toContainText("Doppelboden");
+  await expect(ai.getByTestId("ai-explanation-label")).toContainText("Vorlage, ohne KI");
+  await expect(ai.getByTestId("ai-explanation-reason")).toContainText("Kein KI-Text");
   // erfüllte Kriterien mit tatsächlichen Werten
   const rows = panel.getByTestId("criteria-table").locator("tbody tr");
   expect(await rows.count()).toBeGreaterThanOrEqual(3);
