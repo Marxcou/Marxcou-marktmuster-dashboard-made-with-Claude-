@@ -28,6 +28,21 @@ def _digest(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
+def generate_temporary_password() -> str:
+    """Zufälliges Einmalpasswort (16 Zeichen, URL-sicher); wird nur einmal angezeigt und nie gespeichert."""
+    return secrets.token_urlsafe(12)
+
+
+def delete_user_sessions(db: Session, user_id: int, keep_token_hash: str | None = None) -> None:
+    for sess in db.scalars(select(UserSession).where(UserSession.user_id == user_id)):
+        if sess.token_hash != keep_token_hash:
+            db.delete(sess)
+
+
+def session_token_hash(token: str) -> str:
+    return _digest(token)
+
+
 def create_session(db: Session, user: User) -> tuple[str, UserSession]:
     token = secrets.token_urlsafe(32)
     sess = UserSession(
@@ -51,7 +66,9 @@ def load_session(db: Session, token: str) -> tuple[User, UserSession] | None:
         db.commit()
         return None
     user = db.scalar(select(User).where(User.id == sess.user_id))
-    return (user, sess) if user else None
+    if user is None or not user.is_active:
+        return None
+    return user, sess
 
 
 def delete_session(db: Session, token: str) -> None:
