@@ -9,6 +9,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from app.adapters.registry import load_builtin_adapters, news_adapters
 from app.alpaca_stream import start_stream_thread
 from app.db import SessionLocal
+from app.news_retention import retention_job
 from app.news_service import make_job, sentiment_job
 from app.price_service import daily_job, intraday_job, quote_job
 from app.sources_sync import sync_sources
@@ -38,6 +39,8 @@ def build_scheduler() -> BlockingScheduler:
             sched.add_job(make_job(key), "interval", seconds=adapter.poll_seconds, id=f"news-{key}",
                           max_instances=1, next_run_time=datetime.now(UTC) + timedelta(seconds=10))
     sched.add_job(sentiment_job, "interval", seconds=300, id="sentiment", max_instances=1)
+    sched.add_job(retention_job, "interval", seconds=86400, id="news-retention", max_instances=1,
+                  next_run_time=datetime.now(UTC) + timedelta(minutes=5))
     return sched
 
 

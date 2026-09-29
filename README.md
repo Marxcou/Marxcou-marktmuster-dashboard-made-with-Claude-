@@ -21,6 +21,12 @@ Quellen ohne Schlüssel bzw. ohne Freischaltung erscheinen auf der Seite Quellen
 
 **Stimmung:** Immer verfügbar ist ein regelbasiertes Wortlisten-Verfahren (Deutsch/Englisch, ohne Kosten). Mit `ANTHROPIC_API_KEY` bewertet Claude Haiku 4.5 die Meldungen und muss die auslösenden Formulierungen wörtlich zitieren; das Backend prüft jedes Zitat gegen den Text und fällt bei Abweichung auf das Lexikon zurück. `CLAUDE_MONTHLY_BUDGET_USD` (Standard 10) ist eine harte Obergrenze: vor jedem Aufruf wird der Verbrauch des Monats plus der Höchstwert des Aufrufs geprüft. Danach gilt das Lexikon, sichtbar in `/api/news/sentiment-status` und auf der Seite Quellen. Bitte zusätzlich ein Ausgabenlimit in der Anthropic-Konsole setzen.
 
+**Claude per Batch-API (Standard, `CLAUDE_USE_BATCH=true`):** Neue Meldungen erscheinen sofort mit der Lexikon-Stimmung; Claude wird parallel per Batch-API (halber Preis) angefragt und ersetzt sie, sobald das Ergebnis da ist (meist Minuten, spätestens nach 24 Stunden). Die Prüfung der Zitate ist dieselbe wie bei Einzelaufrufen. Für offene Batches wird der Höchstbetrag gegen das Monatslimit vorgemerkt. Nicht belegbare Antworten bleiben beim Lexikon und werden nicht erneut angefragt; abgelaufene Anfragen werden erneut eingereicht. Mit `CLAUDE_USE_BATCH=false` gilt der frühere Einzelaufruf.
+
+**Tageskontingente:** Der Zähler für Marketaux und Alpha Vantage liegt in der Tabelle `api_usage` und übersteht Neustarts (Tageswechsel 00:00 UTC).
+
+**Aufbewahrung:** Ein täglicher Job löscht Cluster, deren letzte Meldung älter als `NEWS_RETENTION_DAYS` (Standard 90, Minimum 14, 0 = aus) ist, samt Meldungen, Zuordnung und Stimmung.
+
 ## Kursdaten (Phase 1B)
 
 | Quelle | Umfang | Schlüssel in `.env` |

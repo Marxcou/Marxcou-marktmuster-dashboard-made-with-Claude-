@@ -8,6 +8,7 @@ import httpx
 from app.adapters.base import AdapterMetadata, NewsAdapter, NewsRecord
 from app.adapters.http import PassiveHealth, ResilientHttp, SourceError
 from app.adapters.news_common import clean_excerpt, clean_title
+from app.api_usage import calls_today, count_call
 from app.config import get_settings
 
 DAILY_LIMIT = 20  # Reserve unter den 25 Anfragen pro Tag
@@ -22,8 +23,6 @@ class AlphaVantageNewsAdapter(PassiveHealth, NewsAdapter):
     def __init__(self, transport: httpx.BaseTransport | None = None, **kw: Any) -> None:
         self._token = get_settings().alphavantage_api_key
         self.http = ResilientHttp(base_url="https://www.alphavantage.co", rate_per_min=5, transport=transport, **kw)
-        self._day = datetime.now(UTC).date()
-        self._calls = 0  # nur im Arbeitsspeicher: ein Neustart setzt den Zähler zurück
         self._cursor = 0
 
     def metadata(self) -> AdapterMetadata:
@@ -41,10 +40,7 @@ class AlphaVantageNewsAdapter(PassiveHealth, NewsAdapter):
 
 
     def _budget_left(self) -> bool:
-        today = datetime.now(UTC).date()
-        if today != self._day:
-            self._day, self._calls = today, 0
-        return self._calls < DAILY_LIMIT
+        return calls_today(self.key) < DAILY_LIMIT
 
     def fetch_news(self, symbols: list[str], since: datetime) -> list[NewsRecord]:
         if not symbols or not self._budget_left():
@@ -52,7 +48,7 @@ class AlphaVantageNewsAdapter(PassiveHealth, NewsAdapter):
         start = self._cursor % len(symbols)
         chunk = (symbols[start:] + symbols[:start])[:CHUNK]
         self._cursor += CHUNK
-        self._calls += 1
+        count_call(self.key)
         resp = self.http.request("GET", "/query", params={
             "function": "NEWS_SENTIMENT", "tickers": ",".join(chunk), "time_from": since.strftime("%Y%m%dT%H%M"),
             "limit": 50, "sort": "LATEST", "apikey": self._token})

@@ -87,6 +87,8 @@ class SentimentStatusOut(BaseModel):
     spent_usd: float
     month: str
     fallback_reason: str | None
+    claude_mode: str = "batch"  # batch (halber Preis, Ergebnis verzögert) | direct
+    pending_batches: int = 0
 
 
 def _source_ref(s: Source) -> SourceRef:
