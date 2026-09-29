@@ -1,0 +1,13 @@
+# Reverse Proxy mit automatischem HTTPS (Let's Encrypt). Die Adresse kommt aus DOMAIN in .env.
+{$DOMAIN} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+	# Websocket (/ws) und API laufen über denselben Weg wie die Seite
+	reverse_proxy web:80
+}
