@@ -74,7 +74,7 @@ Alle Antworten enthalten `source`-Objekte (Grundregel 2). Stimmung und Cluster s
 
 ### `/sources` (Erweiterung, additiv)
 
-Zusätzlich zu den bisherigen Feldern: `item_count_24h` (Anzahl in den letzten 24 h gespeicherter Meldungen, nur bei `kind == "news"`, sonst `null`). Neu in der Liste: die News-Quellen `finnhub_news`, `sec_edgar`, `alphavantage_news`, `marketaux`, `gdelt`, optional `eqs_news` und je ein `rss_<id>` pro RSS-Feed sowie die Stimmungsverfahren `sentiment_lexicon` (`kind: "reference"`) und `claude_sentiment` (`kind: "llm"`). Ohne Schlüssel bzw. ohne Freischaltung steht der Status `disabled` mit `last_error` (Grund).
+Zusätzlich zu den bisherigen Feldern: `item_count_24h` (Anzahl in den letzten 24 h gespeicherter Meldungen, nur bei `kind == "news"`, sonst `null`). Neu in der Liste: die News-Quellen `finnhub_news`, `sec_edgar`, `alphavantage_news`, `marketaux`, `gdelt`, optional `ir_feeds` (Investor-Relations-Feeds, aus solange `IR_FEEDS` leer ist), optional `eqs_news` und je ein `rss_<id>` pro RSS-Feed sowie die Stimmungsverfahren `sentiment_lexicon` (`kind: "reference"`) und `claude_sentiment` (`kind: "llm"`). Ohne Schlüssel bzw. ohne Freischaltung steht der Status `disabled` mit `last_error` (Grund).
 
 ## Phase 3A: Indikatoren, Indikator-Ereignisse, News↔Kurs (Backend)
 

@@ -37,6 +37,7 @@ def load_builtin_adapters() -> None:
     from app.adapters.finnhub import FinnhubAdapter
     from app.adapters.finnhub_news import FinnhubNewsAdapter
     from app.adapters.gdelt import GdeltAdapter
+    from app.adapters.ir_feeds import IrFeedsAdapter
     from app.adapters.marketaux import MarketauxAdapter
     from app.adapters.openfigi import OpenFigiAdapter
     from app.adapters.rss import build_rss_adapters
@@ -47,7 +48,8 @@ def load_builtin_adapters() -> None:
 
     for adapter_cls in (
         AlpacaAdapter, FinnhubAdapter, StooqAdapter, OpenFigiAdapter, FinnhubNewsAdapter, SecEdgarAdapter,
-        AlphaVantageNewsAdapter, MarketauxAdapter, GdeltAdapter, LexiconSentimentSource, ClaudeSentimentSource,
+        AlphaVantageNewsAdapter, MarketauxAdapter, GdeltAdapter, IrFeedsAdapter,
+        LexiconSentimentSource, ClaudeSentimentSource,
     ):
         if adapter_cls.key not in _ADAPTERS:
             register(adapter_cls())

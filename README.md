@@ -15,6 +15,7 @@ Der Worker ruft je Quelle in eigenem Intervall Meldungen zu den Aktien aller Wat
 | Marketaux | `MARKETAUX_API_KEY` | 100 Anfragen/Tag: Aktien werden reihum abgefragt, höchstens 90 Anfragen/Tag |
 | Alpha Vantage News (optional) | `ALPHAVANTAGE_API_KEY` | 25 Anfragen/Tag, höchstens 20 genutzt |
 | GDELT | keiner | verrauscht: Meldungen ohne Firmenname oder Ticker im Titel werden verworfen |
+| Investor-Relations-Feeds | `IR_FEEDS` | **standardmäßig aus**: Adresse und Nutzungsbedingungen je IR-Seite zuerst prüfen |
 | RSS-Feeds, EQS | `RSS_ENABLED_FEEDS`, `EQS_RSS_URL` | **standardmäßig aus**: Adresse und Nutzungsbedingungen zuerst prüfen |
 
 Quellen ohne Schlüssel bzw. ohne Freischaltung erscheinen auf der Seite Quellen als "deaktiviert" mit Grund; ein Ausfall einer Quelle beeinträchtigt die anderen nicht.
