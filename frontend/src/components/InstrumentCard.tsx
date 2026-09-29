@@ -3,7 +3,7 @@ import type { InstrumentWithQuote } from "../lib/api";
 import { formatDateTime, formatPercent, formatPrice } from "../lib/format";
 import { SourceTip } from "./SourceTip";
 
-export function InstrumentCard({ item, onRemove, newsCount, newsReason }: { item: InstrumentWithQuote; onRemove?: () => void; newsCount?: number; newsReason?: string | null }) {
+export function InstrumentCard({ item, onRemove, newsCount, newsReason, patternCount, patternReason }: { item: InstrumentWithQuote; onRemove?: () => void; newsCount?: number; newsReason?: string | null; patternCount?: number; patternReason?: string | null }) {
   const q = item.quote;
   const tone = q?.change_pct == null ? "text-slate-400" : q.change_pct > 0 ? "text-emerald-400" : q.change_pct < 0 ? "text-rose-400" : "text-slate-300";
   return (
@@ -37,7 +37,11 @@ export function InstrumentCard({ item, onRemove, newsCount, newsReason }: { item
         {newsCount != null
           ? <>Nachrichten (letzte 24 Stunden): <Link to={`/nachrichten?instrument=${item.id}`} className="underline">{newsCount}</Link></>
           : `Nachrichten: nicht verfügbar${newsReason ? ` (${newsReason})` : ""}`}
-        {" · Erkannte Muster: noch nicht angebunden (Phase 3)"}
+      </p>
+      <p className="text-xs text-slate-400" data-testid="pattern-count">
+        {patternCount != null
+          ? <>Aktuell erkannte Muster: <Link to={`/instrument/${item.id}`} className="underline">{patternCount}</Link></>
+          : `Erkannte Muster: nicht verfügbar${patternReason ? ` (${patternReason})` : ""}`}
       </p>
     </article>
   );
