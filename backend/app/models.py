@@ -273,3 +273,114 @@ class SentimentBatchItem(Base):
     cluster_id: Mapped[int] = mapped_column(ForeignKey("news_clusters.id"), primary_key=True, index=True)
     # pending | succeeded | rejected (Antwort nicht belegbar) | errored | expired | canceled
     status: Mapped[str] = mapped_column(String(10), default="pending")
+
+
+class PatternDetection(Base):
+    """Erkanntes Chartmuster mit vollständiger Erklärung (Grundregel 3): Kriterien mit tatsächlichen Werten,
+    Konfidenz-Aufschlüsselung, Szenarien mit Niveaus. Die Trefferquote hängt am Backtest (backtest_runs) und wird
+    beim Lesen nachgeschlagen. source_id ist die Quelle der letzten Musterkerze, source_ids alle verwendeten."""
+    __tablename__ = "pattern_detections"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id"), index=True)
+    timeframe: Mapped[str] = mapped_column(String(3))
+    pattern_type: Mapped[str] = mapped_column(String(30))
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    name: Mapped[str] = mapped_column(String(100))
+    direction: Mapped[str] = mapped_column(String(10))  # aufwärts | abwärts | offen
+    start_ts: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    end_ts: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    formed_ts: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(String(12))  # in_bildung | bestaetigt | ungueltig
+    status_reason: Mapped[str] = mapped_column(Text, default="")
+    status_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    invalidated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    breakout_direction: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    key_points: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
+    lines: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
+    criteria: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
+    confidence: Mapped[float] = mapped_column(Float)
+    confidence_breakdown: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
+    confirmation_level: Mapped[float] = mapped_column(Float)
+    invalidation_level: Mapped[float] = mapped_column(Float)
+    scenarios: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
+    explanation: Mapped[str] = mapped_column(Text)
+    params: Mapped[dict[str, Any]] = mapped_column(JSON)
+    params_hash: Mapped[str] = mapped_column(String(16))
+    algo_version: Mapped[str] = mapped_column(String(20))
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
+    source_ids: Mapped[list[int]] = mapped_column(JSON)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    detected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
+    __table_args__ = (
+        UniqueConstraint("instrument_id", "timeframe", "fingerprint"),
+        Index("ix_pattern_detections_lookup", "instrument_id", "timeframe", "end_ts"),
+    )
+
+
+class SupportResistanceZone(Base):
+    """Unterstützungs-/Widerstandszone aus Häufungen von Wendepunkten; wird je Lauf komplett ersetzt."""
+    __tablename__ = "sr_zones"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id"), index=True)
+    timeframe: Mapped[str] = mapped_column(String(3))
+    kind: Mapped[str] = mapped_column(String(15))  # unterstuetzung | widerstand | im_bereich
+    lower: Mapped[float] = mapped_column(Float)
+    upper: Mapped[float] = mapped_column(Float)
+    touches: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
+    first_touch: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    last_touch: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    criteria: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
+    confidence: Mapped[float] = mapped_column(Float)
+    confidence_breakdown: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
+    explanation: Mapped[str] = mapped_column(Text)
+    params_hash: Mapped[str] = mapped_column(String(16))
+    algo_version: Mapped[str] = mapped_column(String(20))
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
+    source_ids: Mapped[list[int]] = mapped_column(JSON)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    computed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class PatternScan(Base):
+    """Letzter Lauf der Mustererkennung je Instrument und Zeitraster: Datengrundlage (Grundregel 2) und
+    Leerstands-Grund (Grundregel 6)."""
+    __tablename__ = "pattern_scans"
+    instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id"), primary_key=True)
+    timeframe: Mapped[str] = mapped_column(String(3), primary_key=True)
+    computed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    bars_from: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    bars_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    recent_from: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    bar_count: Mapped[int] = mapped_column(Integer, default=0)
+    last_fetched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    source_ids: Mapped[list[int]] = mapped_column(JSON, default=list)
+    params_hash: Mapped[str] = mapped_column(String(16))
+    algo_version: Mapped[str] = mapped_column(String(20))
+    empty_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class BacktestRun(Base):
+    """Ergebnis eines Backtests (Workstream 3C schreibt, 3B liest). Für Muster: kind='pattern',
+    subject=pattern_type; es gilt der neueste Lauf mit gleicher timeframe und algo_version."""
+    __tablename__ = "backtest_runs"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    kind: Mapped[str] = mapped_column(String(20))  # pattern | forecast
+    subject: Mapped[str] = mapped_column(String(50))
+    timeframe: Mapped[str] = mapped_column(String(3))
+    algo_version: Mapped[str] = mapped_column(String(20))
+    params: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    universe: Mapped[str] = mapped_column(Text, default="")
+    date_range: Mapped[str] = mapped_column(String(100), default="")
+    sample_size: Mapped[int] = mapped_column(Integer, default=0)
+    hit_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ci_low: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ci_high: Mapped[float | None] = mapped_column(Float, nullable=True)
+    base_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
+    metrics: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    code_version: Mapped[str] = mapped_column(String(40), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    __table_args__ = (Index("ix_backtest_runs_lookup", "kind", "subject", "timeframe", "algo_version", "created_at"),)

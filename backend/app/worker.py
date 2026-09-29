@@ -12,6 +12,7 @@ from app.analysis_service import analysis_job
 from app.db import SessionLocal
 from app.news_retention import retention_job
 from app.news_service import make_job, sentiment_job
+from app.pattern_service import pattern_job
 from app.price_service import daily_job, intraday_job, quote_job
 from app.sources_sync import sync_sources
 
@@ -41,6 +42,8 @@ def build_scheduler() -> BlockingScheduler:
                           max_instances=1, next_run_time=datetime.now(UTC) + timedelta(seconds=10))
     # Phase 3A: Indikator-Ereignisse und Kursbewegungen<->Meldungen (Meldungen kommen auch nachträglich)
     sched.add_job(analysis_job, "interval", seconds=300, id="analysis", max_instances=1)
+    # 3B: Mustererkennung (alle Muster und Zonen, komplette Historie, deterministisch)
+    sched.add_job(pattern_job, "interval", seconds=300, id="patterns", max_instances=1)
     sched.add_job(sentiment_job, "interval", seconds=300, id="sentiment", max_instances=1)
     sched.add_job(retention_job, "interval", seconds=86400, id="news-retention", max_instances=1,
                   next_run_time=datetime.now(UTC) + timedelta(minutes=5))

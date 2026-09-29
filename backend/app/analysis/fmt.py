@@ -1,4 +1,4 @@
-"""Zahlen- und Datumsformat de-DE für die Erklärtexte der Ereignisse (Zeitzone Europe/Berlin)."""
+"""Zahlen- und Datumsformat de-DE für die Erklärtexte (Zeitzone Europe/Berlin)."""
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -11,8 +11,16 @@ def num(x: float, digits: int = 2) -> str:
     return s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
 
 
-def price(x: float, currency: str) -> str:
+def price(x: float, currency: str | None = None) -> str:
+    """Kurs mit Währungszeichen; ohne Währung (Mustererkennung, instrumentenneutral) nur die Zahl,
+    unter 1 mit vier Nachkommastellen."""
+    if currency is None:
+        return num(x, 4 if abs(x) < 1 else 2)
     return f"{num(x)} {CURRENCY.get(currency, currency)}"
+
+
+def pct(x: float, digits: int = 2) -> str:
+    return f"{num(x, digits)} %"
 
 
 def day(ts: datetime) -> str:

@@ -37,6 +37,17 @@ Der Worker wertet für alle Watchlist-Instrumente (Zeitrahmen 1d und 1h, nur abg
 
 Parameter stehen in `backend/app/analysis/events.py` (`PARAMS`) und `moves.py`; Tests mit synthetischen Reihen in `backend/tests/test_indicator_events.py`. Vertrag: `docs/api-contract.md`.
 
+## Mustererkennung (Phase 3B, Backend)
+
+Der Worker sucht alle 5 Minuten für alle Watchlist-Instrumente (1d und 1h, nur abgeschlossene Kerzen, bis 1.500 Kerzen) regelbasiert und deterministisch nach Chartmustern:
+
+- **Muster:** Kopf-Schulter (auch invers), Doppelhoch/Doppelboden, Dreiecke (aufsteigend, absteigend, symmetrisch), Keile (steigend, fallend), Flaggen und Wimpel (nach Anstieg/Rückgang). Grundlage sind Wendepunkte per ZigZag mit ATR-Schwelle (`backend/app/analysis/pivots.py`).
+- **Unterstützungs- und Widerstandszonen** aus Häufungen von Wendepunkten (`backend/app/analysis/zones.py`).
+- **Erklärung je Erkennung:** Lage (Schlüsselpunkte, Linien, Zeitraum), jedes Kriterium mit Regel und tatsächlichem Wert, Konfidenz als gewichteter Mittelwert der Teilwerte mit Aufschlüsselung, Szenarien "Bestätigung"/"Scheitern" mit Kursniveau (keine Kursziele), Status (in Bildung, bestätigt, ungültig) mit Begründung.
+- **Historische Trefferquote:** kommt aus dem Muster-Backtest (3C, Tabelle `backtest_runs`). Bis dahin zeigt die API `"status": "nicht_berechnet"` ohne Zahlen.
+
+Alle Parameter mit Beschreibung stehen in `backend/app/analysis/params.py` und unter `GET /api/patterns/catalog`; jede Erkennung speichert die verwendeten Werte, `params_hash` und `algo_version`. Endpunkte: `GET /api/instruments/{id}/patterns`, `/api/patterns/{id}`, `/api/patterns/counts`. Tests mit synthetischen Kursreihen bekannten Ergebnisses: `backend/tests/test_patterns.py`, `test_pattern_api.py`.
+
 ## Kursdaten (Phase 1B)
 
 | Quelle | Umfang | Schlüssel in `.env` |

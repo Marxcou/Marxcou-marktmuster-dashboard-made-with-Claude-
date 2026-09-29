@@ -83,3 +83,20 @@ Offen/ehrlich:
 - Die Warnschwelle "kleine Stichprobe" (weniger als 30 Fälle) ist eine Annahme der Oberfläche, kein Wert aus dem Backtest.
 - Der Vertrag für den Muster-Backtest (3C) steht noch aus; das Frontend liest die Felder aus 3B (`backtest`).
 - Claude-Stimmung läuft standardmäßig per Batch-API (halber Preis, verzögerte Ergebnisse, bis dahin Lexikon-Stimmung mit sichtbarem Verfahren). Wie in Phase 2 nur gegen simulierte Antworten getestet; das Batch-Antwortformat folgt der Anbieterdokumentation und ist mit echtem Schlüssel noch zu prüfen.
+
+## Phase 3B (Muster-Engine, Backend)
+
+| Regel | Stand | Beleg |
+|---|---|---|
+| 1 Keine Empfehlungssprache | erfüllt | `test_grundregeln.py` läuft über den neuen Code; alle erzeugten Texte (Kriterien, Szenarien, Status, Erklärung) werden je Mustertyp auf verbotene Begriffe geprüft (`test_explanation_duty_for_every_pattern_type`). Richtungen heißen `aufwärts`/`abwärts`/`offen`. Es gibt keine Kursziele und keine Measured-Move-Projektion; Szenarien nennen nur das Bestätigungs- bzw. Ungültigkeitsniveau |
+| 2 Quellentransparenz | erfüllt | `pattern_detections` und `sr_zones` haben NOT NULL `source_id`/`fetched_at` plus `source_ids`; die API liefert `data_basis` (Zeitraum, Kerzenanzahl, letzter Abruf, Quellen) je Antwort und je Erkennung |
+| 3 Erklärpflicht | erfüllt (Backend), Trefferquote folgt mit 3C | Jede Erkennung hat Name, Zeitraum, Schlüsselpunkte, Linien, alle Kriterien mit Regel und tatsächlichem Wert, Konfidenz mit Methode und Aufschlüsselung (Summe = Score), mindestens zwei Szenarien mit Niveaus und einen `backtest`-Block. Test je Mustertyp (13 Typen). Die Trefferquote kommt aus `backtest_runs`; solange 3C nicht gelaufen ist, steht dort ausdrücklich "nicht berechnet" |
+| 4 Unsicherheit | noch nicht anwendbar | Prognosen folgen in Phase 4 |
+| 5 Hinweis auf jeder Seite | unverändert | Frontend-Layout |
+| 6 Keine erfundenen Daten | erfüllt | Keine geschätzte Trefferquote; laufende Kerze wird nicht ausgewertet; Volumen-Kriterien entfallen ohne Volumendaten (Gewichte werden sichtbar neu verteilt); leere Antworten nennen den Grund (`empty_reason`: noch nicht ausgeführt, zu wenige Kerzen, keine Intraday-Daten für XETRA, kein Muster erfüllt die Kriterien) |
+
+Offen/ehrlich:
+- Parameter (z. B. 1,5 % Abweichung der Tiefs, ATR-Faktor 2, Gewichte der Kriterien) sind begründete Festlegungen aus der gängigen Literatur, nicht an Daten optimiert. Ob sie sinnvoll trennen, zeigt erst der Backtest (3C).
+- Getestet mit synthetischen Kursreihen bekannten Ergebnisses und einer zufälligen Reihe (Laufzeit ca. 0,2 s für 1.300 Kerzen), nicht mit echten Kursdaten.
+- Mehrere Deutungen derselben Kursbewegung sind möglich (z. B. Doppelboden und Dreieck über denselben Wendepunkten); beide werden mit eigener Begründung gezeigt. Innerhalb einer Musterfamilie bleibt bei Überlappung nur die Erkennung mit der höchsten Konfidenz.
+- Erkennungen am rechten Rand können sich mit neuen Kerzen ändern (z. B. ein Dreieck bekommt einen weiteren Wendepunkt); sie werden dann neu berechnet und erhalten eine neue ID.
