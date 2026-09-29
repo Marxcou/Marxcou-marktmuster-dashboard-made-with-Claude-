@@ -28,8 +28,8 @@ der Hauptabfragen (Nachrichtenliste, Zähler, Kerzen, Ereignisse) nutzen vorhand
 ## Umgesetzt
 
 - Muster- und Analyse-Job überspringen unveränderte Kerzen.
-- Kurs- und Intraday-Job pausieren außerhalb der US-Handelszeiten (`app/market_hours.py`).
-- `events` wird auf 24 Stunden gekürzt (bei 35 Instrumenten rund 50.000 Zeilen pro Tag).
+- Kurs- und Intraday-Job pausieren je Instrument außerhalb der Handelszeit seiner Börse (`app/market_hours.py`, US in New York, XETRA in Berlin).
+- `events` wird auf 24 Stunden gekürzt (bei 35 Instrumenten rund 50.000 Zeilen pro Tag). Nur `/ws` liest die Tabelle (`app/main.py`); alle angezeigten Werte kommen aus `quotes`, `price_bars`, `news_*`, `pattern_*`, `indicator_events`, `backtest_runs`, `forecasts`.
 - Fehlerisolation je Instrument in Kurs-, Intraday- und Tageskerzen-Job.
 
 ## Bewusst nicht geändert
