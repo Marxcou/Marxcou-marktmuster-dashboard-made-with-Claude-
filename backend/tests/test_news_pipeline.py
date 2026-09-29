@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 import httpx
 import pytest
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from app.adapters import registry
 from app.adapters.base import NewsRecord
@@ -20,12 +20,16 @@ from app.models import (
     NewsInstrument,
     NewsItem,
     Sentiment,
+    SentimentBatch,
+    SentimentBatchItem,
     Source,
     User,
     WatchlistItem,
+    utcnow,
 )
 from app.news_dedup import normalize_url, similar, title_tokens
 from app.news_match import Candidate, Matcher
+from app.news_retention import prune_news, retention_days
 from app.news_service import ingest, run_adapter
 from app.sentiment_claude import ClaudeSentimentSource, verify
 from app.sentiment_lexicon import LexiconSentimentSource
@@ -166,9 +170,10 @@ def test_claude_verify_rejects_invented_quotes_and_forbidden_language():
     assert verify({**GOOD, "label": "neutral", "evidence": []}, "Apple beats estimates", "").label == "neutral"
 
 
-def claude_source(monkeypatch, handler, budget="10"):
+def claude_source(monkeypatch, handler, budget="10", batch=False):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
     monkeypatch.setenv("CLAUDE_MONTHLY_BUDGET_USD", budget)
+    monkeypatch.setenv("CLAUDE_USE_BATCH", "true" if batch else "false")
     get_settings.cache_clear()
     src = ClaudeSentimentSource(transport=httpx.MockTransport(handler), sleep=lambda _s: None)
     registry.register(src)
@@ -346,3 +351,129 @@ def test_api_sources_lists_news_sources_with_counts_and_reasons(client, env):
     assert rows["claude_sentiment"]["kind"] == "llm" and rows["claude_sentiment"]["status"] == "disabled"
     assert rows["claude_sentiment"]["last_error"].startswith("ANTHROPIC_API_KEY")
     assert rows["gdelt"]["terms_url"] and rows["gdelt"]["update_interval"] and rows["gdelt"]["delay_text"]
+
+
+# --- Batch-API ---
+
+def batch_handler(state, payload=None, results_type="succeeded"):
+    """Simuliert /v1/messages/batches: Einreichen, Status, Ergebnisse (JSONL)."""
+    import json as _json
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        path = req.url.path
+        if req.method == "POST" and path == "/v1/messages/batches":
+            state["submitted"] = _json.loads(req.read())["requests"]
+            state["n"] = state.get("n", 0) + 1
+            return httpx.Response(200, json={"id": f"msgbatch_{state['n']}", "processing_status": "in_progress"})
+        if path.startswith("/v1/messages/batches/") and not path.endswith("/results"):
+            return httpx.Response(200, json={"id": path.rsplit("/", 1)[1],
+                                             "processing_status": "ended" if state.get("ended") else "in_progress"})
+        if path.endswith("/results"):
+            lines = []
+            for r in state["submitted"]:
+                if results_type == "succeeded":
+                    res = {"type": "succeeded", "message": {
+                        "content": [{"type": "tool_use", "name": "record_sentiment", "input": payload or GOOD}],
+                        "usage": {"input_tokens": 1000, "output_tokens": 100}}}
+                else:
+                    res = {"type": results_type}
+                lines.append(_json.dumps({"custom_id": r["custom_id"], "result": res}))
+            return httpx.Response(200, text="\n".join(lines))
+        return httpx.Response(404)
+
+    return handler
+
+
+def ingest_apple(env):
+    with SessionLocal() as db:
+        ingest(db, [rec("finnhub_news", "f1", "Apple beats estimates", "https://a.example/1", symbols=["AAPL"])],
+               env["finnhub"])
+
+
+def test_batch_mode_shows_lexicon_first_then_upgrades_when_batch_ends(env, monkeypatch):
+    state = {}
+    claude_source(monkeypatch, batch_handler(state), batch=True)
+    ingest_apple(env)
+    with SessionLocal() as db:
+        sentiment_pass(db)  # Lexikon sofort, Batch eingereicht
+        assert db.scalars(select(Sentiment)).one().method == "lexicon"
+        assert [r["custom_id"] for r in state["submitted"]] == ["c1"]
+        assert sentiment_status(db)["pending_batches"] == 1 and sentiment_status(db)["claude_mode"] == "batch"
+        sentiment_pass(db)  # noch nicht fertig, und nichts wird doppelt eingereicht
+        assert db.scalars(select(Sentiment)).one().method == "lexicon"
+        assert db.scalar(select(func.count()).select_from(SentimentBatch)) == 1
+        state["ended"] = True
+        sentiment_pass(db)
+        s = db.scalars(select(Sentiment)).one()
+        assert (s.method, s.model_version) == ("claude", "claude-haiku-4-5-20251001")
+        usage = db.get(LlmUsage, datetime.now(UTC).strftime("%Y-%m"))
+        assert usage.cost_usd == pytest.approx((1000 * 1e-6 + 100 * 5e-6) * 0.5)  # halber Preis
+        b = db.scalars(select(SentimentBatch)).one()
+        assert (b.status, b.reserved_usd) == ("ended", 0.0)
+        sentiment_pass(db)
+        assert db.scalar(select(func.count()).select_from(SentimentBatch)) == 1  # nichts erneut eingereicht
+
+
+def test_batch_answer_with_invented_quote_is_rejected_and_not_retried(env, monkeypatch):
+    state = {"ended": True}
+    claude_source(monkeypatch, batch_handler(state, {**GOOD, "evidence": ["erfundenes Zitat"]}), batch=True)
+    ingest_apple(env)
+    with SessionLocal() as db:
+        sentiment_pass(db)
+        sentiment_pass(db)
+        assert db.scalars(select(Sentiment)).one().method == "lexicon"
+        assert db.scalars(select(SentimentBatchItem)).one().status == "rejected"
+        sentiment_pass(db)
+        assert db.scalar(select(func.count()).select_from(SentimentBatch)) == 1
+
+
+def test_expired_batch_items_are_submitted_again(env, monkeypatch):
+    state = {"ended": True}
+    claude_source(monkeypatch, batch_handler(state, results_type="expired"), batch=True)
+    ingest_apple(env)
+    with SessionLocal() as db:
+        sentiment_pass(db)
+        sentiment_pass(db)  # Ergebnis: expired, im selben Durchlauf erneut eingereicht
+        assert db.scalar(select(func.count()).select_from(SentimentBatch)) == 2
+
+
+def test_batch_reserves_budget_and_blocks_when_it_does_not_fit(env, monkeypatch):
+    state = {}
+    claude_source(monkeypatch, batch_handler(state), budget="0.0001", batch=True)
+    ingest_apple(env)
+    with SessionLocal() as db:
+        sentiment_pass(db)
+        assert "submitted" not in state and db.scalar(select(func.count()).select_from(SentimentBatch)) == 0
+
+
+# --- Aufbewahrung ---
+
+def test_retention_deletes_old_clusters_completely_and_keeps_recent(env, monkeypatch):
+    monkeypatch.setenv("NEWS_RETENTION_DAYS", "30")
+    get_settings.cache_clear()
+    with SessionLocal() as db:
+        ingest(db, [rec("finnhub_news", "new", "Apple beats estimates", "https://a.example/1", symbols=["AAPL"]),
+                    rec("finnhub_news", "old", "SAP meldet Gewinnwarnung", "https://n.example/sap", symbols=["SAP"])],
+               env["finnhub"])
+        sentiment_pass(db)
+        old = db.scalar(select(NewsItem).where(NewsItem.external_id == "old"))
+        stale = utcnow() - timedelta(days=31)
+        old.published_at = stale
+        cl = db.get(NewsCluster, old.cluster_id)
+        cl.first_published_at = cl.last_published_at = stale
+        db.commit()
+        assert prune_news(db) == {"clusters": 1, "items": 1}
+        assert [i.external_id for i in db.scalars(select(NewsItem))] == ["new"]
+        assert db.scalar(select(func.count()).select_from(NewsCluster)) == 1
+        assert db.scalar(select(func.count()).select_from(Sentiment)) == 1
+        assert db.scalar(select(func.count()).select_from(NewsInstrument)) == 1
+        assert prune_news(db) == {"clusters": 0, "items": 0}
+
+
+def test_retention_off_and_minimum(env, monkeypatch):
+    monkeypatch.setenv("NEWS_RETENTION_DAYS", "0")
+    get_settings.cache_clear()
+    assert retention_days() == 0
+    monkeypatch.setenv("NEWS_RETENTION_DAYS", "3")
+    get_settings.cache_clear()
+    assert retention_days() == 14  # nie unter dem Abruffenster der Quellen
