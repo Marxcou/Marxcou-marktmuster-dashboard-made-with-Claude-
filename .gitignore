@@ -12,3 +12,6 @@ node_modules/
 dist/
 *.egg-info/
 backtest-cache/
+test-results/
+playwright-report/
+.e2e/

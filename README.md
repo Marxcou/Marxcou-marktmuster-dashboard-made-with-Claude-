@@ -163,10 +163,27 @@ cd backend && pip install -e ".[dev]" && pytest && ruff check . && mypy app
 cd frontend && npm ci && npm test && npm run build
 ```
 
+## Tests (Phase 5B)
+
+Vier Ebenen, alle laufen in der CI (`.github/workflows/ci.yml`):
+
+| Ebene | Befehl | Was sie prüft |
+|---|---|---|
+| Backend-Einheiten | `cd backend && pytest` | Adapter, Pipeline, API, Indikatoren, Muster mit synthetischen Reihen bekannten Ergebnisses, Grundregel-Scan der Quelltexte |
+| Muster-Regression | `cd backend && pytest tests/regression` | Feste Kerzen-Fixtures (CSV) laufen durch die Mustererkennung; Muster, Zeitraum, Status, Kriterienwerte, Konfidenz, Szenario-Niveaus und Zonen sind in `tests/regression/golden/patterns.json` festgehalten |
+| Frontend-Einheiten | `cd frontend && npm test` | Komponenten und Seiten gegen einen gemockten API-Vertrag (Vitest) |
+| Ende-zu-Ende | `cd frontend && npm run e2e` | Playwright (Chromium) gegen das gebaute Frontend und ein echtes Backend |
+
+**Muster-Regressionstests.** Ändert sich ein Parameter oder eine Erkennungsregel, schlägt `test_golden_matches_current_engine` fehl und zeigt die Abweichung als Diff. Ist die Änderung gewollt: `cd backend && UPDATE_GOLDEN=1 pytest tests/regression`, den Diff von `golden/patterns.json` im PR prüfen und bei geänderten Regeln `ALGO_VERSION` in `backend/app/analysis/params.py` erhöhen. Die 17 Fixtures (13 Mustertypen, gescheiterter und noch nicht bestätigter Doppelboden, zwei Negativfälle ohne Muster, eine Zufallsreihe mit festem Startwert) sind erfundene Kerzen und stehen als CSV in `tests/regression/fixtures/`; `python -m tests.regression.make_fixtures` erzeugt sie neu (nur bei bewusster Änderung der Fixtures).
+
+**Ende-zu-Ende-Tests.** `npm run e2e` (im Ordner `frontend`, einmalig `npx playwright install chromium`) startet selbst ein Backend mit frischer SQLite-Datenbank unter `frontend/.e2e/` und baut und startet das Frontend (`vite preview`). Das Backend läuft mit `DEMO_MODE=true` und wird über `backend/app/e2e_seed.py` mit **gekennzeichneten Beispieldaten** gefüllt: zwei Instrumente "Demo ... (Beispieldaten)" mit erfundenen Kerzen (DEMOA mit bestätigtem Doppelboden, DEMOB mit Doppelboden in Bildung), zwei Meldungen aus zwei Demo-Quellen und ein fest eingetragener Muster-Backtest. Muster, Indikator-Ereignisse und Prognose entstehen mit denselben Diensten wie im Betrieb. Der Seed verweigert den Lauf ohne `DEMO_MODE=true`. Es gibt keine Schlüssel und keinen Zugriff auf echte Anbieter: das Backend bekommt einen ins Leere zeigenden Proxy, GDELT und OpenFIGI erscheinen deshalb auf der Seite Quellen als "offline". Mit `E2E_PYTHON=<Pfad zu python>` lässt sich der Python-Interpreter des Backends festlegen (Standard: `backend/.venv` oder `python`), mit `npx playwright test e2e/patterns.spec.ts` ein einzelner Test ausführen, mit `--ui` der Playwright-Inspektor öffnen.
+
+Abgedeckt sind: Anmeldung, Abmeldung und Einmalpasswort (`login.spec.ts`, `users.spec.ts`), Suche und Watchlist, Chart mit Zeiträumen und Indikatoren, Muster mit vollständiger Erklärung (Kriterien mit Werten, Konfidenz, Szenarien, Backtest), Prognosekorridor mit Methode und Fehlermaßen, Nachrichten mit Filtern und allen Quellen, Seite Quellen sowie in `grundregeln.spec.ts` auf jeder Seite der Hinweis (Grundregel 5), das Demo-Banner (Regel 6) und die Abwesenheit von Empfehlungsvokabeln (Regel 1; die Wortliste kommt aus `backend/app/grundregeln.py`). Die Anmeldung steht in `frontend/e2e/helpers/auth.ts`; ändert sich der Login, wird nur diese Datei angepasst.
+
 ## Serverbetrieb (Phase 5)
 
 Für den Dauerbetrieb auf einem Server (Tailscale oder öffentliche HTTPS-Adresse mit automatischem Zertifikat), Aktualisieren mit `./deploy/update.sh`, nächtliche Datenbank-Sicherung und Wiederherstellung: siehe [docs/betrieb.md](docs/betrieb.md). Mit `APP_ENV=production` startet die API nur mit eigenen Werten für `SESSION_SECRET` und `ADMIN_PASSWORD`.
 
 ## Aufbau
 
-`backend/` (FastAPI, Worker, Alembic, Adapter), `frontend/` (Vite, React, TypeScript, Tailwind), `docs/api-contract.md` (API-Vertrag), `docs/grundregeln-check.md` (Selbstprüfung je Phase).
+`backend/` (FastAPI, Worker, Alembic, Adapter), `frontend/` (mit `e2e/` für Playwright) (Vite, React, TypeScript, Tailwind), `docs/api-contract.md` (API-Vertrag), `docs/grundregeln-check.md` (Selbstprüfung je Phase).

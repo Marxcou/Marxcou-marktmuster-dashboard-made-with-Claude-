@@ -32,6 +32,13 @@ def redact(text: str) -> str:
     return _PARAM_RE.sub(lambda m: f"{m.group(1)}{m.group(2)}={MASK}", text)
 
 
+def _plain_args(args: object) -> bool:
+    """Nur Tupel aus Text und Zahlen dürfen einzeln bereinigt werden; alles andere (Objekte, Ausnahmen, Mappings)
+    wird erst formatiert, weil erst der Text zeigt, ob ein Geheimwert darin steckt."""
+    plain = (str, int, float, bool, type(None))
+    return isinstance(args, tuple) and len(args) > 0 and all(isinstance(a, plain) for a in args)
+
+
 def install() -> None:
     """Einmal je Prozess aufrufen (API, Worker, Backtest-Job): jeder Log-Eintrag wird beim Erzeugen bereinigt,
     auch Tracebacks. Gilt für alle Logger und Handler, auch für die von uvicorn."""
@@ -46,7 +53,12 @@ def install() -> None:
     def make_record(*args, **kwargs):  # type: ignore[no-untyped-def]
         rec = factory(*args, **kwargs)
         try:
-            rec.msg, rec.args = redact(rec.getMessage()), None
+            if _plain_args(rec.args):
+                # Struktur der Argumente erhalten: uvicorns Zugriffs-Formatierer entpackt record.args selbst
+                rec.msg = redact(str(rec.msg))
+                rec.args = tuple(redact(a) if isinstance(a, str) else a for a in rec.args)  # type: ignore[union-attr]
+            else:
+                rec.msg, rec.args = redact(rec.getMessage()), None
             if rec.exc_info and not rec.exc_text:
                 rec.exc_text = redact(logging.Formatter().formatException(rec.exc_info))
             elif rec.exc_text:

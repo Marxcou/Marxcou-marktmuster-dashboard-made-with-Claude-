@@ -19,7 +19,12 @@ export function SearchBox({ watchedIds }: { watchedIds: Set<number> }) {
   });
   const add = useMutation({
     mutationFn: (id: number) => api("/watchlist", { method: "POST", body: JSON.stringify({ instrument_id: id }) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["watchlist"] }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["watchlist"] });
+      // Zähler des neuen Instruments (Muster, Meldungen) nachladen, sonst zeigt die Karte bis zum nächsten Abruf 0
+      void qc.invalidateQueries({ queryKey: ["pattern-counts"] });
+      void qc.invalidateQueries({ queryKey: ["news-counts"] });
+    },
   });
 
   return (
