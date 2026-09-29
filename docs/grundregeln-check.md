@@ -51,6 +51,22 @@ Offen/ehrlich:
 - Tageskontingente (Marketaux, Alpha Vantage) werden im Arbeitsspeicher gezählt; ein Neustart des Workers setzt den Zähler zurück.
 - Claude-Aufrufe erfolgen einzeln (nicht per Batch-API), Kosten also am oberen Ende der Schätzung im Plan; die Obergrenze gilt trotzdem hart.
 
+## Phase 3A (Indikatoren, Indikator-Ereignisse, News↔Kurs, Backend)
+
+| Regel | Stand | Beleg |
+|---|---|---|
+| 1 Keine Empfehlungssprache | erfüllt | `test_grundregeln.py` scannt den neuen Code; alle erzeugten Titel, Zusammenfassungen und Kriterien werden im Test `test_every_event_carries_explanation_and_neutral_language` auf verbotene Begriffe geprüft; Richtungen heißen `up`/`down` und beschreiben nur die Lage der Werte |
+| 2 Quellentransparenz | erfüllt | Indikator-Antworten, Ereignisse und Bewegungen nennen `sources` (Anbieter, Link, Bedingungen, Verzögerung) und `bars_fetched_at`; Tabellen haben NOT NULL `source_id`/`fetched_at`; verknüpfte Meldungen tragen alle Quellen ihres Clusters |
+| 3 Erklärpflicht | für Indikator-Ereignisse erfüllt, soweit anwendbar | Jedes Ereignis speichert Kriterien mit Regel, Sollwert und tatsächlichem Wert sowie Parameter und Version (Test pro Ereignistyp). Szenarien, Konfidenz-Score und Backtest-Trefferquote gehören zu Chartmustern (3B/3C) und sind für Indikator-Ereignisse nicht vorgesehen; `historical_stats` ist `null` mit ausdrücklicher Begründung statt erfundener Zahlen |
+| 4 Unsicherheit | noch nicht anwendbar | keine Prognosen bis Phase 4 |
+| 5 Hinweis auf jeder Seite | unverändert | Frontend-Layout |
+| 6 Keine erfundenen Daten | erfüllt | Ohne Volumen der Quelle entstehen keine Volumen-Ereignisse; die laufende Kerze wird nie ausgewertet; leere Antworten tragen `empty_reason`; zu kurze Reihen liefern `null`-Werte statt Schätzungen; keine Beispieldaten |
+
+Offen/ehrlich:
+- Die Parameter (SMA 50/200, RSI 14, Pivot-Fenster 5, z-Schwelle 3, Zeitfenster für Meldungen) sind übliche Voreinstellungen, nicht an Daten optimiert. Die Zeitfenster der Meldungs-Zuordnung sind eine Festlegung ohne empirische Prüfung.
+- Die Indikatoren wurden gegen bekannte Referenzwerte (RSI-Beispiel von StockCharts) und analytische Fälle getestet, nicht gegen eine andere Bibliothek auf Echtdaten. Ein Lauf mit echten Kursdaten steht noch aus.
+- Bollinger-Bänder nutzen die Standardabweichung der Grundgesamtheit (ddof=0), wie in der Literatur üblich; andere Charting-Tools weichen ggf. leicht ab.
+- Unterstützungs-/Widerstandszonen aus dem Plan (3A) gehören zur Muster-Engine (3B) und sind hier nicht enthalten.
 ## Phase 3D (Frontend: Indikatoren, Muster, Erklärpanel)
 
 | Regel | Stand | Beleg |

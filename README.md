@@ -27,6 +27,16 @@ Quellen ohne Schlüssel bzw. ohne Freischaltung erscheinen auf der Seite Quellen
 
 **Aufbewahrung:** Ein täglicher Job löscht Cluster, deren letzte Meldung älter als `NEWS_RETENTION_DAYS` (Standard 90, Minimum 14, 0 = aus) ist, samt Meldungen, Zuordnung und Stimmung.
 
+## Indikatoren und Ereignisse (Phase 3A, Backend)
+
+Der Worker wertet für alle Watchlist-Instrumente (Zeitrahmen 1d und 1h, nur abgeschlossene Kerzen) alle 5 Minuten aus:
+
+- **Indikatoren für den Chart** (`GET /api/instruments/{id}/indicators`): SMA, EMA, RSI (Wilder), MACD, Bollinger-Bänder, on the fly aus den gespeicherten Kerzen berechnet. Formeln stehen in der Antwort und in `backend/app/analysis/indicators.py`.
+- **Indikator-Ereignisse** (`/indicator-events`): Golden/Death Cross (SMA 50/200), RSI-Divergenz, Bollinger-Ausbruch, Volumenspitze. Jedes Ereignis nennt Kriterien mit tatsächlichen Werten, Parameter, Algorithmus-Version und die Kursquellen. Eine historische Trefferquote gibt es dafür noch nicht (kommt mit dem Backtest); die Antwort sagt das ausdrücklich.
+- **Auffällige Kursbewegungen und Meldungen** (`/move-links`): Rendite- oder Volumen-Ausreißer (z-Wert ≥ 3 gegenüber den 60 Vorkerzen), zeitlich zugeordnet zu Meldungen desselben Instruments. Rein zeitlich, ohne Aussage über Ursache.
+
+Parameter stehen in `backend/app/analysis/events.py` (`PARAMS`) und `moves.py`; Tests mit synthetischen Reihen in `backend/tests/test_indicator_events.py`. Vertrag: `docs/api-contract.md`.
+
 ## Kursdaten (Phase 1B)
 
 | Quelle | Umfang | Schlüssel in `.env` |
