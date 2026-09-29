@@ -34,7 +34,7 @@ export function Account({ forced = false }: { forced?: boolean }) {
 
   return (
     <form onSubmit={submit} className="mx-auto max-w-sm space-y-3">
-      <h1 className="text-xl font-semibold">Passwort ändern</h1>
+      <h1>Passwort ändern</h1>
       {forced && (
         <p role="status" data-testid="forced-change" className="rounded border border-amber-700/50 bg-amber-950/40 p-2 text-sm text-amber-200">
           Dein Konto hat ein Einmalpasswort. Bitte lege jetzt ein eigenes Passwort fest, danach kannst du das Dashboard nutzen.

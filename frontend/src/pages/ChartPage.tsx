@@ -7,6 +7,8 @@ import { ForecastPanel } from "../components/ForecastPanel";
 import { PatternPanel } from "../components/PatternPanel";
 import { PriceChart, type ChartKind, type NewsMarker, type PriceOverlay } from "../components/PriceChart";
 import { SourceTip } from "../components/SourceTip";
+import { SectionNav } from "../components/SectionNav";
+import { Skeleton } from "../components/Skeleton";
 import { SubChart } from "../components/SubChart";
 import { useLiveEvents } from "../hooks/useLiveEvents";
 import { INDICATOR_TOGGLES, patternTimeframe, useIndicatorEvents, useIndicators, useMoveLinks, usePatterns } from "../lib/analysis";
@@ -94,11 +96,12 @@ export function ChartPage() {
 
   return (
     <section>
-      <Link to="/" className="text-sm text-slate-400 underline">← Watchlist</Link>
+      <Link to="/" className="inline-flex min-h-[40px] items-center text-sm text-slate-400 hover:text-slate-200">← Watchlist</Link>
       {inst.isError && <p role="alert" className="mt-2 text-rose-300">Instrument konnte nicht geladen werden.</p>}
+      {inst.isLoading && <div className="mb-4 space-y-2"><Skeleton className="h-7 w-1/2" /><Skeleton className="h-9 w-40" /></div>}
       {inst.data && (
-        <header className="mt-2 mb-4">
-          <h1 className="text-xl font-semibold">{inst.data.symbol} <span className="font-normal text-slate-400">{inst.data.name} · {inst.data.exchange}</span></h1>
+        <header className="mb-3">
+          <h1>{inst.data.symbol} <span className="font-normal text-slate-400">{inst.data.name} · {inst.data.exchange}</span></h1>
           {q ? (
             <div>
               <p className="text-2xl font-semibold">{formatPrice(q.price, inst.data.currency)}
@@ -112,37 +115,46 @@ export function ChartPage() {
         </header>
       )}
 
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div role="group" aria-label="Zeitraum" className="flex gap-1">
-          {RANGES.map((r) => (
-            <button key={r.label} type="button" aria-pressed={r.label === rangeLabel} onClick={() => setRangeLabel(r.label)}
-              className={`rounded border px-3 py-1 text-sm ${r.label === rangeLabel ? "border-sky-500 bg-sky-900" : "border-slate-700"}`}>{r.label}</button>
-          ))}
-        </div>
-        <div role="group" aria-label="Diagrammtyp" className="ml-auto flex gap-1">
-          {(["candles", "line"] as const).map((k) => (
-            <button key={k} type="button" aria-pressed={k === kind} onClick={() => setKind(k)}
-              className={`rounded border px-3 py-1 text-sm ${k === kind ? "border-sky-500 bg-sky-900" : "border-slate-700"}`}>{k === "candles" ? "Kerzen" : "Linie"}</button>
-          ))}
-        </div>
-      </div>
+      <SectionNav items={[
+        { id: "sec-chart", label: "Chart" },
+        { id: "sec-muster", label: "Muster", count: detections.length },
+        { id: "sec-prognose", label: "Prognose" },
+        { id: "sec-ereignisse", label: "Ereignisse", count: events.data?.events.length },
+        { id: "sec-bewegungen", label: "Bewegungen", count: moves.data?.moves.length },
+        { id: "sec-nachrichten", label: "Nachrichten", count: markers.length },
+      ]} />
 
-      <div role="group" aria-label="Indikatoren" className="mb-3 flex flex-wrap items-center gap-2" data-testid="indicator-toggles">
-        <span className="text-sm text-slate-400">Indikatoren:</span>
-        {INDICATOR_TOGGLES.map((t) => (
-          <label key={t.key} className={`cursor-pointer rounded border px-3 py-1 text-sm ${activeInd.includes(t.key) ? "border-sky-500 bg-sky-900" : "border-slate-700"}`}>
-            <input type="checkbox" className="sr-only" checked={activeInd.includes(t.key)} onChange={() => toggleInd(t.key)} />{t.label}
+      <div id="sec-chart" className="scroll-mt-28">
+      <div className="card mb-3 space-y-3 p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div role="group" aria-label="Zeitraum" className="flex flex-wrap gap-1">
+            {RANGES.map((r) => (
+              <button key={r.label} type="button" aria-pressed={r.label === rangeLabel} onClick={() => setRangeLabel(r.label)}
+                className={`seg ${r.label === rangeLabel ? "seg-on" : ""}`}>{r.label}</button>
+            ))}
+          </div>
+          <div role="group" aria-label="Diagrammtyp" className="ml-auto flex gap-1">
+            {(["candles", "line"] as const).map((k) => (
+              <button key={k} type="button" aria-pressed={k === kind} onClick={() => setKind(k)}
+                className={`seg ${k === kind ? "seg-on" : ""}`}>{k === "candles" ? "Kerzen" : "Linie"}</button>
+            ))}
+          </div>
+        </div>
+        <div role="group" aria-label="Indikatoren" className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1" data-testid="indicator-toggles">
+          <span className="shrink-0 text-sm text-slate-400">Indikatoren:</span>
+          {INDICATOR_TOGGLES.map((t) => (
+            <label key={t.key} className={`seg shrink-0 cursor-pointer ${activeInd.includes(t.key) ? "seg-on" : ""}`}>
+              <input type="checkbox" className="sr-only" checked={activeInd.includes(t.key)} onChange={() => toggleInd(t.key)} />{t.label}
+            </label>
+          ))}
+          <span className="mx-1 h-5 w-px shrink-0 bg-slate-700" aria-hidden="true" />
+          <label className={`seg shrink-0 cursor-pointer ${showForecast ? "seg-on" : ""}`}>
+            <input type="checkbox" className="sr-only" checked={showForecast} onChange={() => setShowForecast((v) => !v)} />Prognosekorridor
           </label>
-        ))}
+        </div>
       </div>
 
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <label className={`cursor-pointer rounded border px-3 py-1 text-sm ${showForecast ? "border-sky-500 bg-sky-900" : "border-slate-700"}`}>
-          <input type="checkbox" className="sr-only" checked={showForecast} onChange={() => setShowForecast((v) => !v)} />Prognosekorridor
-        </label>
-      </div>
-
-      {bars.isLoading && <p className="text-slate-400">Lade Kursdaten …</p>}
+      {bars.isLoading && <div role="status" aria-label="Lade Kursdaten …"><Skeleton className="h-72 w-full sm:h-96" /><p className="mt-2 text-sm text-slate-400">Lade Kursdaten …</p></div>}
       {bars.isError && <p role="alert" className="text-rose-300">Kursdaten konnten nicht geladen werden (Backend nicht erreichbar).</p>}
       {bars.data && shown.length === 0 && bars.data.pending && (
         <div className="rounded border border-slate-700 bg-slate-900 p-4 text-slate-200" data-testid="bars-pending" role="status">
@@ -192,17 +204,11 @@ export function ChartPage() {
         </>
       )}
 
-      {showForecast && (
-        <div className="mt-6" data-testid="chart-forecast">
-          {fcTf == null
-            ? <p className="text-sm text-amber-300" data-testid="no-forecast">Prognosekorridore gibt es nur für Tageskerzen. Für den Zeitraum {range.label} (Kerzen {range.timeframe}) wird keiner berechnet.</p>
-            : <ForecastPanel data={forecast.data} loading={forecast.isLoading} error={forecast.isError} horizon={horizon} onHorizon={setHorizon} currency={inst.data?.currency ?? "EUR"} pattern={selectedDetection} />}
-        </div>
-      )}
+      </div>
 
-      <div className="mt-6" data-testid="chart-patterns">
+      <div id="sec-muster" className="card scroll-mt-28 mt-6" data-testid="chart-patterns">
         <div className="mb-2 flex flex-wrap items-center gap-3">
-          <h2 className="font-semibold">Erkannte Chartmuster</h2>
+          <h2 className="section-title">Erkannte Chartmuster</h2>
           <label className="text-xs text-slate-300"><input type="checkbox" checked={showInvalid} onChange={(e) => setShowInvalid(e.target.checked)} /> auch ungültige Muster zeigen</label>
         </div>
         {patTf == null && <p className="text-sm text-amber-300" data-testid="no-patterns">Die Mustererkennung arbeitet nur mit Tages- und Stundenkerzen. Für den Zeitraum {range.label} (Kerzen {range.timeframe}) werden keine Muster erkannt.</p>}
@@ -215,22 +221,30 @@ export function ChartPage() {
         {detections.length > 0 && !selectedDetection && <p className="mt-2 text-xs text-slate-400">Ein Muster wählen (Liste oder Klick im Chart), um die vollständige Erklärung zu sehen.</p>}
       </div>
 
-      <div className="mt-6" data-testid="chart-events">
-        <h2 className="mb-2 font-semibold">Indikator-Ereignisse</h2>
+      {showForecast && (
+        <div id="sec-prognose" className="scroll-mt-28 mt-6" data-testid="chart-forecast">
+          {fcTf == null
+            ? <p className="text-sm text-amber-300" data-testid="no-forecast">Prognosekorridore gibt es nur für Tageskerzen. Für den Zeitraum {range.label} (Kerzen {range.timeframe}) wird keiner berechnet.</p>
+            : <ForecastPanel data={forecast.data} loading={forecast.isLoading} error={forecast.isError} horizon={horizon} onHorizon={setHorizon} currency={inst.data?.currency ?? "EUR"} pattern={selectedDetection} />}
+        </div>
+      )}
+
+      <div id="sec-ereignisse" className="card scroll-mt-28 mt-6" data-testid="chart-events">
+        <h2 className="section-title mb-2">Indikator-Ereignisse</h2>
         {events.isError && <p role="alert" className="text-rose-300">Ereignisse konnten nicht geladen werden (Backend nicht erreichbar).</p>}
         {events.data?.empty_reason && <p className="text-sm text-amber-300" data-testid="no-events">Keine Ereignisse: {events.data.empty_reason}</p>}
         {events.data && events.data.events.length > 0 && <><p className="mb-2 text-xs text-slate-400">Marker im Chart: GC Golden Cross, DC Death Cross, RSI Divergenz, BB Bollinger-Ausbruch, Vol Volumenspitze. Die Ereignisse beschreiben nur die Lage der Werte.</p><EventList events={events.data.events} /></>}
       </div>
 
-      <div className="mt-6" data-testid="chart-moves">
-        <h2 className="mb-2 font-semibold">Auffällige Kursbewegungen und zeitlich passende Meldungen</h2>
+      <div id="sec-bewegungen" className="card scroll-mt-28 mt-6" data-testid="chart-moves">
+        <h2 className="section-title mb-2">Auffällige Kursbewegungen und zeitlich passende Meldungen</h2>
         {moves.isError && <p role="alert" className="text-rose-300">Kursbewegungen konnten nicht geladen werden (Backend nicht erreichbar).</p>}
         {moves.data?.empty_reason && <p className="text-sm text-amber-300" data-testid="no-moves">Keine Auswertung: {moves.data.empty_reason}</p>}
         {moves.data && moves.data.moves.length > 0 && <MoveList moves={moves.data.moves} note={moves.data.note} onOpenNews={(cid) => setSelected([cid])} />}
       </div>
 
-      <div className="mt-6" data-testid="chart-news">
-        <h2 className="mb-2 font-semibold">Nachrichten-Marker</h2>
+      <div id="sec-nachrichten" className="card scroll-mt-28 mt-6" data-testid="chart-news">
+        <h2 className="section-title mb-2">Nachrichten-Marker</h2>
         {news.isError && <p role="alert" className="text-rose-300">Nachrichten konnten nicht geladen werden (Backend nicht erreichbar).</p>}
         {news.data?.empty_reason && <p className="text-sm text-amber-300" data-testid="no-markers">Keine Nachrichten-Marker: {news.data.empty_reason}</p>}
         {news.data && !news.data.empty_reason && markers.length === 0 && <p className="text-sm text-slate-400">Für den gezeigten Zeitraum liegen keine Meldungen zu diesem Instrument vor.</p>}

@@ -42,7 +42,7 @@ export function News() {
   const sel = "rounded border border-slate-700 bg-slate-900 px-2 py-1 text-sm";
   return (
     <section>
-      <h1 className="mb-4 text-xl font-semibold">Nachrichten</h1>
+      <h1 className="mb-4 ">Nachrichten</h1>
       <form className="mb-4 flex flex-wrap gap-3" aria-label="Filter" onSubmit={(e) => e.preventDefault()}>
         <label className="text-sm">Aktie{" "}
           <select className={sel} value={instrumentId} onChange={(e) => setInstrumentId(e.target.value)}>

@@ -32,7 +32,7 @@ export function Login() {
 
   return (
     <form onSubmit={submit} className="mx-auto max-w-sm space-y-3">
-      <h1 className="text-xl font-semibold">Anmelden</h1>
+      <h1>Anmelden</h1>
       <p className="text-sm text-slate-400">Konten legt ein Administrator an, eine offene Registrierung gibt es nicht.</p>
       <label className="block text-sm">E-Mail
         <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" className="mt-1 w-full rounded border border-slate-700 bg-slate-900 px-3 py-2" />

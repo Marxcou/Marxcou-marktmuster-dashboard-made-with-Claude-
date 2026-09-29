@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CardSkeleton } from "../components/Skeleton";
 import { InstrumentCard } from "../components/InstrumentCard";
 import { SearchBox } from "../components/SearchBox";
 import { useLiveEvents } from "../hooks/useLiveEvents";
@@ -24,12 +25,13 @@ export function Watchlist() {
 
   return (
     <section>
-      <h1 className="mb-4 text-xl font-semibold">Watchlist</h1>
+      <h1 className="mb-1">Watchlist</h1>
+      <p className="mb-4 text-sm text-slate-400">Deine beobachteten Instrumente. Karte antippen für Chart, Muster, Prognose und Nachrichten.</p>
       <SearchBox watchedIds={watched} />
-      {list.isLoading && <p className="text-slate-400">Lade Watchlist …</p>}
+      {list.isLoading && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><CardSkeleton /><CardSkeleton /><CardSkeleton /></div>}
       {list.isError && <p role="alert" className="text-rose-300">Die Watchlist konnte nicht geladen werden (Backend nicht erreichbar).</p>}
       {list.data && list.data.length === 0 && (
-        <p className="text-slate-400" data-testid="empty-watchlist">Die Watchlist ist leer. Suche oben nach einem Instrument und füge es hinzu.</p>
+        <div className="empty-state" data-testid="empty-watchlist"><p className="font-semibold text-slate-100">Die Watchlist ist leer.</p><p className="mt-1 text-sm">Suche oben nach einem Instrument und füge es hinzu.</p></div>
       )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {list.data?.map((i) => <InstrumentCard key={i.id} item={i} onRemove={() => remove.mutate(i.id)}
