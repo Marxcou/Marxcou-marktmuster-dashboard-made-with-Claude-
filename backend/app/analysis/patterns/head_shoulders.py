@@ -19,7 +19,8 @@ from app.analysis.patterns.common import (
     volume_ratio_criterion,
 )
 
-WEIGHTS = {"kopf": 0.25, "schultern": 0.25, "nacken": 0.15, "zeit": 0.15, "vortrend": 0.10, "volumen": 0.10}
+WEIGHTS = {"kopf_ueberhang": 0.25, "schulter_abweichung": 0.25, "nacken_neigung": 0.15, "zeit_symmetrie": 0.15,
+           "vortrend": 0.10, "volumen": 0.10}
 
 
 def find_head_shoulders(ctx: Context) -> list[Detection]:
@@ -54,7 +55,7 @@ def _candidate(ctx: Context, prev_price: float, pts: list[tuple[int, float]], in
         f"{'tieferen' if inverse else 'höheren'} Schulter",
         overhang, p["min_kopf_ueberhang_pct"], p["ideal_kopf_ueberhang_pct"], "%",
         f"Kopf: {fmt.price(ph)} am {ctx.date(ih)}, {fmt.pct(overhang)} {over} der Schulter bei "
-        f"{fmt.price(outer_shoulder)}", WEIGHTS["kopf"]))
+        f"{fmt.price(outer_shoulder)}", WEIGHTS["kopf_ueberhang"]))
 
     sdev = pct_diff(pls, prs)
     crit.append(crit_le(
@@ -62,7 +63,7 @@ def _candidate(ctx: Context, prev_price: float, pts: list[tuple[int, float]], in
         f"Schultern weichen höchstens {fmt.pct(p['max_schulter_abweichung_pct'], 1)} voneinander ab",
         sdev, p["max_schulter_abweichung_pct"], 0.0, "%",
         f"Linke Schulter: {fmt.price(pls)} am {ctx.date(ils)}, rechte Schulter: {fmt.price(prs)} am "
-        f"{ctx.date(irs)}, Abweichung {fmt.pct(sdev)}", WEIGHTS["schultern"]))
+        f"{ctx.date(irs)}, Abweichung {fmt.pct(sdev)}", WEIGHTS["schulter_abweichung"]))
 
     ndev = pct_diff(pn1, pn2)
     crit.append(crit_le(
@@ -70,7 +71,7 @@ def _candidate(ctx: Context, prev_price: float, pts: list[tuple[int, float]], in
         f"Nackenpunkte weichen höchstens {fmt.pct(p['max_nacken_neigung_pct'], 1)} voneinander ab",
         ndev, p["max_nacken_neigung_pct"], 0.0, "%",
         f"Nacken 1: {fmt.price(pn1)} am {ctx.date(in1)}, Nacken 2: {fmt.price(pn2)} am {ctx.date(in2)}, "
-        f"Unterschied {fmt.pct(ndev)}", WEIGHTS["nacken"]))
+        f"Unterschied {fmt.pct(ndev)}", WEIGHTS["nacken_neigung"]))
 
     left, right = ih - ils, irs - ih
     ratio = left / right if right else math.inf
@@ -82,7 +83,7 @@ def _candidate(ctx: Context, prev_price: float, pts: list[tuple[int, float]], in
         f"Dauer linke Schulter bis Kopf / Kopf bis rechte Schulter zwischen {fmt.num(lo, 1)} und {fmt.num(hi, 1)}",
         hi, round(ratio, 4) if math.isfinite(ratio) else None, "Faktor",
         f"{left} Kerzen links, {right} Kerzen rechts, Verhältnis {fmt.num(ratio) if math.isfinite(ratio) else '–'}",
-        True, ok, round(sub, 4), WEIGHTS["zeit"]))
+        True, ok, round(sub, 4), WEIGHTS["zeit_symmetrie"]))
 
     prior = sgn * (pls - prev_price) / prev_price * 100
     crit.append(crit_ge(

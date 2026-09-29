@@ -267,6 +267,9 @@ Erkennung regelbasiert und deterministisch (`backend/app/analysis/`): gleiche Ke
 - **`scenarios[].kind`**: `bestaetigung` \| `scheitern`; beim symmetrischen Dreieck `ausbruch_oben` \| `ausbruch_unten`. Immer mindestens zwei. `trigger_level` ist bei schrägen Linien der Wert der Linie an der letzten Kerze.
 - **`scenarios[].historical`** und **`backtest`**: kommen aus der Tabelle `backtest_runs` (Workstream 3C schreibt sie, `kind = "pattern"`, `subject = pattern_type`, gleiche `timeframe` und `algo_version`; es gilt der neueste Lauf). Mit Lauf: `status = "berechnet"`, `hit_rate`/`base_rate`/`ci_low`/`ci_high` 0..1, `sample_size` Anzahl Fälle, `not_better_than_random = true`, wenn das 95-%-Intervall die Basisrate überdeckt; `verdict_text` z. B. "Historisch nicht besser als Zufall"; `survivorship_note` nennt die Verzerrung durch heutige Indexmitglieder; `historical` = `{share, sample_size, text}` aus `metrics.scenarios[kind]`. Ohne Lauf: wie oben, alles `null`.
 - **`explanation`**: deterministischer deutscher Erklärtext aus den berechneten Werten (kein KI-Text).
+- **Ergänzt bei der Umsetzung (additiv):** `status_reason` (Begründung des Status, z. B. "Keine Bestätigung bis zum Fristende am …"), `breakout_direction` (`aufwärts`/`abwärts` beim symmetrischen Dreieck nach Ausbruch, sonst `null`), `formed_at` (letzte Kerze, deren Daten in die Erkennung eingehen; erst ab hier war das Muster in Echtzeit erkennbar, wichtig für den Backtest ohne Vorgriff), `is_demo`. `status_changed_at` ist bei `in_bildung` gleich `formed_at`. `trigger_level` schräger Linien ist der Linienwert an der Kerze des Statuswechsels bzw. (in Bildung) an der letzten Kerze. Ohne Bestätigung bis zur Frist (Musterbreite, mindestens 10, höchstens 60 Kerzen; bei Flaggen 10 Kerzen) oder beim Erreichen der Dreiecksspitze wird ein Muster `ungueltig`.
+- **Fristen und Niveaus je Muster:** Doppel-Muster und Kopf-Schulter: Bestätigung per Schlusskurs jenseits der Nackenlinie, ungültig jenseits des äußeren Extrempunkts (Doppel) bzw. der rechten Schulter (Kopf-Schulter) plus 1,5 %. Dreiecke/Keile: jeweilige Begrenzungslinie (verlängert). Flaggen/Wimpel: Kanal-Linie in Richtung der Fahnenstange; ungültig jenseits des Extrems der Konsolidierung.
+- **Für 3C (Backtest):** Die Engine ist `app.analysis.engine.detect(bars, timeframe, params)` (reines numpy, ohne DB). `Detection.formed_idx`, `confirmed_idx`, `invalidated_idx` sind Kerzenindizes; Wendepunkte tragen `confirmed_idx`, sodass ein Lauf auf einer abgeschnittenen Reihe dieselben Wendepunkte liefert (Test `test_pivots_are_confirmed_later_and_without_lookahead`).
 
 `SRZone` (Unterstützungs- und Widerstandszonen aus Pivot-Häufungen):
 
@@ -285,6 +288,6 @@ Erkennung regelbasiert und deterministisch (`backend/app/analysis/`): gleiche Ke
 }
 ```
 
-`kind` ist relativ zum letzten Schlusskurs: Zone unterhalb = `unterstuetzung`, oberhalb = `widerstand`, Kurs innerhalb = `im_bereich` ("Kurs innerhalb der Zone").
+Zusätzlich je Zone: `sources` (Kursquellen der verwendeten Kerzen), `fetched_at`, `is_demo`. `kind` ist relativ zum letzten Schlusskurs: Zone unterhalb = `unterstuetzung`, oberhalb = `widerstand`, Kurs innerhalb = `im_bereich` ("Kurs innerhalb der Zone").
 
-`/patterns/catalog` Eintrag: `{pattern_type, name, direction_if_confirmed, description, criteria: [{key, name, rule, required, weight}], params: [{key, value, unit, description}], algo_version}`.
+`/patterns/catalog` liefert `{algo_version, params_hash, confidence_method, items: [...]}`; ein Eintrag: `{pattern_type, name, direction_if_confirmed, description, criteria: [{key, name, rule, required, weight}], params: [{key, value, unit, description}], algo_version}`.

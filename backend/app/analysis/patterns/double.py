@@ -17,7 +17,7 @@ from app.analysis.patterns.common import (
     volume_ratio_criterion,
 )
 
-WEIGHTS = {"abweichung": 0.35, "tiefe": 0.25, "abstand": 0.15, "vortrend": 0.15, "volumen": 0.10}
+WEIGHTS = {"extrem_abweichung": 0.35, "tiefe": 0.25, "abstand": 0.15, "vortrend": 0.15, "volumen": 0.10}
 
 
 def find_double(ctx: Context) -> list[Detection]:
@@ -47,7 +47,7 @@ def _candidate(ctx: Context, prev_price: float, i1: int, p1: float, im: int, pm:
         f"{ext}s weichen höchstens {fmt.pct(p['max_extrem_abweichung_pct'], 1)} voneinander ab",
         dev, p["max_extrem_abweichung_pct"], 0.0, "%",
         f"{ext} 1: {fmt.price(p1)} am {ctx.date(i1)}, {ext} 2: {fmt.price(p2)} am {ctx.date(i2)}, "
-        f"Abweichung {fmt.pct(dev)}", WEIGHTS["abweichung"]))
+        f"Abweichung {fmt.pct(dev)}", WEIGHTS["extrem_abweichung"]))
 
     nearer = max(p1, p2) if bottom else min(p1, p2)
     depth = abs(pm - nearer) / nearer * 100
