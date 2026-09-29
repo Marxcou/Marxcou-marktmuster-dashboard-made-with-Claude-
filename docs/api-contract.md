@@ -383,3 +383,16 @@ Prognosen gibt es nur als Korridor (Grundregel 4): je Schritt die Quantile 2,5/1
 ## Erstberechnung nach dem Hinzufügen zur Watchlist
 
 `POST /watchlist` startet im Hintergrund sofort Kursabruf, Mustererkennung, Indikator-Ereignisse und Prognose für das Instrument (statt auf die periodischen Jobs zu warten). Bis dahin melden `GET /instruments/{id}/bars`, `/patterns` und `/forecast` zusätzlich `pending: true` (mit `empty_reason` im Klartext), wenn das Instrument in den letzten 15 Minuten auf eine Watchlist gesetzt wurde und das Ergebnis noch fehlt. Danach gilt wieder der normale Leerzustand mit Grund. Nicht verfügbare Zeitraster (z. B. XETRA-Intraday im kostenlosen Tarif) sind nie `pending`, sondern nennen ihren Grund.
+
+## Erklärtexte
+
+| Methode/Pfad | Auth | Antwort |
+|---|---|---|
+| GET `/patterns/{id}/explanation` | ja | Erklärtext zur Erkennung. 404, wenn es die Erkennung nicht gibt |
+| GET `/instruments/{id}/forecast/explanation` | ja | Erklärtext zur Prognose (Horizont 20 Handelstage). 404 mit Grund, solange keine Prognose vorliegt |
+
+Antwort (beide): `{text, source: "ki"|"vorlage", label, model_name, model_version, generated_at, cost_usd, fallback_reason, input_hash, budget: {month, spent_usd, budget_usd}}`.
+
+- `source = "ki"`: Text von Claude (`model_name`, `model_version` gesetzt), nach der Prüfung gespeichert; je Datenstand (Hash der Eingabewerte) höchstens einmal erzeugt, `cost_usd` sind die Kosten dieser Erzeugung.
+- `source = "vorlage"`: deterministischer Text aus denselben Werten, `model_*` sind `null`. `fallback_reason` nennt den Grund: "Kein API-Schlüssel gesetzt", "Monatslimit erreicht", "KI-Dienst derzeit nicht erreichbar", "Beispieldaten (Demo-Modus): keine KI-Texte" oder "KI-Text von der Prüfung abgelehnt (…)". Nur der letzte Fall wird gespeichert (der Aufruf war bezahlt); die anderen werden beim nächsten Abruf erneut versucht.
+- Der Text enthält nur Zahlen und Daten aus den Werten der Erkennung bzw. Prognose, keine Empfehlungssprache, keine Links. Die Quelle `claude_explain` (`kind: "llm"`) erscheint auf der Seite Quellen.

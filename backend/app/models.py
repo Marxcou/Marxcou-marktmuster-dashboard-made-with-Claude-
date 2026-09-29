@@ -190,6 +190,25 @@ class LlmUsage(Base):
     cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
 
 
+class AiExplanation(Base):
+    """Erklärtext zu einer Erkennung oder Prognose, einmal je Datenstand (input_hash) erzeugt und zwischengespeichert.
+    method 'claude' = KI-Text (nach Prüfung), 'template' = deterministische Vorlage (fallback_reason nennt den Grund,
+    wenn ein KI-Text versucht und verworfen wurde)."""
+    __tablename__ = "ai_explanations"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    subject_kind: Mapped[str] = mapped_column(String(10))  # pattern | forecast
+    subject_id: Mapped[int] = mapped_column(Integer)
+    input_hash: Mapped[str] = mapped_column(String(64))
+    method: Mapped[str] = mapped_column(String(10))
+    text: Mapped[str] = mapped_column(Text)
+    model_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    model_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
+    fallback_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    __table_args__ = (UniqueConstraint("subject_kind", "subject_id", "input_hash"),)
+
+
 class IndicatorEvent(Base):
     """Indikator-Ereignis mit Erklärung (Kriterien mit tatsächlichen Werten). source_id ist die Quelle der
     Markierungs-Kerze, source_ids alle Quellen der verwendeten Kerzen; fetched_at der späteste Abruf davon."""

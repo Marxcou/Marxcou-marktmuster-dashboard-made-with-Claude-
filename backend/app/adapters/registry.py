@@ -77,13 +77,14 @@ def load_builtin_adapters() -> None:
     from app.adapters.sec_edgar import SecEdgarAdapter
     from app.adapters.stooq import StooqAdapter
     from app.adapters.yahoo import YahooAdapter
+    from app.explain_service import ClaudeExplainSource
     from app.sentiment_claude import ClaudeSentimentSource
     from app.sentiment_lexicon import LexiconSentimentSource
 
     for adapter_cls in (
         AlpacaAdapter, FinnhubAdapter, StooqAdapter, YahooAdapter, OpenFigiAdapter, FinnhubNewsAdapter, SecEdgarAdapter,
         AlphaVantageNewsAdapter, MarketauxAdapter, GdeltAdapter, IrFeedsAdapter,
-        LexiconSentimentSource, ClaudeSentimentSource,
+        LexiconSentimentSource, ClaudeSentimentSource, ClaudeExplainSource,
     ):
         if adapter_cls.key not in _ADAPTERS:
             register(_safe_build(adapter_cls, adapter_cls.key, adapter_cls.__name__))

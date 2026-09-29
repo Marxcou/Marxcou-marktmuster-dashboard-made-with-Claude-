@@ -78,8 +78,9 @@ def _params(title: str, excerpt: str) -> dict[str, Any]:
             "messages": [{"role": "user", "content": _user_text(title, excerpt)}]}
 
 
-def record_usage(db: Session, input_tokens: int, output_tokens: int, factor: float = 1.0) -> float:
-    cost = (input_tokens * PRICE_IN_PER_M / 1e6 + output_tokens * PRICE_OUT_PER_M / 1e6) * factor
+def record_usage(db: Session, input_tokens: int, output_tokens: int, factor: float = 1.0,
+                 price_in: float = PRICE_IN_PER_M, price_out: float = PRICE_OUT_PER_M) -> float:
+    cost = (input_tokens * price_in / 1e6 + output_tokens * price_out / 1e6) * factor
     month = current_month()
     row = db.get(LlmUsage, month)
     if row is None:

@@ -1,6 +1,7 @@
 import type { ForecastBacktest, ForecastResponse, ForecastStep, PatternDetection } from "../lib/api";
 import { BAND_FILL, BANDS, HORIZONS, coverageNote, levelPosition, metricName, metricVsNaive, scenarioLevels, validSteps } from "../lib/forecast";
 import { formatDate, formatDateTime, formatNumber, formatShare } from "../lib/format";
+import { AiExplanation } from "./AiExplanation";
 import { SourceTip } from "./SourceTip";
 
 const money = (v: number, currency: string) => new Intl.NumberFormat("de-DE", { style: "currency", currency }).format(v);
@@ -115,6 +116,7 @@ export function ForecastPanel({ data, loading, error, horizon, onHorizon, curren
 
       {data && steps.length > 0 && (
         <div className="mt-3 space-y-4">
+          <AiExplanation kind="forecast" id={data.instrument_id} />
           <p className="text-xs text-slate-300" data-testid="forecast-basis">
             Berechnet aus Kursdaten bis {data.based_on_until ? formatDateTime(data.based_on_until) : "(Zeitpunkt nicht angegeben)"}{data.generated_at && `, erstellt ${formatDateTime(data.generated_at)}`}. Verfahren {data.method?.name ?? "(nicht angegeben)"}, Version {data.algo_version || "?"}.
           </p>

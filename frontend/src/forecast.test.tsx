@@ -4,6 +4,7 @@ import { ForecastPanel } from "./components/ForecastPanel";
 import type { ForecastResponse, PatternDetection } from "./lib/api";
 import { coverageNote, levelPosition, metricVsNaive, scenarioLevels, validSteps } from "./lib/forecast";
 
+vi.mock("./components/AiExplanation", () => ({ AiExplanation: () => <div data-testid="ai-explanation" /> }));
 vi.mock("./components/PriceChart", () => ({
   PriceChart: (p: { forecast: unknown[]; scenarioLevels: unknown[]; patterns: unknown[]; onPatternClick: (id: number) => void }) => (
     <button data-testid="price-chart" onClick={() => p.onPatternClick(42)}>{p.forecast.length} Prognoseschritte, {p.scenarioLevels.length} Szenario-Niveaus, {p.patterns.length} Muster</button>
