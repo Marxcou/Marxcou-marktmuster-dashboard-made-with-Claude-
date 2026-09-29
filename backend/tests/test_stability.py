@@ -8,7 +8,7 @@ from app import events as event_bus
 from app import price_service as ps
 from app.analysis_service import analyze_instrument
 from app.db import SessionLocal
-from app.market_hours import us_session_active
+from app.market_hours import session_active
 from app.models import Event, Instrument, PatternScan, Source
 from app.pattern_service import scan_instrument
 from tests.test_pattern_api import NOW, seed
@@ -18,21 +18,40 @@ def utc(y, m, d, h, mi=0):
     return datetime(y, m, d, h, mi, tzinfo=UTC)
 
 
-def test_us_session_window_covers_extended_hours_and_weekends_are_closed():
-    assert us_session_active(utc(2026, 9, 29, 14, 0))  # Di 10:00 New York
-    assert us_session_active(utc(2026, 9, 29, 8, 30))  # Pre-Market 04:30
-    assert not us_session_active(utc(2026, 9, 29, 7, 30))  # 03:30
-    assert us_session_active(utc(2026, 9, 30, 0, 20))  # 20:20 = Nachlauf
-    assert not us_session_active(utc(2026, 9, 30, 0, 40))
-    assert not us_session_active(utc(2026, 9, 26, 15, 0))  # Samstag
-    assert us_session_active(utc(2026, 1, 13, 14, 30))  # Winterzeit 09:30
+def test_session_windows_per_exchange_and_time_zone():
+    assert session_active("XNAS", utc(2026, 9, 29, 14, 0))  # Di 10:00 New York
+    assert session_active("XNAS", utc(2026, 9, 29, 8, 30))  # Pre-Market 04:30
+    assert not session_active("XNAS", utc(2026, 9, 29, 7, 30))  # 03:30
+    assert session_active("XNAS", utc(2026, 9, 30, 0, 20))  # 20:20 = Nachlauf
+    assert not session_active("XNAS", utc(2026, 9, 30, 0, 40))
+    assert not session_active("XNAS", utc(2026, 9, 26, 15, 0))  # Samstag
+    assert session_active("XNYS", utc(2026, 1, 13, 14, 30))  # Winterzeit 09:30
+    # XETRA in Berlin-Zeit: 09:00 MESZ = 07:00 UTC, 17:30 MESZ = 15:30 UTC
+    assert session_active("XETR", utc(2026, 9, 29, 7, 0))
+    assert session_active("XETR", utc(2026, 9, 29, 15, 45))
+    assert not session_active("XETR", utc(2026, 9, 29, 5, 30))  # 07:30 MESZ, vor der Vorhandelsphase
+    assert not session_active("XETR", utc(2026, 9, 29, 16, 40))
+    assert session_active("XETR", utc(2026, 1, 13, 8, 0))  # Winter: 09:00 MEZ
+    assert not session_active("XETR", utc(2026, 9, 26, 10, 0))
+    assert session_active("XXXX", utc(2026, 9, 26, 10, 0))  # unbekannte Börse: nie stillschweigend pausieren
 
 
-def test_price_jobs_do_nothing_outside_the_session(monkeypatch):
-    monkeypatch.setattr(ps, "us_session_active", lambda: False)
-    monkeypatch.setattr(ps, "SessionLocal", lambda: (_ for _ in ()).throw(AssertionError("DB geöffnet")))
+def test_price_jobs_do_nothing_outside_the_session(client, monkeypatch):
+    with SessionLocal() as db:
+        src = Source(key="t2", name="T", kind="price")
+        db.add(src)
+        db.flush()
+        db.add(Instrument(symbol="CCC", name="C", exchange="XNAS", currency="USD", source_id=src.id))
+        db.commit()
+    monkeypatch.setattr(ps, "session_active", lambda exchange, now=None: False)
+    monkeypatch.setattr(ps, "SessionLocal", SessionLocal)
+    monkeypatch.setattr(ps, "watched_instruments", lambda db: list(db.scalars(select(Instrument))))
+    calls = []
+    monkeypatch.setattr(ps, "refresh_quote", lambda db, inst: calls.append(inst.symbol))
+    monkeypatch.setattr(ps, "backfill_instrument", lambda *a, **k: calls.append("backfill"))
     ps.quote_job()
     ps.intraday_job()
+    assert calls == []
 
 
 def test_jobs_isolate_failing_instrument(client, monkeypatch):
@@ -43,7 +62,7 @@ def test_jobs_isolate_failing_instrument(client, monkeypatch):
         db.add_all([Instrument(symbol=s, name=s, exchange="XNAS", currency="USD", source_id=src.id)
                     for s in ("AAA", "BBB")])
         db.commit()
-    monkeypatch.setattr(ps, "us_session_active", lambda: True)
+    monkeypatch.setattr(ps, "session_active", lambda exchange, now=None: True)
     monkeypatch.setattr(ps, "SessionLocal", SessionLocal)
     seen = []
     def fake(db, inst):
