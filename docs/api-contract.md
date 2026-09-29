@@ -82,7 +82,7 @@ Erkennung regelbasiert und deterministisch (`backend/app/analysis/`): gleiche Ke
 
 | Methode/Pfad | Auth | Zweck |
 |---|---|---|
-| GET `/instruments/{id}/patterns?timeframe=1d\|1h&include_invalid=false` | ja | `PatternsResponse` (Erkennungen + Unterstützungs-/Widerstandszonen). Standard: nur `in_bildung` und `bestaetigt`; `include_invalid=true` liefert auch `ungueltig` |
+| GET `/instruments/{id}/patterns?timeframe=1d\|1h&include_invalid=false&start` | ja | `PatternsResponse` (Erkennungen + Unterstützungs-/Widerstandszonen). Standard: nur `in_bildung` und `bestaetigt`; `include_invalid=true` liefert auch `ungueltig`. `start` (ISO) filtert auf Erkennungen mit `end_ts >= start` |
 | GET `/patterns/{detection_id}` | ja | Eine `PatternDetection` |
 | GET `/patterns/catalog` | ja | Alle Mustertypen mit Beschreibung, Kriterien, Gewichten und dokumentierten Parametern (für "Wie wird das berechnet?") |
 | GET `/patterns/counts` | ja | `{counts: {"<instrument_id>": n}, empty_reason}`: aktuelle Muster (`in_bildung` oder in den letzten 20 Kerzen bestätigt) je Instrument der Watchlist, Zeitraster `1d` |
@@ -157,7 +157,7 @@ Erkennung regelbasiert und deterministisch (`backend/app/analysis/`): gleiche Ke
   "backtest": {
     "status": "nicht_berechnet", "run_id": null, "hit_rate": null, "sample_size": null, "ci_low": null, "ci_high": null,
     "base_rate": null, "not_better_than_random": null, "horizon_bars": null, "min_move_pct": null,
-    "universe": null, "date_range": null, "computed_at": null,
+    "universe": null, "date_range": null, "computed_at": null, "survivorship_note": null, "verdict_text": null,
     "note": "Die historische Trefferquote für dieses Muster wurde noch nicht berechnet."
   },
   "explanation": "Doppelboden zwischen 20.08.2026 und 17.09.2026: …",
@@ -177,7 +177,7 @@ Erkennung regelbasiert und deterministisch (`backend/app/analysis/`): gleiche Ke
 - **`criteria`**: alle geprüften Kriterien mit tatsächlichem Wert. `required: true` sind Pflichtkriterien (eine Erkennung existiert nur, wenn alle erfüllt sind); `required: false` sind Qualitätskriterien (z. B. Volumenverlauf), die nur den Konfidenz-Score beeinflussen und auch `passed: false` sein können. `threshold`/`actual` sind Zahlen in `unit` (`%`, `Kerzen`, `Preis`, `Faktor`, `Anzahl`), `actual_text` ist fertig formatiert (de-DE).
 - **`confidence.score`** 0..1 (UI zeigt Prozent). `breakdown[].contribution = weight × sub_score`, Summe = `score`. Die Gewichte je Muster stehen auch in `/patterns/catalog`.
 - **`scenarios[].kind`**: `bestaetigung` \| `scheitern`; beim symmetrischen Dreieck `ausbruch_oben` \| `ausbruch_unten`. Immer mindestens zwei. `trigger_level` ist bei schrägen Linien der Wert der Linie an der letzten Kerze.
-- **`scenarios[].historical`** und **`backtest`**: kommen aus der Tabelle `backtest_runs` (Workstream 3C schreibt sie, `kind = "pattern"`, `subject = pattern_type`, gleiche `timeframe` und `algo_version`; es gilt der neueste Lauf). Mit Lauf: `status = "berechnet"`, `hit_rate`/`base_rate`/`ci_low`/`ci_high` 0..1, `sample_size` Anzahl Fälle, `not_better_than_random = true`, wenn das 95-%-Intervall die Basisrate überdeckt; `historical` = `{share, sample_size, text}` aus `metrics.scenarios[kind]`. Ohne Lauf: wie oben, alles `null`.
+- **`scenarios[].historical`** und **`backtest`**: kommen aus der Tabelle `backtest_runs` (Workstream 3C schreibt sie, `kind = "pattern"`, `subject = pattern_type`, gleiche `timeframe` und `algo_version`; es gilt der neueste Lauf). Mit Lauf: `status = "berechnet"`, `hit_rate`/`base_rate`/`ci_low`/`ci_high` 0..1, `sample_size` Anzahl Fälle, `not_better_than_random = true`, wenn das 95-%-Intervall die Basisrate überdeckt; `verdict_text` z. B. "Historisch nicht besser als Zufall"; `survivorship_note` nennt die Verzerrung durch heutige Indexmitglieder; `historical` = `{share, sample_size, text}` aus `metrics.scenarios[kind]`. Ohne Lauf: wie oben, alles `null`.
 - **`explanation`**: deterministischer deutscher Erklärtext aus den berechneten Werten (kein KI-Text).
 
 `SRZone` (Unterstützungs- und Widerstandszonen aus Pivot-Häufungen):
