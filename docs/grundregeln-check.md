@@ -67,4 +67,19 @@ Offen/ehrlich:
 - Die Indikatoren wurden gegen bekannte Referenzwerte (RSI-Beispiel von StockCharts) und analytische Fälle getestet, nicht gegen eine andere Bibliothek auf Echtdaten. Ein Lauf mit echten Kursdaten steht noch aus.
 - Bollinger-Bänder nutzen die Standardabweichung der Grundgesamtheit (ddof=0), wie in der Literatur üblich; andere Charting-Tools weichen ggf. leicht ab.
 - Unterstützungs-/Widerstandszonen aus dem Plan (3A) gehören zur Muster-Engine (3B) und sind hier nicht enthalten.
+## Phase 3D (Frontend: Indikatoren, Muster, Erklärpanel)
+
+| Regel | Stand | Beleg |
+|---|---|---|
+| 1 Keine Empfehlungssprache | erfüllt | `test_grundregeln.py` läuft über den neuen Code. Farben sind rein beschreibend (Muster violett, Ereignisse cyan), keine Ampeln. Bestätigungs- und Ungültigkeitsniveau sind ausdrücklich als "keine Kursziele" beschriftet |
+| 2 Quellentransparenz | erfüllt | Unter dem Chart stehen Kursquellen, Abrufzeit, Verfahrensversion und Formel der eingeblendeten Indikatoren; Muster, Ereignisse und Bewegungen haben je ein aufklappbares Quellenfeld mit `SourceTip` |
+| 3 Erklärpflicht | erfüllt (Anzeige) | `PatternPanel` zeigt Name, Zeitraum, Schlüsselpunkte, Kriterien mit tatsächlichen Werten, Konfidenz mit Berechnung und Aufschlüsselung, mindestens zwei Szenarien mit Niveaus und den Backtest. Fehlt einer dieser Teile, erscheint eine rote Warnung "unvollständig erklärt" (`patterns.test.tsx`) |
+| 4 Unsicherheit | noch nicht anwendbar | Prognosen folgen in Phase 4 |
+| 5 Hinweis auf jeder Seite | unverändert | Layout, Test über alle Routen |
+| 6 Keine erfundenen Daten | erfüllt | Fehlende Endpunkte (404), fehlender Backtest, fehlende Indikatorwerte (Einschwingphase bleibt leer) und nicht unterstützte Zeitraster (Muster nur 1d/1h) werden mit Grund angezeigt; nie Platzhalterwerte |
+
+Offen/ehrlich:
+- Die Oberfläche wurde gegen den Vertrag aus den Branches `phase-3a-indicators` und `phase-3-pattern-engine` gebaut und mit simulierten Antworten geprüft (Vitest und eine Sichtprüfung mit Mock-Daten im Browser), nicht gegen das laufende Backend.
+- Die Warnschwelle "kleine Stichprobe" (weniger als 30 Fälle) ist eine Annahme der Oberfläche, kein Wert aus dem Backtest.
+- Der Vertrag für den Muster-Backtest (3C) steht noch aus; das Frontend liest die Felder aus 3B (`backtest`).
 - Claude-Stimmung läuft standardmäßig per Batch-API (halber Preis, verzögerte Ergebnisse, bis dahin Lexikon-Stimmung mit sichtbarem Verfahren). Wie in Phase 2 nur gegen simulierte Antworten getestet; das Batch-Antwortformat folgt der Anbieterdokumentation und ist mit echtem Schlüssel noch zu prüfen.
