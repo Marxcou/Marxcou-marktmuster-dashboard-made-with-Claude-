@@ -88,6 +88,7 @@ def test_store_bars_is_idempotent_and_updates(db):
 
 
 def test_daily_job_uses_stooq_for_xetra_and_derives_quote(db, monkeypatch):
+    monkeypatch.setattr(ps, "us_session_active", lambda: True)
     days = [NOW - timedelta(days=2), NOW - timedelta(days=1)]
     stooq = Fake("stooq", ("XNAS", "XNYS", "XETR"), bars=[bar("stooq", "1d", d, c, "SAP", "XETR")
                                                        for d, c in zip(days, (100, 110), strict=True)])
@@ -118,6 +119,7 @@ def test_failing_adapter_falls_through_without_invented_data(db, monkeypatch):
 
 
 def test_quote_job_prefers_first_adapter_and_publishes_event(db, monkeypatch):
+    monkeypatch.setattr(ps, "us_session_active", lambda: True)
     q = QuoteRecord(symbol="AAPL", exchange="XNAS", price=101.0, ts_utc=NOW, source_key="alpaca", fetched_at=NOW,
                     change_abs=1.0, change_pct=1.0, delay_seconds=0)
     inst = add_instrument(db, [Fake("alpaca", ("XNAS",), quote=q), Fake("stooq", ("XNAS",))])

@@ -48,11 +48,26 @@ def _source_info(rows: list[tuple[PriceBar, Source]], indices: list[int]) -> tup
     return ids, max(aware(b.fetched_at) for b, _ in used)
 
 
-def analyze_instrument(db: Session, inst: Instrument, timeframe: str, now: datetime | None = None) -> dict[str, int]:
+# Letzter ausgewerteter Stand je (Instrument, Zeitraster): (Kerzenanzahl, letzte Kerze). Nur im Worker-Prozess;
+# nach einem Neustart wird einmal komplett gerechnet (idempotent, siehe unten).
+_last_seen: dict[tuple[int, str], tuple[int, datetime]] = {}
+
+
+def analyze_instrument(db: Session, inst: Instrument, timeframe: str, now: datetime | None = None,
+                       skip_unchanged: bool = False) -> dict[str, int]:
+    """skip_unchanged (Worker-Job): Ereignisse und Bewegungen nur neu berechnen, wenn es neue Kerzen gibt.
+    Die Verknüpfung mit Meldungen läuft immer, weil Meldungen nach der Bewegung eintreffen können."""
     now = now or datetime.now(UTC)
     rows = closed_only(load_bars(db, inst.id, timeframe, limit=BAR_LIMIT), timeframe, now)
     stats = {"events": 0, "moves": 0, "links": 0}
     if len(rows) < 30:
+        return stats
+    state = (len(rows), aware(rows[-1][0].ts_utc))
+    if skip_unchanged and _last_seen.get((inst.id, timeframe)) == state:
+        recent = db.scalars(select(NotableMove).where(
+            NotableMove.instrument_id == inst.id, NotableMove.timeframe == timeframe,
+            NotableMove.algo_version == mv.ALGO_VERSION, NotableMove.move_start >= now - LINK_MAX_AGE)).all()
+        stats["links"] = link_news(db, inst, timeframe, list(recent))
         return stats
     s = build_series(rows, timeframe, inst.currency)
     step = mv.TIMEFRAME_DELTA[timeframe]
@@ -101,6 +116,7 @@ def analyze_instrument(db: Session, inst: Instrument, timeframe: str, now: datet
         stats["moves"] += 1
     db.commit()
     stats["links"] = link_news(db, inst, timeframe, [m for st, m in known.items() if st >= now - LINK_MAX_AGE])
+    _last_seen[(inst.id, timeframe)] = state
     return stats
 
 
@@ -137,7 +153,7 @@ def analysis_job() -> None:
         for inst in watched_instruments(db):
             for tf in TIMEFRAMES:
                 try:
-                    stats = analyze_instrument(db, inst, tf)
+                    stats = analyze_instrument(db, inst, tf, skip_unchanged=True)
                 except Exception:  # noqa: BLE001 - ein Instrument darf die anderen nicht stoppen
                     db.rollback()
                     log.exception("Analyse %s/%s fehlgeschlagen", inst.symbol, tf)
