@@ -70,12 +70,18 @@ def _sources(rows: list[tuple[PriceBar, Source]], start: int, end: int) -> tuple
 
 
 def scan_instrument(db: Session, inst: Instrument, timeframe: str, now: datetime | None = None,
-                    params: Params | None = None) -> dict[str, int]:
+                    params: Params | None = None, skip_unchanged: bool = False) -> dict[str, int]:
+    """skip_unchanged: der Worker-Job rechnet nicht neu, wenn Kerzen (Anzahl, letzte Kerze), Parameter und
+    Algorithmus-Version dem letzten Lauf entsprechen. Die Erkennung ist deterministisch, das Ergebnis wäre gleich."""
     now = now or datetime.now(UTC)
     params = params or default_params()
     phash = params_hash(params)
     rows = closed_only(load_bars(db, inst.id, timeframe, limit=BAR_LIMIT), timeframe, now)
     scan = db.get(PatternScan, (inst.id, timeframe)) or PatternScan(instrument_id=inst.id, timeframe=timeframe)
+    if (skip_unchanged and rows and scan.computed_at is not None and scan.params_hash == phash
+            and scan.algo_version == ALGO_VERSION and scan.bar_count == len(rows)
+            and scan.bars_to is not None and aware(scan.bars_to) == aware(rows[-1][0].ts_utc)):
+        return {"new": 0, "updated": 0, "removed": 0, "zones": 0}
     scan.computed_at, scan.params_hash, scan.algo_version = now, phash, ALGO_VERSION
     scan.bar_count = len(rows)
     stats = {"new": 0, "updated": 0, "removed": 0, "zones": 0}
@@ -197,7 +203,7 @@ def pattern_job() -> None:
         for inst in watched_instruments(db):
             for tf in TIMEFRAMES:
                 try:
-                    stats = scan_instrument(db, inst, tf)
+                    stats = scan_instrument(db, inst, tf, skip_unchanged=True)
                 except Exception:  # noqa: BLE001 - ein Instrument darf die anderen nicht stoppen
                     db.rollback()
                     log.exception("Mustererkennung %s/%s fehlgeschlagen", inst.symbol, tf)

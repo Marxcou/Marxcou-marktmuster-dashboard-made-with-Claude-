@@ -101,6 +101,15 @@ Auf der Chart-Seite (Tageskerzen) lässt sich der **Prognosekorridor** zuschalte
 
 Der Worker holt Daten nur für Aktien, die auf mindestens einer Watchlist stehen. Fehlt ein Schlüssel, zeigt `/api/sources` den Status `disabled`; es werden keine Ersatzdaten erzeugt. XETRA hat im kostenlosen Tarif nur Tagesdaten: 1T/1W zeigen dafür einen ausdrücklichen Hinweis. Kurse aus dem Alpaca-Live-Feed stammen von der IEX-Börse und können vom konsolidierten Kurs abweichen. Ein Ausfall einer Quelle bleibt lokal (Rate-Limit, Retry, Circuit-Breaker je Adapter).
 
+## Stabilität und Tempo (Phase 5A)
+
+Gemessen mit `backend/scripts/bench.py` (40 Instrumente, 35 davon auf Watchlists, 1500 Tageskerzen, je Zeitraster mehrere tausend Kerzen, 20.000 Meldungen; Ergebnisse in `docs/performance.md`):
+
+- Die Worker-Jobs für Muster und Analysen rechnen nur noch neu, wenn es neue abgeschlossene Kerzen gibt (oder sich Parameter/Algorithmus-Version ändern). Ein Lauf ohne neue Kerzen dauert dadurch etwa 2 s statt 12 s (Muster) bzw. 9 s (Analysen). Die Erkennung ist deterministisch, das Ergebnis wäre identisch.
+- `quote_job` und `intraday_job` fragen die US-Quellen nur zwischen 04:00 und 20:30 Uhr New York, Montag bis Freitag, ab. Nachts und am Wochenende entfallen die Anfragen (Rate-Limits der freien Tarife). XETRA-Tagesdaten laufen unverändert stündlich.
+- Die Ereignis-Warteschlange (`events`) wird im täglichen Aufräum-Job auf 24 Stunden gekürzt. Vorher wuchs sie mit jeder Kursaktualisierung unbegrenzt.
+- Ein Fehler bei einem Instrument stoppt in den Kurs-Jobs nicht mehr die übrigen Instrumente (wie schon bei Mustern, Analysen und Prognosen), er landet im Log.
+
 ## Starten (Docker Compose)
 
 Voraussetzung: Docker mit Compose.
