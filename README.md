@@ -121,6 +121,17 @@ Hast du `.env` erst nach dem ersten Start angepasst und kommst nicht hinein, üb
 docker compose run --rm api python -m app.admin_cli
 ``` Weitere Nutzer legt ein Admin an (`POST /api/users`); es gibt keine offene Registrierung.
 
+### Benutzerverwaltung (Admin)
+
+Als Administrator erscheint im Menü **Benutzer**. Dort kannst du Konten anlegen (E-Mail, Anzeigename, Rolle), sperren und wieder entsperren und Passwörter zurücksetzen. Ablauf für einen Freund:
+
+1. **Konto anlegen**: das Dashboard zeigt ein Einmalpasswort genau einmal an. Es wird nicht gespeichert und nicht per E-Mail verschickt (es gibt keinen Mailversand), gib es selbst weiter.
+2. Beim ersten Login muss der Freund ein eigenes Passwort festlegen (mindestens 10 Zeichen); bis dahin ist nur diese Seite erreichbar. Jeder Nutzer kann sein Passwort später unter seinem Namen oben rechts ändern; dabei werden seine anderen Sitzungen beendet.
+3. **Sperren** beendet sofort alle Sitzungen des Kontos, Anmeldung und Live-Verbindung sind danach nicht mehr möglich. **Passwort zurücksetzen** erzeugt ein neues Einmalpasswort und beendet ebenfalls alle Sitzungen.
+4. Der letzte aktive Admin und das eigene Konto lassen sich nicht sperren oder herabstufen.
+
+API-Schlüssel stehen nur in der `.env` des Servers. Kein Endpunkt und keine Seite liefert sie an einen Browser (auch nicht an Admins); ein Test prüft das für alle GET-Routen. Manche kostenlose Datentarife erlauben nur private Nutzung, bitte vor dem Teilen die Nutzungsbedingungen prüfen (Seite "Quellen"). Das Claude-Budget gilt für alle Nutzer zusammen. Aktualisieren: `docker compose up --build` (die Migration `0007` läuft beim Start).
+
 ### Windows: Zeilenenden
 
 Die Datei `.gitattributes` erzwingt LF für Skripte und Konfigurationsdateien, die in den Linux-Containern laufen. Zusätzlich entfernt `backend/Dockerfile` beim Bauen eventuelle CRLF aus `entrypoint.sh`. Trat vorher `exec ./entrypoint.sh: no such file or directory` auf, in einem bestehenden Klon nach dem Pull einmal ausführen:

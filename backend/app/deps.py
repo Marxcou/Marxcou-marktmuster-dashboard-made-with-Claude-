@@ -11,7 +11,7 @@ SESSION_COOKIE = "session"
 DB = Annotated[Session, Depends(get_db)]
 
 
-def current_user(
+def current_user_allow_pw_change(
     request: Request, db: DB, session: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
     x_csrf_token: Annotated[str | None, Header()] = None,
 ) -> User:
@@ -26,6 +26,14 @@ def current_user(
     return user
 
 
+def current_user(user: Annotated[User, Depends(current_user_allow_pw_change)]) -> User:
+    """Wie oben, aber ein Konto mit Einmalpasswort darf nur sein Passwort ändern (und sich abmelden)."""
+    if user.must_change_password:
+        raise HTTPException(403, "Bitte zuerst das Passwort ändern",
+                            headers={"X-Error-Code": "password_change_required"})
+    return user
+
+
 def admin_user(user: Annotated[User, Depends(current_user)]) -> User:
     if user.role != "admin":
         raise HTTPException(403, "Nur für Administratoren")
@@ -33,4 +41,5 @@ def admin_user(user: Annotated[User, Depends(current_user)]) -> User:
 
 
 CurrentUser = Annotated[User, Depends(current_user)]
+CurrentUserAllowPwChange = Annotated[User, Depends(current_user_allow_pw_change)]
 AdminUser = Annotated[User, Depends(admin_user)]

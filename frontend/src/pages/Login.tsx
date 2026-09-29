@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Navigate } from "react-router-dom";
+import { ApiError } from "../lib/api";
 import { useAuth } from "../lib/auth";
 
 export function Login() {
@@ -19,7 +20,8 @@ export function Login() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
       setError(
-        msg === "unauthorized" ? "E-Mail oder Passwort falsch."
+        err instanceof ApiError && err.status === 403 && err.detail ? err.detail
+          : msg === "unauthorized" ? "E-Mail oder Passwort falsch."
           : msg.startsWith("HTTP ") ? `Anmeldung nicht möglich: Server-Antwort ${msg}.`
           : "Anmeldung nicht möglich. Ist das Backend erreichbar?",
       );

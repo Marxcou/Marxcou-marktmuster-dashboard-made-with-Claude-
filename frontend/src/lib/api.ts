@@ -13,7 +13,8 @@ export interface Bar {
   fetched_at: string; is_demo: boolean; source: SourceRef;
 }
 export interface BarsResponse { instrument: Instrument; timeframe: string; bars: Bar[]; empty_reason: string | null; pending?: boolean }
-export interface User { id: number; email: string; display_name: string; role: string }
+export interface User { id: number; email: string; display_name: string; role: string; must_change_password?: boolean }
+export interface AdminUser extends User { is_active: boolean; must_change_password: boolean; created_at: string }
 export interface Me { user: User; csrf_token: string }
 export interface Meta { demo_mode: boolean; timezone: string; disclaimer: string }
 export interface Source {
@@ -132,11 +133,20 @@ export interface ForecastResponse {
 let csrfToken = "";
 export const setCsrfToken = (t: string) => { csrfToken = t; };
 
+// Fehler mit Serverklartext (detail), z. B. "Das aktuelle Passwort ist falsch"; message bleibt wie bisher.
+export class ApiError extends Error {
+  constructor(message: string, public status: number, public detail: string) { super(message); }
+}
+
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   if (init.body) headers.set("Content-Type", "application/json");
   if (init.method && init.method !== "GET") headers.set("X-CSRF-Token", csrfToken);
   const res = await fetch(`/api${path}`, { ...init, headers, credentials: "same-origin" });
-  if (!res.ok) throw new Error(res.status === 401 ? "unauthorized" : `HTTP ${res.status}`);
+  if (!res.ok) {
+    let detail = "";
+    try { const body = await res.json(); if (typeof body?.detail === "string") detail = body.detail; } catch { /* kein JSON */ }
+    throw new ApiError(res.status === 401 ? "unauthorized" : `HTTP ${res.status}`, res.status, detail);
+  }
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
 }
