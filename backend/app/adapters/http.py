@@ -6,6 +6,7 @@ import time
 from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 
@@ -18,6 +19,20 @@ def is_header_safe(value: str) -> bool:
     """True, wenn der Wert unverändert in einen HTTP-Header darf: druckbares ASCII, keine Zeilenumbrüche.
     Sonst bricht schon der Aufbau des HTTP-Clients ab (z. B. UnicodeEncodeError bei einem Umlaut)."""
     return value.isascii() and value.isprintable()
+
+
+_HOST_RE = re.compile(r"^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$")
+
+
+def is_valid_https_url(value: str) -> bool:
+    """https-Adresse mit ASCII-Hostnamen (keine Platzhalter wie "...", keine Kommentare, keine Leerzeichen)."""
+    if not value.isascii() or any(c.isspace() for c in value):
+        return False
+    try:
+        u = urlparse(value)
+        return u.scheme == "https" and bool(u.hostname) and bool(_HOST_RE.match(u.hostname or ""))
+    except ValueError:
+        return False
 
 
 def is_valid_contact_email(value: str) -> bool:

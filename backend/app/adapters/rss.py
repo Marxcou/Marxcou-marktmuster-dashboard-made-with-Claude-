@@ -5,6 +5,7 @@ Feeds sind standardmäßig ausgeschaltet: Adresse und Nutzungsbedingungen jedes 
 geprüft werden (Plan: 'nicht gescrapt, wenn die Bedingungen es verbieten'). Freischalten per .env:
 RSS_ENABLED_FEEDS=tagesschau,cnbc (oder 'all'); EQS über EQS_RSS_URL. Die Adressen unten sind Vorschläge und
 wurden in dieser Umgebung nicht abgerufen; ein falscher Link zeigt sich als Status 'offline' auf der Seite Quellen."""
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
@@ -14,9 +15,11 @@ import httpx
 from defusedxml import ElementTree as ET
 
 from app.adapters.base import AdapterMetadata, NewsAdapter, NewsRecord
-from app.adapters.http import ProbedHealth, ResilientHttp, SourceError
+from app.adapters.http import ProbedHealth, ResilientHttp, SourceError, is_valid_https_url
 from app.adapters.news_common import clean_excerpt, clean_title
 from app.config import get_settings
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -103,6 +106,12 @@ class RssFeedAdapter(ProbedHealth, NewsAdapter):
         self.disabled_reason = (
             "EQS_RSS_URL nicht gesetzt (Feed-Adresse und Nutzungsbedingungen zuerst prüfen)" if feed.id == "eqs"
             else f"Nicht freigeschaltet (Nutzungsbedingungen prüfen, dann RSS_ENABLED_FEEDS={feed.id} setzen)")
+        if self._enabled and not is_valid_https_url(self._url):
+            log.warning("%s: Feed-Adresse ist keine gültige https-Adresse; Quelle bleibt deaktiviert",
+                        "EQS_RSS_URL" if feed.id == "eqs" else f"Feed {feed.id}")
+            self._enabled = False
+            self.disabled_reason = ("EQS_RSS_URL ungültig (erwartet: https://adresse); Quelle deaktiviert"
+                                    if feed.id == "eqs" else f"Feed-Adresse von {feed.id} ungültig; Quelle deaktiviert")
         self.http = ResilientHttp(base_url="", headers={"User-Agent": "Marktmuster-Dashboard (Informationstool)"},
                                   rate_per_min=6, transport=transport, **kw)
 
