@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from app.api.instruments import InstrumentOut, InstrumentWithQuote, latest_quote
 from app.deps import DB, CurrentUser
 from app.models import Instrument, WatchlistItem
-from app.price_service import backfill_new_instrument
+from app.onboarding import process_new_instrument
 
 router = APIRouter(prefix="/api/watchlist", tags=["watchlist"])
 
@@ -36,7 +36,7 @@ def add(body: WatchlistAdd, bg: BackgroundTasks, db: DB, user: CurrentUser) -> d
                         .where(WatchlistItem.user_id == user.id)) or 0
         db.add(WatchlistItem(user_id=user.id, instrument_id=body.instrument_id, position=pos))
         db.commit()
-        bg.add_task(backfill_new_instrument, body.instrument_id)  # Chart soll nicht bis zum nächsten Job leer sein
+        bg.add_task(process_new_instrument, body.instrument_id)  # sofort Kurse, Muster, Prognose
     return {"instrument_id": body.instrument_id}
 
 

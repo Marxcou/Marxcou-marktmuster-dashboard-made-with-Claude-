@@ -12,6 +12,7 @@ from app.adapters.registry import price_adapters
 from app.bars import load_bars
 from app.deps import DB, CurrentUser
 from app.models import Instrument, Quote, Source
+from app.onboarding import is_pending
 from app.price_service import NO_INTRADAY_REASON, has_intraday, upsert_instrument
 
 log = logging.getLogger("instruments")
@@ -67,6 +68,8 @@ class BarsOut(BaseModel):
     bars: list[BarOut]
     # Explizite Leerstands-Aussage statt Ersatzdaten (Grundregel 6):
     empty_reason: str | None = None
+    # Kurse werden gerade erstmals abgerufen (Instrument wurde eben auf eine Watchlist gesetzt):
+    pending: bool = False
 
 
 class InstrumentWithQuote(InstrumentOut):
@@ -142,5 +145,8 @@ def get_bars(
         reason = NO_INTRADAY_REASON
     else:
         reason = "Keine Kursdaten für diesen Zeitraum gespeichert (noch keine Quelle hat sie geliefert)."
+    pending = bool(reason) and reason != NO_INTRADAY_REASON and is_pending(db, instrument_id)
+    if pending:
+        reason = "Kursdaten werden gerade abgerufen. Die Ansicht aktualisiert sich automatisch."
     return BarsOut(instrument=InstrumentOut.model_validate(inst, from_attributes=True),
-                   timeframe=timeframe, bars=bars, empty_reason=reason)
+                   timeframe=timeframe, bars=bars, empty_reason=reason, pending=pending)

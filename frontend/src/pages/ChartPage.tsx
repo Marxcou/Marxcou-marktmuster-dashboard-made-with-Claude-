@@ -13,7 +13,7 @@ import { INDICATOR_TOGGLES, patternTimeframe, useIndicatorEvents, useIndicators,
 import { forecastTimeframe, scenarioLevels, useForecast, validSteps } from "../lib/forecast";
 import { alignSeries, toTime } from "../lib/chartData";
 import { ChartGroup } from "../lib/chartSync";
-import { api, type BarsResponse, type InstrumentWithQuote } from "../lib/api";
+import { api, PENDING_POLL_MS, type BarsResponse, type InstrumentWithQuote } from "../lib/api";
 import { formatDateTime, formatPercent, formatPrice } from "../lib/format";
 import { useInstrumentNews } from "../lib/news";
 import { RANGES, rangeStart, windowBars } from "../lib/timeframes";
@@ -30,7 +30,7 @@ export function ChartPage() {
   const bars = useQuery({
     queryKey: ["bars", id, range.label],
     queryFn: () => api<BarsResponse>(`/instruments/${id}/bars?timeframe=${range.timeframe}&start=${encodeURIComponent(rangeStart(range))}`),
-    refetchInterval: intraday ? 15_000 : 60_000,
+    refetchInterval: (q) => (q.state.data?.pending ? PENDING_POLL_MS : intraday ? 15_000 : 60_000),
   });
   useLiveEvents((e) => {
     if (e.type === "detection" && String(e.payload.instrument_id) === id) {
@@ -144,7 +144,13 @@ export function ChartPage() {
 
       {bars.isLoading && <p className="text-slate-400">Lade Kursdaten …</p>}
       {bars.isError && <p role="alert" className="text-rose-300">Kursdaten konnten nicht geladen werden (Backend nicht erreichbar).</p>}
-      {bars.data && shown.length === 0 && (
+      {bars.data && shown.length === 0 && bars.data.pending && (
+        <div className="rounded border border-slate-700 bg-slate-900 p-4 text-slate-200" data-testid="bars-pending" role="status">
+          <p className="font-semibold">Kursdaten werden abgerufen …</p>
+          <p className="text-sm text-slate-400">{bars.data.empty_reason}</p>
+        </div>
+      )}
+      {bars.data && shown.length === 0 && !bars.data.pending && (
         <div className="rounded border border-amber-700/50 bg-amber-950/30 p-4 text-amber-200" data-testid="no-bars">
           <p className="font-semibold">Keine Kursdaten für diesen Zeitraum.</p>
           <p className="text-sm">{bars.data.empty_reason ?? "Die Quelle hat für diesen Zeitraum keine Daten geliefert."}</p>
@@ -201,7 +207,8 @@ export function ChartPage() {
         </div>
         {patTf == null && <p className="text-sm text-amber-300" data-testid="no-patterns">Die Mustererkennung arbeitet nur mit Tages- und Stundenkerzen. Für den Zeitraum {range.label} (Kerzen {range.timeframe}) werden keine Muster erkannt.</p>}
         {patterns.isError && <p role="alert" className="text-rose-300">Muster konnten nicht geladen werden (Backend nicht erreichbar).</p>}
-        {patterns.data?.empty_reason && <p className="text-sm text-amber-300" data-testid="no-patterns">Keine Muster: {patterns.data.empty_reason}</p>}
+        {patterns.data?.pending && <p className="text-sm text-slate-300" role="status" data-testid="patterns-pending">Muster werden berechnet: {patterns.data.empty_reason}</p>}
+        {patterns.data?.empty_reason && !patterns.data.pending && <p className="text-sm text-amber-300" data-testid="no-patterns">Keine Muster: {patterns.data.empty_reason}</p>}
         {detections.length > 0 && <PatternList items={detections} selectedId={selectedPattern} onSelect={setSelectedPattern} />}
         {patterns.data && <ZoneList zones={patterns.data.zones} />}
         {selectedDetection && <div className="mt-4"><PatternPanel p={selectedDetection} onClose={() => setSelectedPattern(null)} /></div>}
