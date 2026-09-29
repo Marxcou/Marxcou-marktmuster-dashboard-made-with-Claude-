@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 import httpx
 
 from app.adapters.base import Health
+from app.log_redaction import redact
 
 _EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$")
 
@@ -79,7 +80,7 @@ class ResilientHttp:
             self._sleep(wait)
 
     def _fail(self, message: str) -> None:
-        self.last_error = message
+        self.last_error = redact(message)
         self._failures += 1
         if self._failures >= self._threshold:
             self._open_until = self._clock() + self._cooldown

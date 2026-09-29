@@ -134,7 +134,7 @@ docker compose up --build -d
 
 Falls Dateien im Arbeitsverzeichnis weiterhin CRLF haben: `git rm --cached -r . && git reset --hard` (verwirft lokale, nicht committete Änderungen).
 
-`.env` wird nie committet. Schlüssel gehören ausschließlich dorthin.
+`.env` wird nie committet. Schlüssel gehören ausschließlich dorthin. Schlüssel erscheinen weder in Logs noch in Statustexten der Quellen-Seite: Logeinträge werden zentral bereinigt (`backend/app/log_redaction.py`), das HTTP-Client-Logging von httpx steht auf WARNING, und wo der Anbieter es unterstützt, geht der Schlüssel im Header statt in der URL. Wer die Logs vor der Umstellung geteilt hat oder Logs aus einer älteren Version aufbewahrt, sollte die betroffenen Schlüssel beim Anbieter erneuern.
 
 ## Entwicklung ohne Docker
 

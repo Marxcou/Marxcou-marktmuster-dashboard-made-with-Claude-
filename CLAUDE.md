@@ -11,7 +11,7 @@ Web-Dashboard: Live-Nachrichten, Live-Charts, regelbasierte Mustererkennung mit 
 5. Auf jeder Seite gut sichtbar: "Dieses Dashboard stellt keine Anlageberatung dar. Alle Analysen sind automatisiert, können fehlerhaft sein und dienen ausschließlich der Information."
 6. Keine erfundenen Daten. Fehlende Daten klar anzeigen. Beispieldaten nur im ausdrücklich gekennzeichneten Demo-Modus.
 
-Arbeitsweise: Am Ende jeder Phase selbst prüfen, ob alle Grundregeln eingehalten sind (Ergebnis in `docs/grundregeln-check.md`). API-Schlüssel nur über `.env`, nie im Code.
+Arbeitsweise: Am Ende jeder Phase selbst prüfen, ob alle Grundregeln eingehalten sind (Ergebnis in `docs/grundregeln-check.md`). API-Schlüssel nur über `.env`, nie im Code und nie in Logs oder gespeicherten Statustexten (siehe unten).
 
 ## Wie die Regeln im Code durchgesetzt werden
 
@@ -21,6 +21,12 @@ Arbeitsweise: Am Ende jeder Phase selbst prüfen, ob alle Grundregeln eingehalte
 - Regel 4: Die Prognose-API liefert ausschließlich Quantilbänder (ab Phase 4).
 - Regel 5: Der Hinweis ist Teil des App-Layouts (`frontend/src/components/Layout.tsx`), Test prüft jede Route.
 - Regel 6: `DEMO_MODE` in `.env`; Demodaten tragen `is_demo=true`, Banner "DEMO-MODUS". Leere Zustände nennen Grund und letzten erfolgreichen Abruf (`empty_reason`).
+
+## Schlüssel in Logs (Regel für jeden neuen Adapter)
+
+- Schlüssel wenn möglich als HTTP-Header senden (z. B. Finnhub `X-Finnhub-Token`), nicht als URL-Parameter.
+- `backend/app/log_redaction.py` bereinigt jeden Log-Eintrag (auch Tracebacks) von konfigurierten Geheimwerten und URL-Parametern wie `token`, `apikey`, `api_token`, `key`; httpx/httpcore-Logging steht auf WARNING. Jeder Prozess-Einstieg ruft `install()` auf.
+- Statustexte, die in der DB landen oder auf der Quellen-Seite erscheinen, laufen durch `redact()`. Test: `backend/tests/test_log_redaction.py`.
 
 ## Struktur
 

@@ -22,6 +22,7 @@ from app.analysis.catalog import PATTERN_NAMES
 from app.backtest_service import run_pattern_backtest
 from app.backtest_universe import UNIVERSE_LABEL, default_universe, read_universe_file
 from app.db import SessionLocal
+from app.log_redaction import install as install_log_redaction
 
 log = logging.getLogger("backtest")
 
@@ -76,6 +77,7 @@ def _line(s: PatternSummary) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
+    install_log_redaction()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
     a = parse_args(argv)
     cfg = BacktestConfig(horizon_bars=a.horizon, min_move_pct=a.min_move, window_bars=a.window, step_bars=a.step)
