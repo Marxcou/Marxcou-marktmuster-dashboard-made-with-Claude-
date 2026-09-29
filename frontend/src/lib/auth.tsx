@@ -36,7 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     await api<void>("/auth/logout", { method: "POST" });
     setCsrfToken("");
-    qc.clear();
+    // Nicht qc.clear(): das entfernt auch die Abfrage "me", an der die Oberfläche hängt, und die Abmeldung bliebe ohne Wirkung
+    qc.removeQueries({ predicate: (q) => q.queryKey[0] !== "me" });
     qc.setQueryData(["me"], null);
   };
 

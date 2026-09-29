@@ -9,3 +9,7 @@ docker-compose.yml text eol=lf
 *.mako text eol=lf
 *.py text eol=lf
 .dockerignore text eol=lf
+*.csv text eol=lf
+*.json text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf

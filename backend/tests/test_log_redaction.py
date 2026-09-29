@@ -76,3 +76,16 @@ def test_stored_error_text_is_clean():
     with pytest.raises(SourceError):
         a.http.request("GET", "/v1/news/all", params={"api_token": SECRETS["MARKETAUX_API_KEY"]})
     assert_clean(a.http.last_error or "")
+
+
+def test_uvicorn_access_log_keeps_its_argument_tuple():
+    """uvicorns Zugriffs-Formatierer entpackt record.args (Client, Methode, Pfad, Version, Status). Die Bereinigung darf
+    die Tupelstruktur nicht zerstören, sonst scheitert jede Zugriffszeile mit einem Formatierungsfehler."""
+    from uvicorn.logging import AccessFormatter
+
+    rec = logging.getLogger("uvicorn.access").makeRecord(
+        "uvicorn.access", logging.INFO, __file__, 1, '%s - "%s %s HTTP/%s" %d',
+        ("127.0.0.1:5000", "GET", f"/api/x?token=whatever123456&k={SECRETS['STOOQ_API_KEY']}", "1.1", 200), None)
+    line = AccessFormatter('%(client_addr)s - "%(request_line)s" %(status_code)s', use_colors=False).format(rec)
+    assert_clean(line)
+    assert "whatever123456" not in line and "GET /api/x" in line and "200" in line

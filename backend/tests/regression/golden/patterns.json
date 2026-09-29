@@ -1,0 +1,6041 @@
+{
+ "algo_version": "1.0.0",
+ "fixtures": {
+  "doppelboden": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 100.1593,
+     "ende": 60,
+     "gebildet": 62,
+     "konfidenz": 0.7768,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.2268,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 0.9073,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 0.9073,
+       "wert": 0.2163
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 67.3057
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 0,
+       "kurs": 120.24,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 30,
+       "kurs": 99.8,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 110.22,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 60,
+       "kurs": 100.0994,
+       "rolle": "beruehrung_unten_2"
+      }
+     ],
+     "start": 0,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 100.1593
+      },
+      {
+       "art": "scheitern",
+       "niveau": 105.544
+      }
+     ],
+     "typ": "dreieck_absteigend",
+     "ungueltig_bei": 66,
+     "ungueltigkeitsniveau": 105.544
+    },
+    {
+     "bestaetigt_bei": 72,
+     "bestaetigungsniveau": 110.22,
+     "ende": 60,
+     "gebildet": 62,
+     "konfidenz": 0.88,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.28,
+       "key": "extrem_abweichung",
+       "name": "Abweichung der beiden Tiefs",
+       "sub_score": 0.8,
+       "weight": 0.35
+      },
+      {
+       "contribution": 0.25,
+       "key": "tiefe",
+       "name": "Abstand Zwischenhoch",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "abstand",
+       "name": "Abstand der beiden Tiefs",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.15,
+       "key": "vortrend",
+       "name": "Vorheriger Rückgang",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen am zweiten Tief",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.35,
+       "key": "extrem_abweichung",
+       "teilwert": 0.8,
+       "wert": 0.3
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "tiefe",
+       "teilwert": 1.0,
+       "wert": 10.1106
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "abstand",
+       "teilwert": 1.0,
+       "wert": 30.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "vortrend",
+       "teilwert": 1.0,
+       "wert": 16.9993
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 30,
+       "kurs": 99.8,
+       "rolle": "tief_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 110.22,
+       "rolle": "zwischenhoch"
+      },
+      {
+       "idx": 60,
+       "kurs": 100.0994,
+       "rolle": "tief_2"
+      }
+     ],
+     "start": 30,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 110.22
+      },
+      {
+       "art": "scheitern",
+       "niveau": 98.303
+      }
+     ],
+     "typ": "doppelboden",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 98.303
+    }
+   ],
+   "kerzen": 101,
+   "zonen": []
+  },
+  "doppelboden_gescheitert": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": 75,
+     "bestaetigungsniveau": 100.2491,
+     "ende": 60,
+     "gebildet": 65,
+     "konfidenz": 0.7768,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.2268,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 0.9073,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 0.9073,
+       "wert": 0.2163
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 67.3057
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 0,
+       "kurs": 120.24,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 30,
+       "kurs": 99.8,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 110.22,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 60,
+       "kurs": 100.0994,
+       "rolle": "beruehrung_unten_2"
+      }
+     ],
+     "start": 0,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 100.2491
+      },
+      {
+       "art": "scheitern",
+       "niveau": 103.54
+      }
+     ],
+     "typ": "dreieck_absteigend",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 103.54
+    },
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 110.22,
+     "ende": 60,
+     "gebildet": 65,
+     "konfidenz": 0.88,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.28,
+       "key": "extrem_abweichung",
+       "name": "Abweichung der beiden Tiefs",
+       "sub_score": 0.8,
+       "weight": 0.35
+      },
+      {
+       "contribution": 0.25,
+       "key": "tiefe",
+       "name": "Abstand Zwischenhoch",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "abstand",
+       "name": "Abstand der beiden Tiefs",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.15,
+       "key": "vortrend",
+       "name": "Vorheriger Rückgang",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen am zweiten Tief",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.35,
+       "key": "extrem_abweichung",
+       "teilwert": 0.8,
+       "wert": 0.3
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "tiefe",
+       "teilwert": 1.0,
+       "wert": 10.1106
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "abstand",
+       "teilwert": 1.0,
+       "wert": 30.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "vortrend",
+       "teilwert": 1.0,
+       "wert": 16.9993
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 30,
+       "kurs": 99.8,
+       "rolle": "tief_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 110.22,
+       "rolle": "zwischenhoch"
+      },
+      {
+       "idx": 60,
+       "kurs": 100.0994,
+       "rolle": "tief_2"
+      }
+     ],
+     "start": 30,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 110.22
+      },
+      {
+       "art": "scheitern",
+       "niveau": 98.303
+      }
+     ],
+     "typ": "doppelboden",
+     "ungueltig_bei": 77,
+     "ungueltigkeitsniveau": 98.303
+    }
+   ],
+   "kerzen": 101,
+   "zonen": []
+  },
+  "doppelboden_in_bildung": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 100.1892,
+     "ende": 60,
+     "gebildet": 64,
+     "konfidenz": 0.7768,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.2268,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 0.9073,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 0.9073,
+       "wert": 0.2163
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 67.3057
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 0,
+       "kurs": 120.24,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 30,
+       "kurs": 99.8,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 110.22,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 60,
+       "kurs": 100.0994,
+       "rolle": "beruehrung_unten_2"
+      }
+     ],
+     "start": 0,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 100.1892
+      },
+      {
+       "art": "scheitern",
+       "niveau": 104.876
+      }
+     ],
+     "typ": "dreieck_absteigend",
+     "ungueltig_bei": 69,
+     "ungueltigkeitsniveau": 104.876
+    },
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 110.22,
+     "ende": 60,
+     "gebildet": 64,
+     "konfidenz": 0.88,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.28,
+       "key": "extrem_abweichung",
+       "name": "Abweichung der beiden Tiefs",
+       "sub_score": 0.8,
+       "weight": 0.35
+      },
+      {
+       "contribution": 0.25,
+       "key": "tiefe",
+       "name": "Abstand Zwischenhoch",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "abstand",
+       "name": "Abstand der beiden Tiefs",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.15,
+       "key": "vortrend",
+       "name": "Vorheriger Rückgang",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen am zweiten Tief",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.35,
+       "key": "extrem_abweichung",
+       "teilwert": 0.8,
+       "wert": 0.3
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "tiefe",
+       "teilwert": 1.0,
+       "wert": 10.1106
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "abstand",
+       "teilwert": 1.0,
+       "wert": 30.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "vortrend",
+       "teilwert": 1.0,
+       "wert": 16.9993
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 30,
+       "kurs": 99.8,
+       "rolle": "tief_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 110.22,
+       "rolle": "zwischenhoch"
+      },
+      {
+       "idx": 60,
+       "kurs": 100.0994,
+       "rolle": "tief_2"
+      }
+     ],
+     "start": 30,
+     "status": "in_bildung",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 110.22
+      },
+      {
+       "art": "scheitern",
+       "niveau": 98.303
+      }
+     ],
+     "typ": "doppelboden",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 98.303
+    }
+   ],
+   "kerzen": 71,
+   "zonen": []
+  },
+  "doppelhoch": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 99.8393,
+     "ende": 60,
+     "gebildet": 62,
+     "konfidenz": 0.7729,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.2229,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 0.8916,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 0.8916,
+       "wert": 0.2508
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 67.3159
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 0,
+       "kurs": 79.84,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 30,
+       "kurs": 100.2,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 89.82,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 60,
+       "kurs": 99.8994,
+       "rolle": "beruehrung_oben_2"
+      }
+     ],
+     "start": 0,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 99.8393
+      },
+      {
+       "art": "scheitern",
+       "niveau": 94.4773
+      }
+     ],
+     "typ": "dreieck_aufsteigend",
+     "ungueltig_bei": 66,
+     "ungueltigkeitsniveau": 94.4773
+    },
+    {
+     "bestaetigt_bei": 72,
+     "bestaetigungsniveau": 89.82,
+     "ende": 60,
+     "gebildet": 62,
+     "konfidenz": 0.8798,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.2798,
+       "key": "extrem_abweichung",
+       "name": "Abweichung der beiden Hochs",
+       "sub_score": 0.7994,
+       "weight": 0.35
+      },
+      {
+       "contribution": 0.25,
+       "key": "tiefe",
+       "name": "Abstand Zwischentief",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "abstand",
+       "name": "Abstand der beiden Hochs",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.15,
+       "key": "vortrend",
+       "name": "Vorheriger Anstieg",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen am zweiten Hoch",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.35,
+       "key": "extrem_abweichung",
+       "teilwert": 0.7994,
+       "wert": 0.3009
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "tiefe",
+       "teilwert": 1.0,
+       "wert": 10.0896
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "abstand",
+       "teilwert": 1.0,
+       "wert": 30.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "vortrend",
+       "teilwert": 1.0,
+       "wert": 25.501
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 30,
+       "kurs": 100.2,
+       "rolle": "hoch_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 89.82,
+       "rolle": "zwischentief"
+      },
+      {
+       "idx": 60,
+       "kurs": 99.8994,
+       "rolle": "hoch_2"
+      }
+     ],
+     "start": 30,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 89.82
+      },
+      {
+       "art": "scheitern",
+       "niveau": 101.703
+      }
+     ],
+     "typ": "doppelhoch",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 101.703
+    }
+   ],
+   "kerzen": 101,
+   "zonen": []
+  },
+  "dreieck_absteigend": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": 52,
+     "bestaetigungsniveau": 100.7511,
+     "ende": 45,
+     "gebildet": 48,
+     "konfidenz": 0.8,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 1.0,
+       "wert": 0.66
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 73.0901
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "offen",
+     "schluesselpunkte": [
+      {
+       "idx": 0,
+       "kurs": 79.84,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 25,
+       "kurs": 110.22,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 35,
+       "kurs": 89.82,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 45,
+       "kurs": 103.206,
+       "rolle": "beruehrung_oben_2"
+      }
+     ],
+     "start": 0,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "ausbruch_oben",
+       "niveau": 100.7511
+      },
+      {
+       "art": "ausbruch_unten",
+       "niveau": 94.6674
+      }
+     ],
+     "typ": "dreieck_symmetrisch",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 94.6674
+    },
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 103.206,
+     "ende": 55,
+     "gebildet": 60,
+     "konfidenz": 0.95,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.35,
+       "key": "extrem_abweichung",
+       "name": "Abweichung der beiden Tiefs",
+       "sub_score": 1.0,
+       "weight": 0.35
+      },
+      {
+       "contribution": 0.25,
+       "key": "tiefe",
+       "name": "Abstand Zwischenhoch",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "abstand",
+       "name": "Abstand der beiden Tiefs",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.15,
+       "key": "vortrend",
+       "name": "Vorheriger Rückgang",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen am zweiten Tief",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.35,
+       "key": "extrem_abweichung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "tiefe",
+       "teilwert": 1.0,
+       "wert": 14.9031
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "abstand",
+       "teilwert": 1.0,
+       "wert": 20.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "vortrend",
+       "teilwert": 1.0,
+       "wert": 18.5084
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 35,
+       "kurs": 89.82,
+       "rolle": "tief_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 103.206,
+       "rolle": "zwischenhoch"
+      },
+      {
+       "idx": 55,
+       "kurs": 89.82,
+       "rolle": "tief_2"
+      }
+     ],
+     "start": 35,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 103.206
+      },
+      {
+       "art": "scheitern",
+       "niveau": 88.4727
+      }
+     ],
+     "typ": "doppelboden",
+     "ungueltig_bei": 75,
+     "ungueltigkeitsniveau": 88.4727
+    },
+    {
+     "bestaetigt_bei": 83,
+     "bestaetigungsniveau": 89.82,
+     "ende": 80,
+     "gebildet": 82,
+     "konfidenz": 0.924,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.174,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 0.87,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.15,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 1.0,
+       "wert": 0.3036
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 79.8602
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 0.87,
+       "wert": 0.195
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 1.0,
+       "wert": 3.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 35,
+       "kurs": 89.82,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 103.206,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 55,
+       "kurs": 89.82,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 65,
+       "kurs": 97.194,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 75,
+       "kurs": 89.82,
+       "rolle": "beruehrung_unten_3"
+      },
+      {
+       "idx": 80,
+       "kurs": 93.186,
+       "rolle": "beruehrung_oben_3"
+      }
+     ],
+     "start": 35,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 89.82
+      },
+      {
+       "art": "scheitern",
+       "niveau": 92.2165
+      }
+     ],
+     "typ": "dreieck_absteigend",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 92.2165
+    },
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 97.194,
+     "ende": 75,
+     "gebildet": 79,
+     "konfidenz": 0.9196,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.35,
+       "key": "extrem_abweichung",
+       "name": "Abweichung der beiden Tiefs",
+       "sub_score": 1.0,
+       "weight": 0.35
+      },
+      {
+       "contribution": 0.25,
+       "key": "tiefe",
+       "name": "Abstand Zwischenhoch",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "abstand",
+       "name": "Abstand der beiden Tiefs",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1196,
+       "key": "vortrend",
+       "name": "Vorheriger Rückgang",
+       "sub_score": 0.797,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen am zweiten Tief",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.35,
+       "key": "extrem_abweichung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "tiefe",
+       "teilwert": 1.0,
+       "wert": 8.2098
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "abstand",
+       "teilwert": 1.0,
+       "wert": 20.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "vortrend",
+       "teilwert": 0.797,
+       "wert": 12.9702
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 55,
+       "kurs": 89.82,
+       "rolle": "tief_1"
+      },
+      {
+       "idx": 65,
+       "kurs": 97.194,
+       "rolle": "zwischenhoch"
+      },
+      {
+       "idx": 75,
+       "kurs": 89.82,
+       "rolle": "tief_2"
+      }
+     ],
+     "start": 55,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 97.194
+      },
+      {
+       "art": "scheitern",
+       "niveau": 88.4727
+      }
+     ],
+     "typ": "doppelboden",
+     "ungueltig_bei": 85,
+     "ungueltigkeitsniveau": 88.4727
+    }
+   ],
+   "kerzen": 101,
+   "zonen": [
+    {
+     "art": "widerstand",
+     "beruehrungen": 3,
+     "konfidenz": 0.4585,
+     "oben": 89.82,
+     "unten": 89.82
+    }
+   ]
+  },
+  "dreieck_aufsteigend": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": 52,
+     "bestaetigungsniveau": 105.3531,
+     "ende": 45,
+     "gebildet": 48,
+     "konfidenz": 0.8,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 1.0,
+       "wert": 0.6131
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 73.0512
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "offen",
+     "schluesselpunkte": [
+      {
+       "idx": 0,
+       "kurs": 120.24,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 25,
+       "kurs": 89.82,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 35,
+       "kurs": 110.22,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 45,
+       "kurs": 96.806,
+       "rolle": "beruehrung_unten_2"
+      }
+     ],
+     "start": 0,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "ausbruch_oben",
+       "niveau": 105.3531
+      },
+      {
+       "art": "ausbruch_unten",
+       "niveau": 99.2511
+      }
+     ],
+     "typ": "dreieck_symmetrisch",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 99.2511
+    },
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 96.806,
+     "ende": 55,
+     "gebildet": 60,
+     "konfidenz": 0.95,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.35,
+       "key": "extrem_abweichung",
+       "name": "Abweichung der beiden Hochs",
+       "sub_score": 1.0,
+       "weight": 0.35
+      },
+      {
+       "contribution": 0.25,
+       "key": "tiefe",
+       "name": "Abstand Zwischentief",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "abstand",
+       "name": "Abstand der beiden Hochs",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.15,
+       "key": "vortrend",
+       "name": "Vorheriger Anstieg",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen am zweiten Hoch",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.35,
+       "key": "extrem_abweichung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "tiefe",
+       "teilwert": 1.0,
+       "wert": 12.1702
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "abstand",
+       "teilwert": 1.0,
+       "wert": 20.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "vortrend",
+       "teilwert": 1.0,
+       "wert": 22.7121
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 35,
+       "kurs": 110.22,
+       "rolle": "hoch_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 96.806,
+       "rolle": "zwischentief"
+      },
+      {
+       "idx": 55,
+       "kurs": 110.22,
+       "rolle": "hoch_2"
+      }
+     ],
+     "start": 35,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 96.806
+      },
+      {
+       "art": "scheitern",
+       "niveau": 111.8733
+      }
+     ],
+     "typ": "doppelhoch",
+     "ungueltig_bei": 75,
+     "ungueltigkeitsniveau": 111.8733
+    },
+    {
+     "bestaetigt_bei": 83,
+     "bestaetigungsniveau": 110.22,
+     "ende": 80,
+     "gebildet": 82,
+     "konfidenz": 0.9255,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.1755,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 0.8775,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.15,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 1.0,
+       "wert": 0.2711
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 79.4586
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 0.8775,
+       "wert": 0.1837
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 1.0,
+       "wert": 3.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 35,
+       "kurs": 110.22,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 96.806,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 55,
+       "kurs": 110.22,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 65,
+       "kurs": 102.794,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 75,
+       "kurs": 110.22,
+       "rolle": "beruehrung_oben_3"
+      },
+      {
+       "idx": 80,
+       "kurs": 106.786,
+       "rolle": "beruehrung_unten_3"
+      }
+     ],
+     "start": 35,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 110.22
+      },
+      {
+       "art": "scheitern",
+       "niveau": 107.7516
+      }
+     ],
+     "typ": "dreieck_aufsteigend",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 107.7516
+    },
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 102.794,
+     "ende": 75,
+     "gebildet": 79,
+     "konfidenz": 0.8697,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.35,
+       "key": "extrem_abweichung",
+       "name": "Abweichung der beiden Hochs",
+       "sub_score": 1.0,
+       "weight": 0.35
+      },
+      {
+       "contribution": 0.1869,
+       "key": "tiefe",
+       "name": "Abstand Zwischentief",
+       "sub_score": 0.7475,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "abstand",
+       "name": "Abstand der beiden Hochs",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1329,
+       "key": "vortrend",
+       "name": "Vorheriger Anstieg",
+       "sub_score": 0.8857,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen am zweiten Hoch",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.35,
+       "key": "extrem_abweichung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "tiefe",
+       "teilwert": 0.7475,
+       "wert": 6.7374
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "abstand",
+       "teilwert": 1.0,
+       "wert": 20.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "vortrend",
+       "teilwert": 0.8857,
+       "wert": 13.8566
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 55,
+       "kurs": 110.22,
+       "rolle": "hoch_1"
+      },
+      {
+       "idx": 65,
+       "kurs": 102.794,
+       "rolle": "zwischentief"
+      },
+      {
+       "idx": 75,
+       "kurs": 110.22,
+       "rolle": "hoch_2"
+      }
+     ],
+     "start": 55,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 102.794
+      },
+      {
+       "art": "scheitern",
+       "niveau": 111.8733
+      }
+     ],
+     "typ": "doppelhoch",
+     "ungueltig_bei": 85,
+     "ungueltigkeitsniveau": 111.8733
+    }
+   ],
+   "kerzen": 101,
+   "zonen": [
+    {
+     "art": "unterstuetzung",
+     "beruehrungen": 3,
+     "konfidenz": 0.4585,
+     "oben": 110.22,
+     "unten": 110.22
+    }
+   ]
+  },
+  "dreieck_symmetrisch": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": 51,
+     "bestaetigungsniveau": 105.0096,
+     "ende": 45,
+     "gebildet": 49,
+     "konfidenz": 0.8,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 1.0,
+       "wert": 0.821
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 76.4401
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "offen",
+     "schluesselpunkte": [
+      {
+       "idx": 0,
+       "kurs": 69.86,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 25,
+       "kurs": 110.22,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 35,
+       "kurs": 89.82,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 45,
+       "kurs": 106.212,
+       "rolle": "beruehrung_oben_2"
+      }
+     ],
+     "start": 0,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "ausbruch_oben",
+       "niveau": 105.0096
+      },
+      {
+       "art": "ausbruch_unten",
+       "niveau": 98.9446
+      }
+     ],
+     "typ": "dreieck_symmetrisch",
+     "ungueltig_bei": 87,
+     "ungueltigkeitsniveau": 98.9446
+    },
+    {
+     "bestaetigt_bei": 79,
+     "bestaetigungsniveau": 99.3984,
+     "ende": 75,
+     "gebildet": 79,
+     "konfidenz": 0.9027,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.1527,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 0.7636,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.15,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 1.0,
+       "wert": 0.3781
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 85.3155
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 0.7636,
+       "wert": 0.3546
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 1.0,
+       "wert": 3.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "offen",
+     "schluesselpunkte": [
+      {
+       "idx": 25,
+       "kurs": 110.22,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 35,
+       "kurs": 89.82,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 106.212,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 55,
+       "kurs": 93.812,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 65,
+       "kurs": 102.204,
+       "rolle": "beruehrung_oben_3"
+      },
+      {
+       "idx": 75,
+       "kurs": 96.806,
+       "rolle": "beruehrung_unten_3"
+      }
+     ],
+     "start": 25,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "ausbruch_oben",
+       "niveau": 99.3984
+      },
+      {
+       "art": "ausbruch_unten",
+       "niveau": 97.6709
+      }
+     ],
+     "typ": "dreieck_symmetrisch",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 97.6709
+    }
+   ],
+   "kerzen": 101,
+   "zonen": []
+  },
+  "flagge_abwaerts": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": 62,
+     "bestaetigungsniveau": 103.9583,
+     "ende": 61,
+     "gebildet": 61,
+     "konfidenz": 0.8996,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "stange",
+       "name": "Fahnenstange",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "ruecksetzer",
+       "name": "Rücksetzer in der Konsolidierung",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1271,
+       "key": "neigung",
+       "name": "Neigung der Konsolidierung",
+       "sub_score": 0.8474,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1425,
+       "key": "form",
+       "name": "Parallele Linien (Flagge)",
+       "sub_score": 0.95,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse im Kanal",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.08,
+       "key": "dauer",
+       "name": "Dauer der Konsolidierung",
+       "sub_score": 0.8,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen in der Konsolidierung",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "stange",
+       "teilwert": 1.0,
+       "wert": 16.9993
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "ruecksetzer",
+       "teilwert": 1.0,
+       "wert": 21.5656
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "neigung",
+       "teilwert": 0.8474,
+       "wert": 14.5787
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "form",
+       "teilwert": 0.95,
+       "wert": 0.0075
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "dauer",
+       "teilwert": 0.8,
+       "wert": 12.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 41,
+       "kurs": 120.24,
+       "rolle": "fahnenstange_start"
+      },
+      {
+       "idx": 49,
+       "kurs": 99.8,
+       "rolle": "fahnenstange_ende"
+      }
+     ],
+     "start": 41,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 103.9583
+      },
+      {
+       "art": "scheitern",
+       "niveau": 104.208
+      }
+     ],
+     "typ": "flagge_abwaerts",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 104.208
+    }
+   ],
+   "kerzen": 81,
+   "zonen": []
+  },
+  "flagge_aufwaerts": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": 62,
+     "bestaetigungsniveau": 116.065,
+     "ende": 61,
+     "gebildet": 61,
+     "konfidenz": 0.9229,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "stange",
+       "name": "Fahnenstange",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "ruecksetzer",
+       "name": "Rücksetzer in der Konsolidierung",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1473,
+       "key": "neigung",
+       "name": "Neigung der Konsolidierung",
+       "sub_score": 0.9819,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1456,
+       "key": "form",
+       "name": "Parallele Linien (Flagge)",
+       "sub_score": 0.9708,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse im Kanal",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.08,
+       "key": "dauer",
+       "name": "Dauer der Konsolidierung",
+       "sub_score": 0.8,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen in der Konsolidierung",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "stange",
+       "teilwert": 1.0,
+       "wert": 20.481
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "ruecksetzer",
+       "teilwert": 1.0,
+       "wert": 21.8787
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "neigung",
+       "teilwert": 0.9819,
+       "wert": 10.5419
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "form",
+       "teilwert": 0.9708,
+       "wert": 0.0044
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "dauer",
+       "teilwert": 0.8,
+       "wert": 12.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 41,
+       "kurs": 99.8,
+       "rolle": "fahnenstange_start"
+      },
+      {
+       "idx": 49,
+       "kurs": 120.24,
+       "rolle": "fahnenstange_ende"
+      }
+     ],
+     "start": 41,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 116.065
+      },
+      {
+       "art": "scheitern",
+       "niveau": 115.768
+      }
+     ],
+     "typ": "flagge_aufwaerts",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 115.768
+    }
+   ],
+   "kerzen": 81,
+   "zonen": []
+  },
+  "keil_fallend": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": 81,
+     "bestaetigungsniveau": 94.9562,
+     "ende": 75,
+     "gebildet": 79,
+     "konfidenz": 0.7697,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.0665,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 0.3324,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.1532,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 0.7661,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.15,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 1.0,
+       "wert": 0.051
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 0.3324,
+       "wert": 29.9724
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 0.7661,
+       "wert": 0.3509
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 1.0,
+       "wert": 3.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 25,
+       "kurs": 110.22,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 35,
+       "kurs": 99.8,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 105.21,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 55,
+       "kurs": 94.81,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 65,
+       "kurs": 99.198,
+       "rolle": "beruehrung_oben_3"
+      },
+      {
+       "idx": 75,
+       "kurs": 90.818,
+       "rolle": "beruehrung_unten_3"
+      }
+     ],
+     "start": 25,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 94.9562
+      },
+      {
+       "art": "scheitern",
+       "niveau": 89.3044
+      }
+     ],
+     "typ": "keil_fallend",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 89.3044
+    },
+    {
+     "bestaetigt_bei": 67,
+     "bestaetigungsniveau": 98.9109,
+     "ende": 66,
+     "gebildet": 66,
+     "konfidenz": 0.5095,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.0673,
+       "key": "stange",
+       "name": "Fahnenstange",
+       "sub_score": 0.2693,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.0468,
+       "key": "ruecksetzer",
+       "name": "Rücksetzer in der Konsolidierung",
+       "sub_score": 0.3123,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.0256,
+       "key": "neigung",
+       "name": "Neigung der Konsolidierung",
+       "sub_score": 0.1706,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1298,
+       "key": "form",
+       "name": "Parallele Linien (Flagge)",
+       "sub_score": 0.8652,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse im Kanal",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.09,
+       "key": "dauer",
+       "name": "Dauer der Konsolidierung",
+       "sub_score": 0.9,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen in der Konsolidierung",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "stange",
+       "teilwert": 0.2693,
+       "wert": 9.885
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "ruecksetzer",
+       "teilwert": 0.3123,
+       "wert": 42.1923
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "neigung",
+       "teilwert": 0.1706,
+       "wert": 34.8824
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "form",
+       "teilwert": 0.8652,
+       "wert": 0.0202
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "dauer",
+       "teilwert": 0.9,
+       "wert": 11.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 46,
+       "kurs": 105.21,
+       "rolle": "fahnenstange_start"
+      },
+      {
+       "idx": 55,
+       "kurs": 94.81,
+       "rolle": "fahnenstange_ende"
+      }
+     ],
+     "start": 46,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 98.9109
+      },
+      {
+       "art": "scheitern",
+       "niveau": 99.198
+      }
+     ],
+     "typ": "flagge_abwaerts",
+     "ungueltig_bei": 85,
+     "ungueltigkeitsniveau": 99.198
+    }
+   ],
+   "kerzen": 101,
+   "zonen": []
+  },
+  "keil_steigend": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": 81,
+     "bestaetigungsniveau": 105.0229,
+     "ende": 75,
+     "gebildet": 79,
+     "konfidenz": 0.763,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.0598,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 0.2988,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.1532,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 0.7661,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.15,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 1.0,
+       "wert": 0.049
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 0.2988,
+       "wert": 28.9638
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 0.7661,
+       "wert": 0.3509
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 1.0,
+       "wert": 3.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 25,
+       "kurs": 89.82,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 35,
+       "kurs": 100.2,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 94.81,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 55,
+       "kurs": 105.21,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 65,
+       "kurs": 100.798,
+       "rolle": "beruehrung_unten_3"
+      },
+      {
+       "idx": 75,
+       "kurs": 109.218,
+       "rolle": "beruehrung_oben_3"
+      }
+     ],
+     "start": 25,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 105.0229
+      },
+      {
+       "art": "scheitern",
+       "niveau": 110.7377
+      }
+     ],
+     "typ": "keil_steigend",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 110.7377
+    },
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 95.691,
+     "ende": 44,
+     "gebildet": 44,
+     "konfidenz": 0.5426,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.127,
+       "key": "stange",
+       "name": "Fahnenstange",
+       "sub_score": 0.5081,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.0173,
+       "key": "ruecksetzer",
+       "name": "Rücksetzer in der Konsolidierung",
+       "sub_score": 0.1152,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.0003,
+       "key": "neigung",
+       "name": "Neigung der Konsolidierung",
+       "sub_score": 0.0021,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1479,
+       "key": "form",
+       "name": "Parallele Linien (Flagge)",
+       "sub_score": 0.9863,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse im Kanal",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.1,
+       "key": "dauer",
+       "name": "Dauer der Konsolidierung",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen in der Konsolidierung",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "stange",
+       "teilwert": 0.5081,
+       "wert": 11.5564
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "ruecksetzer",
+       "teilwert": 0.1152,
+       "wert": 47.1195
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "neigung",
+       "teilwert": 0.0021,
+       "wert": 39.9378
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "form",
+       "teilwert": 0.9863,
+       "wert": 0.0021
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "dauer",
+       "teilwert": 1.0,
+       "wert": 9.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 26,
+       "kurs": 89.82,
+       "rolle": "fahnenstange_start"
+      },
+      {
+       "idx": 35,
+       "kurs": 100.2,
+       "rolle": "fahnenstange_ende"
+      }
+     ],
+     "start": 26,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 95.691
+      },
+      {
+       "art": "scheitern",
+       "niveau": 95.309
+      }
+     ],
+     "typ": "flagge_aufwaerts",
+     "ungueltig_bei": 45,
+     "ungueltigkeitsniveau": 95.309
+    },
+    {
+     "bestaetigt_bei": 67,
+     "bestaetigungsniveau": 101.0927,
+     "ende": 66,
+     "gebildet": 66,
+     "konfidenz": 0.5764,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.1061,
+       "key": "stange",
+       "name": "Fahnenstange",
+       "sub_score": 0.4242,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.0455,
+       "key": "ruecksetzer",
+       "name": "Rücksetzer in der Konsolidierung",
+       "sub_score": 0.3031,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.0511,
+       "key": "neigung",
+       "name": "Neigung der Konsolidierung",
+       "sub_score": 0.3409,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1338,
+       "key": "form",
+       "name": "Parallele Linien (Flagge)",
+       "sub_score": 0.8917,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse im Kanal",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.09,
+       "key": "dauer",
+       "name": "Dauer der Konsolidierung",
+       "sub_score": 0.9,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen in der Konsolidierung",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "stange",
+       "teilwert": 0.4242,
+       "wert": 10.9693
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "ruecksetzer",
+       "teilwert": 0.3031,
+       "wert": 42.4231
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "neigung",
+       "teilwert": 0.3409,
+       "wert": 29.7731
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "form",
+       "teilwert": 0.8917,
+       "wert": 0.0163
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "dauer",
+       "teilwert": 0.9,
+       "wert": 11.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 46,
+       "kurs": 94.81,
+       "rolle": "fahnenstange_start"
+      },
+      {
+       "idx": 55,
+       "kurs": 105.21,
+       "rolle": "fahnenstange_ende"
+      }
+     ],
+     "start": 46,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 101.0927
+      },
+      {
+       "art": "scheitern",
+       "niveau": 100.798
+      }
+     ],
+     "typ": "flagge_aufwaerts",
+     "ungueltig_bei": 85,
+     "ungueltigkeitsniveau": 100.798
+    }
+   ],
+   "kerzen": 101,
+   "zonen": []
+  },
+  "kopf_schulter": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": 53,
+     "bestaetigungsniveau": 100.9976,
+     "ende": 45,
+     "gebildet": 48,
+     "konfidenz": 0.6356,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.0356,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 0.1782,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 1.0,
+       "wert": 0.083
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 0.1782,
+       "wert": 25.347
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 0,
+       "kurs": 79.84,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 20,
+       "kurs": 100.2,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 30,
+       "kurs": 91.816,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 45,
+       "kurs": 108.216,
+       "rolle": "beruehrung_oben_2"
+      }
+     ],
+     "start": 0,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 100.9976
+      },
+      {
+       "art": "scheitern",
+       "niveau": 110.7811
+      }
+     ],
+     "typ": "keil_steigend",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 110.7811
+    },
+    {
+     "bestaetigt_bei": 84,
+     "bestaetigungsniveau": 92.7142,
+     "ende": 75,
+     "gebildet": 77,
+     "konfidenz": 0.8692,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "kopf_ueberhang",
+       "name": "Kopf gegenüber den Schultern",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.225,
+       "key": "schulter_abweichung",
+       "name": "Symmetrie der Schultern",
+       "sub_score": 0.9,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.1337,
+       "key": "nacken_neigung",
+       "name": "Neigung der Nackenlinie",
+       "sub_score": 0.8913,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1105,
+       "key": "zeit_symmetrie",
+       "name": "Zeitliche Symmetrie",
+       "sub_score": 0.737,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "vortrend",
+       "name": "Vorheriger Anstieg",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen an der rechten Schulter",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "kopf_ueberhang",
+       "teilwert": 1.0,
+       "wert": 7.4627
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "schulter_abweichung",
+       "teilwert": 0.9,
+       "wert": 0.5
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "nacken_neigung",
+       "teilwert": 0.8913,
+       "wert": 0.5435
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "zeit_symmetrie",
+       "teilwert": 0.737,
+       "wert": 0.8333
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "vortrend",
+       "teilwert": 1.0,
+       "wert": 25.501
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 20,
+       "kurs": 100.2,
+       "rolle": "linke_schulter"
+      },
+      {
+       "idx": 30,
+       "kurs": 91.816,
+       "rolle": "nacken_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 108.216,
+       "rolle": "kopf"
+      },
+      {
+       "idx": 60,
+       "kurs": 92.315,
+       "rolle": "nacken_2"
+      },
+      {
+       "idx": 75,
+       "kurs": 100.701,
+       "rolle": "rechte_schulter"
+      }
+     ],
+     "start": 20,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 92.7142
+      },
+      {
+       "art": "scheitern",
+       "niveau": 102.2115
+      }
+     ],
+     "typ": "kopf_schulter",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 102.2115
+    },
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 108.216,
+     "ende": 60,
+     "gebildet": 65,
+     "konfidenz": 0.7237,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.2232,
+       "key": "extrem_abweichung",
+       "name": "Abweichung der beiden Tiefs",
+       "sub_score": 0.6377,
+       "weight": 0.35
+      },
+      {
+       "contribution": 0.25,
+       "key": "tiefe",
+       "name": "Abstand Zwischenhoch",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "abstand",
+       "name": "Abstand der beiden Tiefs",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.0505,
+       "key": "vortrend",
+       "name": "Vorheriger Rückgang",
+       "sub_score": 0.3367,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen am zweiten Tief",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.35,
+       "key": "extrem_abweichung",
+       "teilwert": 0.6377,
+       "wert": 0.5435
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "tiefe",
+       "teilwert": 1.0,
+       "wert": 17.2247
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "abstand",
+       "teilwert": 1.0,
+       "wert": 30.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "vortrend",
+       "teilwert": 0.3367,
+       "wert": 8.3673
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 30,
+       "kurs": 91.816,
+       "rolle": "tief_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 108.216,
+       "rolle": "zwischenhoch"
+      },
+      {
+       "idx": 60,
+       "kurs": 92.315,
+       "rolle": "tief_2"
+      }
+     ],
+     "start": 30,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 108.216
+      },
+      {
+       "art": "scheitern",
+       "niveau": 90.4388
+      }
+     ],
+     "typ": "doppelboden",
+     "ungueltig_bei": 86,
+     "ungueltigkeitsniveau": 90.4388
+    },
+    {
+     "bestaetigt_bei": 84,
+     "bestaetigungsniveau": 92.7142,
+     "ende": 75,
+     "gebildet": 77,
+     "konfidenz": 0.7579,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.2079,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 0.8317,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 0.8317,
+       "wert": 0.2702
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 59.6354
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 30,
+       "kurs": 91.816,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 108.216,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 60,
+       "kurs": 92.315,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 75,
+       "kurs": 100.701,
+       "rolle": "beruehrung_oben_2"
+      }
+     ],
+     "start": 30,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 92.7142
+      },
+      {
+       "art": "scheitern",
+       "niveau": 98.4465
+      }
+     ],
+     "typ": "dreieck_absteigend",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 98.4465
+    }
+   ],
+   "kerzen": 111,
+   "zonen": []
+  },
+  "kopf_schulter_invers": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": 53,
+     "bestaetigungsniveau": 98.9976,
+     "ende": 45,
+     "gebildet": 48,
+     "konfidenz": 0.6405,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.0405,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 0.2026,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 1.0,
+       "wert": 0.0773
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 0.2026,
+       "wert": 26.0788
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 0,
+       "kurs": 120.24,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 20,
+       "kurs": 99.8,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 30,
+       "kurs": 108.216,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 45,
+       "kurs": 91.816,
+       "rolle": "beruehrung_unten_2"
+      }
+     ],
+     "start": 0,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 98.9976
+      },
+      {
+       "art": "scheitern",
+       "niveau": 89.2611
+      }
+     ],
+     "typ": "keil_fallend",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 89.2611
+    },
+    {
+     "bestaetigt_bei": 84,
+     "bestaetigungsniveau": 107.3142,
+     "ende": 75,
+     "gebildet": 77,
+     "konfidenz": 0.8715,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "kopf_ueberhang",
+       "name": "Kopf gegenüber den Schultern",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2249,
+       "key": "schulter_abweichung",
+       "name": "Symmetrie der Schultern",
+       "sub_score": 0.8995,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.1361,
+       "key": "nacken_neigung",
+       "name": "Neigung der Nackenlinie",
+       "sub_score": 0.907,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1105,
+       "key": "zeit_symmetrie",
+       "name": "Zeitliche Symmetrie",
+       "sub_score": 0.737,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "vortrend",
+       "name": "Vorheriger Rückgang",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen an der rechten Schulter",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "kopf_ueberhang",
+       "teilwert": 1.0,
+       "wert": 7.5377
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "schulter_abweichung",
+       "teilwert": 0.8995,
+       "wert": 0.5025
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "nacken_neigung",
+       "teilwert": 0.907,
+       "wert": 0.4651
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "zeit_symmetrie",
+       "teilwert": 0.737,
+       "wert": 0.8333
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "vortrend",
+       "teilwert": 1.0,
+       "wert": 16.9993
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 20,
+       "kurs": 99.8,
+       "rolle": "linke_schulter"
+      },
+      {
+       "idx": 30,
+       "kurs": 108.216,
+       "rolle": "nacken_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 91.816,
+       "rolle": "kopf"
+      },
+      {
+       "idx": 60,
+       "kurs": 107.715,
+       "rolle": "nacken_2"
+      },
+      {
+       "idx": 75,
+       "kurs": 99.301,
+       "rolle": "rechte_schulter"
+      }
+     ],
+     "start": 20,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 107.3142
+      },
+      {
+       "art": "scheitern",
+       "niveau": 97.8115
+      }
+     ],
+     "typ": "kopf_schulter_invers",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 97.8115
+    },
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 91.816,
+     "ende": 60,
+     "gebildet": 65,
+     "konfidenz": 0.743,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.2415,
+       "key": "extrem_abweichung",
+       "name": "Abweichung der beiden Hochs",
+       "sub_score": 0.6899,
+       "weight": 0.35
+      },
+      {
+       "contribution": 0.25,
+       "key": "tiefe",
+       "name": "Abstand Zwischentief",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "abstand",
+       "name": "Abstand der beiden Hochs",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.0515,
+       "key": "vortrend",
+       "name": "Vorheriger Anstieg",
+       "sub_score": 0.3433,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen am zweiten Hoch",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.35,
+       "key": "extrem_abweichung",
+       "teilwert": 0.6899,
+       "wert": 0.4651
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "tiefe",
+       "teilwert": 1.0,
+       "wert": 14.7602
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "abstand",
+       "teilwert": 1.0,
+       "wert": 30.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "vortrend",
+       "teilwert": 0.3433,
+       "wert": 8.4329
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 30,
+       "kurs": 108.216,
+       "rolle": "hoch_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 91.816,
+       "rolle": "zwischentief"
+      },
+      {
+       "idx": 60,
+       "kurs": 107.715,
+       "rolle": "hoch_2"
+      }
+     ],
+     "start": 30,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 91.816
+      },
+      {
+       "art": "scheitern",
+       "niveau": 109.8392
+      }
+     ],
+     "typ": "doppelhoch",
+     "ungueltig_bei": 87,
+     "ungueltigkeitsniveau": 109.8392
+    },
+    {
+     "bestaetigt_bei": 84,
+     "bestaetigungsniveau": 107.3142,
+     "ende": 75,
+     "gebildet": 77,
+     "konfidenz": 0.7587,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.2087,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 0.8349,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 0.8349,
+       "wert": 0.2632
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 59.4713
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 30,
+       "kurs": 108.216,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 45,
+       "kurs": 91.816,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 60,
+       "kurs": 107.715,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 75,
+       "kurs": 99.301,
+       "rolle": "beruehrung_unten_2"
+      }
+     ],
+     "start": 30,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 107.3142
+      },
+      {
+       "art": "scheitern",
+       "niveau": 101.5465
+      }
+     ],
+     "typ": "dreieck_aufsteigend",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 101.5465
+    }
+   ],
+   "kerzen": 111,
+   "zonen": []
+  },
+  "seitwaerts_flach": {
+   "erkennungen": [],
+   "kerzen": 121,
+   "zonen": []
+  },
+  "trend_steigend": {
+   "erkennungen": [],
+   "kerzen": 121,
+   "zonen": []
+  },
+  "wimpel_abwaerts": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": 63,
+     "bestaetigungsniveau": 81.6825,
+     "ende": 62,
+     "gebildet": 62,
+     "konfidenz": 0.8402,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "stange",
+       "name": "Fahnenstange",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "ruecksetzer",
+       "name": "Rücksetzer in der Konsolidierung",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.15,
+       "key": "neigung",
+       "name": "Neigung der Konsolidierung",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.0702,
+       "key": "form",
+       "name": "Zusammenlaufende Linien (Wimpel)",
+       "sub_score": 0.4681,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse im Kanal",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.07,
+       "key": "dauer",
+       "name": "Dauer der Konsolidierung",
+       "sub_score": 0.7,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen in der Konsolidierung",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "stange",
+       "teilwert": 1.0,
+       "wert": 20.3194
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "ruecksetzer",
+       "teilwert": 1.0,
+       "wert": 21.2574
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "neigung",
+       "teilwert": 1.0,
+       "wert": 2.1012
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "form",
+       "teilwert": 0.4681,
+       "wert": 0.0387
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "dauer",
+       "teilwert": 0.7,
+       "wert": 13.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 41,
+       "kurs": 100.2,
+       "rolle": "fahnenstange_start"
+      },
+      {
+       "idx": 49,
+       "kurs": 79.84,
+       "rolle": "fahnenstange_ende"
+      }
+     ],
+     "start": 41,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 81.6825
+      },
+      {
+       "art": "scheitern",
+       "niveau": 84.168
+      }
+     ],
+     "typ": "wimpel_abwaerts",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 84.168
+    }
+   ],
+   "kerzen": 81,
+   "zonen": []
+  },
+  "wimpel_aufwaerts": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": 64,
+     "bestaetigungsniveau": 118.3505,
+     "ende": 63,
+     "gebildet": 63,
+     "konfidenz": 0.8346,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.25,
+       "key": "stange",
+       "name": "Fahnenstange",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "ruecksetzer",
+       "name": "Rücksetzer in der Konsolidierung",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.15,
+       "key": "neigung",
+       "name": "Neigung der Konsolidierung",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.0846,
+       "key": "form",
+       "name": "Zusammenlaufende Linien (Wimpel)",
+       "sub_score": 0.5639,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse im Kanal",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "dauer",
+       "name": "Dauer der Konsolidierung",
+       "sub_score": 0.5,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.05,
+       "key": "volumen",
+       "name": "Volumen in der Konsolidierung",
+       "sub_score": 0.5,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "stange",
+       "teilwert": 1.0,
+       "wert": 20.481
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "ruecksetzer",
+       "teilwert": 1.0,
+       "wert": 21.8787
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "neigung",
+       "teilwert": 1.0,
+       "wert": 0.3212
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "form",
+       "teilwert": 0.5639,
+       "wert": 0.0426
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "dauer",
+       "teilwert": 0.5,
+       "wert": 15.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5,
+       "wert": 1.0
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 41,
+       "kurs": 99.8,
+       "rolle": "fahnenstange_start"
+      },
+      {
+       "idx": 48,
+       "kurs": 120.24,
+       "rolle": "fahnenstange_ende"
+      }
+     ],
+     "start": 41,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 118.3505
+      },
+      {
+       "art": "scheitern",
+       "niveau": 115.768
+      }
+     ],
+     "typ": "wimpel_aufwaerts",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 115.768
+    }
+   ],
+   "kerzen": 81,
+   "zonen": []
+  },
+  "zufallsreihe_seed42": {
+   "erkennungen": [
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 111.757,
+     "ende": 93,
+     "gebildet": 95,
+     "konfidenz": 0.6252,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.068,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 0.2721,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.0572,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5722,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 0.2721,
+       "wert": 0.1165
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 57.4398
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5722,
+       "wert": 0.9567
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 9,
+       "kurs": 97.2473,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 35,
+       "kurs": 114.6265,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 72,
+       "kurs": 102.6408,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 93,
+       "kurs": 112.2824,
+       "rolle": "beruehrung_oben_2"
+      }
+     ],
+     "start": 9,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 111.757
+      },
+      {
+       "art": "scheitern",
+       "niveau": 105.5515
+      }
+     ],
+     "typ": "dreieck_aufsteigend",
+     "ungueltig_bei": 106,
+     "ungueltigkeitsniveau": 105.5515
+    },
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 113.8017,
+     "ende": 52,
+     "gebildet": 52,
+     "konfidenz": 0.6018,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.0654,
+       "key": "stange",
+       "name": "Fahnenstange",
+       "sub_score": 0.2615,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.0563,
+       "key": "ruecksetzer",
+       "name": "Rücksetzer in der Konsolidierung",
+       "sub_score": 0.3756,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.15,
+       "key": "neigung",
+       "name": "Neigung der Konsolidierung",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1497,
+       "key": "form",
+       "name": "Parallele Linien (Flagge)",
+       "sub_score": 0.9979,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse im Kanal",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.03,
+       "key": "dauer",
+       "name": "Dauer der Konsolidierung",
+       "sub_score": 0.3,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.0504,
+       "key": "volumen",
+       "name": "Volumen in der Konsolidierung",
+       "sub_score": 0.5038,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "stange",
+       "teilwert": 0.2615,
+       "wert": 9.8308
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "ruecksetzer",
+       "teilwert": 0.3756,
+       "wert": 40.6088
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "neigung",
+       "teilwert": 1.0,
+       "wert": 1.1736
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "form",
+       "teilwert": 0.9979,
+       "wert": 0.0003
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "dauer",
+       "teilwert": 0.3,
+       "wert": 17.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5038,
+       "wert": 0.9977
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 22,
+       "kurs": 104.3664,
+       "rolle": "fahnenstange_start"
+      },
+      {
+       "idx": 35,
+       "kurs": 114.6265,
+       "rolle": "fahnenstange_ende"
+      }
+     ],
+     "start": 22,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 113.8017
+      },
+      {
+       "art": "scheitern",
+       "niveau": 110.46
+      }
+     ],
+     "typ": "flagge_aufwaerts",
+     "ungueltig_bei": 53,
+     "ungueltigkeitsniveau": 110.46
+    },
+    {
+     "bestaetigt_bei": 71,
+     "bestaetigungsniveau": 105.7142,
+     "ende": 70,
+     "gebildet": 70,
+     "konfidenz": 0.5888,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.0131,
+       "key": "stange",
+       "name": "Fahnenstange",
+       "sub_score": 0.0522,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.0821,
+       "key": "ruecksetzer",
+       "name": "Rücksetzer in der Konsolidierung",
+       "sub_score": 0.5471,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.15,
+       "key": "neigung",
+       "name": "Neigung der Konsolidierung",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.0947,
+       "key": "form",
+       "name": "Parallele Linien (Flagge)",
+       "sub_score": 0.6315,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse im Kanal",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.1,
+       "key": "dauer",
+       "name": "Dauer der Konsolidierung",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.049,
+       "key": "volumen",
+       "name": "Volumen in der Konsolidierung",
+       "sub_score": 0.4901,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "stange",
+       "teilwert": 0.0522,
+       "wert": 8.3657
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "ruecksetzer",
+       "teilwert": 0.5471,
+       "wert": 36.3235
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "neigung",
+       "teilwert": 1.0,
+       "wert": 2.9886
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "form",
+       "teilwert": 0.6315,
+       "wert": 0.0553
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "dauer",
+       "teilwert": 1.0,
+       "wert": 7.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.4901,
+       "wert": 1.0059
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 52,
+       "kurs": 114.1872,
+       "rolle": "fahnenstange_start"
+      },
+      {
+       "idx": 63,
+       "kurs": 104.6346,
+       "rolle": "fahnenstange_ende"
+      }
+     ],
+     "start": 52,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 105.7142
+      },
+      {
+       "art": "scheitern",
+       "niveau": 108.1044
+      }
+     ],
+     "typ": "flagge_abwaerts",
+     "ungueltig_bei": 88,
+     "ungueltigkeitsniveau": 108.1044
+    },
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 100.8315,
+     "ende": 126,
+     "gebildet": 129,
+     "konfidenz": 0.7434,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.1862,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 0.7446,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.0572,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5724,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 0.7446,
+       "wert": 0.1962
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 68.8313
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5724,
+       "wert": 0.9565
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 72,
+       "kurs": 102.6408,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 93,
+       "kurs": 112.2824,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 122,
+       "kurs": 97.4536,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 126,
+       "kurs": 102.0695,
+       "rolle": "beruehrung_oben_2"
+      }
+     ],
+     "start": 72,
+     "status": "ungueltig",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 100.8315
+      },
+      {
+       "art": "scheitern",
+       "niveau": 96.6236
+      }
+     ],
+     "typ": "keil_fallend",
+     "ungueltig_bei": 130,
+     "ungueltigkeitsniveau": 96.6236
+    },
+    {
+     "bestaetigt_bei": 156,
+     "bestaetigungsniveau": 97.9467,
+     "ende": 153,
+     "gebildet": 156,
+     "konfidenz": 0.44,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.0851,
+       "key": "kopf_ueberhang",
+       "name": "Kopf gegenüber den Schultern",
+       "sub_score": 0.3402,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.1009,
+       "key": "schulter_abweichung",
+       "name": "Symmetrie der Schultern",
+       "sub_score": 0.4038,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.0924,
+       "key": "nacken_neigung",
+       "name": "Neigung der Nackenlinie",
+       "sub_score": 0.6158,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.0796,
+       "key": "zeit_symmetrie",
+       "name": "Zeitliche Symmetrie",
+       "sub_score": 0.5305,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.0821,
+       "key": "vortrend",
+       "name": "Vorheriger Rückgang",
+       "sub_score": 0.8207,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.0,
+       "key": "volumen",
+       "name": "Volumen an der rechten Schulter",
+       "sub_score": 0.0,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "kopf_ueberhang",
+       "teilwert": 0.3402,
+       "wert": 3.3607
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "schulter_abweichung",
+       "teilwert": 0.4038,
+       "wert": 2.9808
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "nacken_neigung",
+       "teilwert": 0.6158,
+       "wert": 1.9212
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "zeit_symmetrie",
+       "teilwert": 0.5305,
+       "wert": 0.7222
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "vortrend",
+       "teilwert": 0.8207,
+       "wert": 13.2067
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.0,
+       "wert": 1.5637
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 122,
+       "kurs": 97.4536,
+       "rolle": "linke_schulter"
+      },
+      {
+       "idx": 126,
+       "kurs": 102.0695,
+       "rolle": "nacken_1"
+      },
+      {
+       "idx": 135,
+       "kurs": 91.4524,
+       "rolle": "kopf"
+      },
+      {
+       "idx": 140,
+       "kurs": 100.1455,
+       "rolle": "nacken_2"
+      },
+      {
+       "idx": 153,
+       "kurs": 94.6328,
+       "rolle": "rechte_schulter"
+      }
+     ],
+     "start": 122,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 97.9467
+      },
+      {
+       "art": "scheitern",
+       "niveau": 93.2133
+      }
+     ],
+     "typ": "kopf_schulter_invers",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 93.2133
+    },
+    {
+     "bestaetigt_bei": 188,
+     "bestaetigungsniveau": 101.1889,
+     "ende": 185,
+     "gebildet": 188,
+     "konfidenz": 0.8597,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.2053,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 0.8212,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.1582,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 0.7911,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.1869,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 0.9343,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.15,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.0593,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.5929,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 0.8212,
+       "wert": 0.0721
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 0.7911,
+       "wert": 43.7333
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 0.9343,
+       "wert": 0.0985
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 1.0,
+       "wert": 3.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.5929,
+       "wert": 0.9443
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 135,
+       "kurs": 91.4524,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 140,
+       "kurs": 100.1455,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 153,
+       "kurs": 94.6328,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 169,
+       "kurs": 103.403,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 174,
+       "kurs": 98.6468,
+       "rolle": "beruehrung_unten_3"
+      },
+      {
+       "idx": 185,
+       "kurs": 105.2442,
+       "rolle": "beruehrung_oben_3"
+      }
+     ],
+     "start": 135,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 101.1889
+      },
+      {
+       "art": "scheitern",
+       "niveau": 105.5719
+      }
+     ],
+     "typ": "keil_steigend",
+     "ungueltig_bei": 227,
+     "ungueltigkeitsniveau": 105.5719
+    },
+    {
+     "bestaetigt_bei": 252,
+     "bestaetigungsniveau": 101.519,
+     "ende": 248,
+     "gebildet": 259,
+     "konfidenz": 0.7104,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.1291,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 0.5164,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.0813,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.8134,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 0.5164,
+       "wert": 0.4053
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 68.566
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.8134,
+       "wert": 0.812
+      }
+     ],
+     "richtung": "offen",
+     "schluesselpunkte": [
+      {
+       "idx": 214,
+       "kurs": 94.6786,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 233,
+       "kurs": 108.3257,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 246,
+       "kurs": 96.4141,
+       "rolle": "beruehrung_unten_2"
+      },
+      {
+       "idx": 248,
+       "kurs": 102.952,
+       "rolle": "beruehrung_oben_2"
+      }
+     ],
+     "start": 214,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "ausbruch_oben",
+       "niveau": 101.519
+      },
+      {
+       "art": "ausbruch_unten",
+       "niveau": 96.7395
+      }
+     ],
+     "typ": "dreieck_symmetrisch",
+     "ungueltig_bei": 260,
+     "ungueltigkeitsniveau": 96.7395
+    },
+    {
+     "bestaetigt_bei": 273,
+     "bestaetigungsniveau": 93.9958,
+     "ende": 272,
+     "gebildet": 274,
+     "konfidenz": 0.7227,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.1761,
+       "key": "form",
+       "name": "Verlauf der Linien",
+       "sub_score": 0.7042,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.2,
+       "key": "verengung",
+       "name": "Verengung der Spanne",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.2,
+       "key": "anpassung",
+       "name": "Lage der Wendepunkte an den Linien",
+       "sub_score": 1.0,
+       "weight": 0.2
+      },
+      {
+       "contribution": 0.0,
+       "key": "beruehrungen",
+       "name": "Berührungen je Linie",
+       "sub_score": 0.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse zwischen den Linien",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.0467,
+       "key": "volumen",
+       "name": "Volumenverlauf",
+       "sub_score": 0.4668,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "form",
+       "teilwert": 0.7042,
+       "wert": 0.2698
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "verengung",
+       "teilwert": 1.0,
+       "wert": 97.3362
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.2,
+       "key": "anpassung",
+       "teilwert": 1.0,
+       "wert": 0.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "beruehrungen",
+       "teilwert": 0.0,
+       "wert": 2.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.4668,
+       "wert": 1.0199
+      }
+     ],
+     "richtung": "aufwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 233,
+       "kurs": 108.3257,
+       "rolle": "beruehrung_oben_1"
+      },
+      {
+       "idx": 246,
+       "kurs": 96.4141,
+       "rolle": "beruehrung_unten_1"
+      },
+      {
+       "idx": 248,
+       "kurs": 102.952,
+       "rolle": "beruehrung_oben_2"
+      },
+      {
+       "idx": 272,
+       "kurs": 94.068,
+       "rolle": "beruehrung_unten_2"
+      }
+     ],
+     "start": 233,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 93.9958
+      },
+      {
+       "art": "scheitern",
+       "niveau": 93.9778
+      }
+     ],
+     "typ": "keil_fallend",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 93.9778
+    },
+    {
+     "bestaetigt_bei": null,
+     "bestaetigungsniveau": 94.068,
+     "ende": 292,
+     "gebildet": 298,
+     "konfidenz": 0.7266,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.2211,
+       "key": "extrem_abweichung",
+       "name": "Abweichung der beiden Hochs",
+       "sub_score": 0.6318,
+       "weight": 0.35
+      },
+      {
+       "contribution": 0.25,
+       "key": "tiefe",
+       "name": "Abstand Zwischentief",
+       "sub_score": 1.0,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.15,
+       "key": "abstand",
+       "name": "Abstand der beiden Hochs",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.0267,
+       "key": "vortrend",
+       "name": "Vorheriger Anstieg",
+       "sub_score": 0.1781,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.0787,
+       "key": "volumen",
+       "name": "Volumen am zweiten Hoch",
+       "sub_score": 0.7871,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.35,
+       "key": "extrem_abweichung",
+       "teilwert": 0.6318,
+       "wert": 0.5523
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "tiefe",
+       "teilwert": 1.0,
+       "wert": 8.6293
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "abstand",
+       "teilwert": 1.0,
+       "wert": 44.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "vortrend",
+       "teilwert": 0.1781,
+       "wert": 6.7811
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.7871,
+       "wert": 0.8278
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 248,
+       "kurs": 102.952,
+       "rolle": "hoch_1"
+      },
+      {
+       "idx": 272,
+       "kurs": 94.068,
+       "rolle": "zwischentief"
+      },
+      {
+       "idx": 292,
+       "kurs": 103.5206,
+       "rolle": "hoch_2"
+      }
+     ],
+     "start": 248,
+     "status": "in_bildung",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 94.068
+      },
+      {
+       "art": "scheitern",
+       "niveau": 105.0734
+      }
+     ],
+     "typ": "doppelhoch",
+     "ungueltig_bei": null,
+     "ungueltigkeitsniveau": 105.0734
+    },
+    {
+     "bestaetigt_bei": 270,
+     "bestaetigungsniveau": 95.4243,
+     "ende": 269,
+     "gebildet": 269,
+     "konfidenz": 0.5663,
+     "konfidenz_aufschluesselung": [
+      {
+       "contribution": 0.0122,
+       "key": "stange",
+       "name": "Fahnenstange",
+       "sub_score": 0.0488,
+       "weight": 0.25
+      },
+      {
+       "contribution": 0.1416,
+       "key": "ruecksetzer",
+       "name": "Rücksetzer in der Konsolidierung",
+       "sub_score": 0.9443,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.15,
+       "key": "neigung",
+       "name": "Neigung der Konsolidierung",
+       "sub_score": 1.0,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.019,
+       "key": "form",
+       "name": "Zusammenlaufende Linien (Wimpel)",
+       "sub_score": 0.1267,
+       "weight": 0.15
+      },
+      {
+       "contribution": 0.1,
+       "key": "innerhalb",
+       "name": "Schlusskurse im Kanal",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.1,
+       "key": "dauer",
+       "name": "Dauer der Konsolidierung",
+       "sub_score": 1.0,
+       "weight": 0.1
+      },
+      {
+       "contribution": 0.0435,
+       "key": "volumen",
+       "name": "Volumen in der Konsolidierung",
+       "sub_score": 0.4349,
+       "weight": 0.1
+      }
+     ],
+     "kriterien": [
+      {
+       "erfuellt": true,
+       "gewicht": 0.25,
+       "key": "stange",
+       "teilwert": 0.0488,
+       "wert": 8.3414
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "ruecksetzer",
+       "teilwert": 0.9443,
+       "wert": 26.3924
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "neigung",
+       "teilwert": 1.0,
+       "wert": 6.9352
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.15,
+       "key": "form",
+       "teilwert": 0.1267,
+       "wert": 0.0251
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "innerhalb",
+       "teilwert": 1.0,
+       "wert": 100.0
+      },
+      {
+       "erfuellt": true,
+       "gewicht": 0.1,
+       "key": "dauer",
+       "teilwert": 1.0,
+       "wert": 5.0
+      },
+      {
+       "erfuellt": false,
+       "gewicht": 0.1,
+       "key": "volumen",
+       "teilwert": 0.4349,
+       "wert": 1.0391
+      }
+     ],
+     "richtung": "abwärts",
+     "schluesselpunkte": [
+      {
+       "idx": 249,
+       "kurs": 102.952,
+       "rolle": "fahnenstange_start"
+      },
+      {
+       "idx": 264,
+       "kurs": 94.3644,
+       "rolle": "fahnenstange_ende"
+      }
+     ],
+     "start": 249,
+     "status": "bestaetigt",
+     "szenarien": [
+      {
+       "art": "bestaetigung",
+       "niveau": 95.4243
+      },
+      {
+       "art": "scheitern",
+       "niveau": 96.6308
+      }
+     ],
+     "typ": "wimpel_abwaerts",
+     "ungueltig_bei": 273,
+     "ungueltigkeitsniveau": 96.6308
+    }
+   ],
+   "kerzen": 300,
+   "zonen": [
+    {
+     "art": "unterstuetzung",
+     "beruehrungen": 3,
+     "konfidenz": 0.6139,
+     "oben": 94.6786,
+     "unten": 94.068
+    },
+    {
+     "art": "unterstuetzung",
+     "beruehrungen": 3,
+     "konfidenz": 0.582,
+     "oben": 97.4536,
+     "unten": 96.4141
+    },
+    {
+     "art": "widerstand",
+     "beruehrungen": 4,
+     "konfidenz": 0.7096,
+     "oben": 102.952,
+     "unten": 102.0695
+    }
+   ]
+  }
+ },
+ "params_hash": "6e2e8bf1"
+}
