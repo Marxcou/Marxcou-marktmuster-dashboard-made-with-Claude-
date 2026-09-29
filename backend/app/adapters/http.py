@@ -1,5 +1,6 @@
 """Gemeinsame HTTP-Schicht für Adapter: Rate-Limit, Retry mit Backoff, Circuit-Breaker und Health-Zustand.
 Ein Ausfall bleibt lokal in seinem Adapter (Grundregel 6: keine Ersatzdaten, nur ein ehrlicher Status)."""
+import re
 import threading
 import time
 from collections.abc import Callable
@@ -9,6 +10,18 @@ from typing import Any
 import httpx
 
 from app.adapters.base import Health
+
+_EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$")
+
+
+def is_header_safe(value: str) -> bool:
+    """True, wenn der Wert unverändert in einen HTTP-Header darf: druckbares ASCII, keine Zeilenumbrüche.
+    Sonst bricht schon der Aufbau des HTTP-Clients ab (z. B. UnicodeEncodeError bei einem Umlaut)."""
+    return value.isascii() and value.isprintable()
+
+
+def is_valid_contact_email(value: str) -> bool:
+    return bool(value) and is_header_safe(value) and _EMAIL_RE.match(value) is not None
 
 
 class SourceError(Exception):

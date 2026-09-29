@@ -1,5 +1,6 @@
 """SEC EDGAR (offiziell): US-Pflichtmeldungen (8-K, 10-Q, 10-K, Form 4, 6-K, 20-F) je Aktie.
 Die SEC verlangt eine Kontaktadresse im User-Agent und höchstens 10 Anfragen pro Sekunde."""
+import logging
 import time
 from datetime import UTC, datetime
 from typing import Any
@@ -7,9 +8,11 @@ from typing import Any
 import httpx
 
 from app.adapters.base import AdapterMetadata, NewsAdapter, NewsRecord
-from app.adapters.http import ProbedHealth, ResilientHttp, SourceError
+from app.adapters.http import ProbedHealth, ResilientHttp, SourceError, is_valid_contact_email
 from app.adapters.news_common import clean_excerpt, clean_title
 from app.config import get_settings
+
+log = logging.getLogger(__name__)
 
 FORMS = {"8-K", "10-Q", "10-K", "4", "6-K", "20-F"}
 FORM_LABEL = {
@@ -27,8 +30,15 @@ class SecEdgarAdapter(ProbedHealth, NewsAdapter):
     disabled_reason = "SEC_EDGAR_CONTACT_EMAIL nicht gesetzt (Pflicht im User-Agent der SEC)"
 
     def __init__(self, transport: httpx.BaseTransport | None = None, **kw: Any) -> None:
-        self._email = get_settings().sec_edgar_contact_email
-        headers = {"User-Agent": f"Marktmuster-Dashboard {self._email}", "Accept-Encoding": "gzip, deflate"}
+        raw = get_settings().sec_edgar_contact_email.strip()
+        # Ein ungültiger Wert (Umlaut, kein E-Mail-Format) zählt wie ein fehlender: Quelle 'disabled', Backend läuft
+        self._email = raw if is_valid_contact_email(raw) else ""
+        if raw and not self._email:
+            log.warning("SEC_EDGAR_CONTACT_EMAIL ist keine gültige ASCII-E-Mail-Adresse; SEC EDGAR bleibt deaktiviert")
+            self.disabled_reason = ("SEC_EDGAR_CONTACT_EMAIL ungültig (nur ASCII-Zeichen, Format name@domain.de); "
+                                    "Quelle deaktiviert")
+        ua = f"Marktmuster-Dashboard {self._email}" if self._email else "Marktmuster-Dashboard"
+        headers = {"User-Agent": ua, "Accept-Encoding": "gzip, deflate"}
         self.http = ResilientHttp(base_url="https://data.sec.gov", headers=headers, rate_per_min=240,
                                   transport=transport, **kw)
         self._ciks: dict[str, tuple[int, str]] = {}
