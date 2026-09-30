@@ -31,6 +31,13 @@ def _share(x: float | None, digits: int = 0) -> str:
     return "nicht verfügbar" if x is None else fmt.pct(x * 100, digits)
 
 
+def level_labels(d: dict[str, Any]) -> tuple[str, str]:
+    """Symmetrisches Dreieck (Richtung "offen"): beide Niveaus sind Ausbruchsniveaus, keins ist Ungültigkeitsniveau."""
+    if d["direction_if_confirmed"] == "offen":
+        return "Ausbruchsniveau oben", "Ausbruchsniveau unten"
+    return "Bestätigungsniveau", "Ungültigkeitsniveau"
+
+
 def pattern_facts_text(d: dict[str, Any]) -> str:
     """Alle Werte einer Erkennung als Klartext (deutsches Zahlenformat), so wie sie auch in der Oberfläche stehen."""
     conf = d["confidence"]
@@ -49,8 +56,9 @@ def pattern_facts_text(d: dict[str, Any]) -> str:
     lines.append(f"Berechnung: {conf['method']}")
     lines += [f"- {b['name']}: Teilwert {fmt.num(b['sub_score'], 2)}, Gewicht {fmt.num(b['weight'], 2)}, "
               f"Beitrag {fmt.num(b['contribution'], 2)}" for b in conf["breakdown"]]
-    lines.append(f"Bestätigungsniveau: {fmt.price(d['confirmation_level'])}")
-    lines.append(f"Ungültigkeitsniveau: {fmt.price(d['invalidation_level'])}")
+    conf_label, inv_label = level_labels(d)
+    lines.append(f"{conf_label}: {fmt.price(d['confirmation_level'])}")
+    lines.append(f"{inv_label}: {fmt.price(d['invalidation_level'])}")
     lines.append("Szenarien:")
     for s in d["scenarios"]:
         hist = s.get("historical") or {}
@@ -91,10 +99,16 @@ def pattern_template(d: dict[str, Any]) -> str:
                     + "; ".join(c["actual_text"] for c in passed) + ".")
     text.append(f"Die Konfidenz der Erkennung beträgt {fmt.pct(conf['score'] * 100, 0)} (gewichteter Mittelwert der "
                 "Teilwerte aller Kriterien, Aufschlüsselung siehe unten).")
-    text.append(f"Mögliche Szenarien: Ein Schlusskurs bei {fmt.price(d['confirmation_level'])} gilt als "
-                f"Bestätigungsniveau, ein Schlusskurs bei {fmt.price(d['invalidation_level'])} als "
-                "Ungültigkeitsniveau. "
-                "Welches Szenario eintritt, ist offen.")
+    if d["direction_if_confirmed"] == "offen":
+        text.append(f"Mögliche Szenarien: Ein Schlusskurs über {fmt.price(d['confirmation_level'])} gilt als Ausbruch "
+                    f"nach oben, ein Schlusskurs unter {fmt.price(d['invalidation_level'])} als Ausbruch nach unten. "
+                    "Ohne Ausbruch bis zur Spitze der Linien oder zum Fristende gilt das Muster als ungültig. "
+                    "Welches Szenario eintritt, ist offen.")
+    else:
+        text.append(f"Mögliche Szenarien: Ein Schlusskurs bei {fmt.price(d['confirmation_level'])} gilt als "
+                    f"Bestätigungsniveau, ein Schlusskurs bei {fmt.price(d['invalidation_level'])} als "
+                    "Ungültigkeitsniveau. "
+                    "Welches Szenario eintritt, ist offen.")
     b = d["backtest"]
     if b.get("status") == "berechnet" and b.get("hit_rate") is not None:
         text.append(f"Historisch folgte auf dieses Muster in {_share(b['hit_rate'])} von {b['sample_size']} Fällen "

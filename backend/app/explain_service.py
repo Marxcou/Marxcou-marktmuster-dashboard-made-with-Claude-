@@ -79,8 +79,8 @@ class ClaudeExplainSource(SourceAdapter):
     def worst_case_usd(self, facts_text: str) -> float:
         return ((len(SYSTEM) + len(facts_text)) / 3 * PRICE_IN_PER_M / 1e6 + MAX_TOKENS * PRICE_OUT_PER_M / 1e6)
 
-    def write(self, facts_text: str) -> tuple[str, int, int]:
-        """Text, Eingabe-Tokens, Ausgabe-Tokens."""
+    def write(self, facts_text: str) -> tuple[str, int, int, str | None]:
+        """Text, Eingabe-Tokens, Ausgabe-Tokens, stop_reason ("end_turn", wenn der Text vollständig ist)."""
         resp = self.http.request("POST", "/v1/messages", json={
             "model": MODEL, "max_tokens": MAX_TOKENS, "system": SYSTEM,
             "messages": [{"role": "user", "content": f"Fakten der automatischen Analyse:\n{facts_text}"}]})
@@ -88,7 +88,7 @@ class ClaudeExplainSource(SourceAdapter):
             body = resp.json()
             usage = body["usage"]
             text = "".join(b["text"] for b in body["content"] if b.get("type") == "text").strip()
-            return text, int(usage["input_tokens"]), int(usage["output_tokens"])
+            return text, int(usage["input_tokens"]), int(usage["output_tokens"]), body.get("stop_reason")
         except (ValueError, KeyError, TypeError) as exc:
             raise SourceError("Claude: unerwartetes Antwortformat") from exc
 
@@ -161,12 +161,14 @@ def get_explanation(db: Session, kind: str, subject_id: int, facts_text: str, te
             return transient("Monatslimit erreicht")
         src.budget_exhausted = False
         try:
-            text, tin, tout = src.write(facts_text)
+            text, tin, tout, stop_reason = src.write(facts_text)
         except SourceError as exc:
             log.info("Erklärtext nicht verfügbar: %s", redact(str(exc)))
             return transient("KI-Dienst derzeit nicht erreichbar")
         cost = record_usage(db, tin, tout, price_in=PRICE_IN_PER_M, price_out=PRICE_OUT_PER_M)
-        problem = validate(text, facts_text)
+        # Abgeschnittener Text (max_tokens) oder Ablehnung (refusal) wird nie gezeigt, auch wenn er die Prüfung besteht.
+        problem = (f"Antwort unvollständig (stop_reason {stop_reason})" if stop_reason != "end_turn"
+                   else validate(text, facts_text))
         if problem is not None:
             log.info("Erklärtext verworfen: %s", problem)
             saved = _store(db, AiExplanation(

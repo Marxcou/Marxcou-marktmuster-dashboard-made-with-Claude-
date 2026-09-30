@@ -1,6 +1,6 @@
 # API-Vertrag (Stand Phase 1B)
 
-Alle Pfade unter `/api`, JSON. Login per Cookie `session` (httpOnly). Unsichere Methoden (POST/DELETE/...) brauchen den Header `X-CSRF-Token` mit dem Wert aus `/api/auth/login` bzw. `/api/auth/me`. Zeitstempel sind ISO-8601 in UTC; das Frontend formatiert nach Europe/Berlin.
+Alle Pfade unter `/api`, JSON. Login per Cookie `session` (httpOnly). Unsichere Methoden (POST/DELETE/...) brauchen den Header `X-CSRF-Token` mit dem Wert aus `/api/auth/login` bzw. `/api/auth/me`. Zeitstempel sind ISO-8601 in UTC und immer mit Zeitzone (`Z` oder `+00:00`); ohne Zeitzone würde der Browser sie als Ortszeit lesen. Zeitparameter mit anderem Versatz werden vor dem Vergleich nach UTC umgerechnet. Das Frontend formatiert nach Europe/Berlin.
 
 Jeder Kurs/jede Kerze trägt `source` (`key`, `name`, `homepage`, `terms_url`, `delay_text`) und `fetched_at` (Grundregel 2). Fehlende Daten werden über `empty_reason` erklärt, nie durch Platzhalter ersetzt.
 

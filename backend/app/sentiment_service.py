@@ -6,12 +6,13 @@ from datetime import timedelta
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.adapters.http import SourceError
+from app.adapters.http import SourceError, SourceUnavailable
 from app.adapters.registry import get_adapter
 from app.config import get_settings
 from app.models import NewsCluster, NewsItem, Sentiment, SentimentBatch, SentimentBatchItem, Source, utcnow
 from app.sentiment_claude import (
     BATCH_FACTOR,
+    BudgetExceeded,
     ClaudeSentimentSource,
     current_month,
     record_usage,
@@ -25,6 +26,10 @@ log = logging.getLogger("sentiment")
 UPGRADE_WINDOW = timedelta(days=3)  # Lexikon-Einstufungen jüngerer Cluster werden mit Claude nachgeholt
 BATCH_SIZE = 100
 RETRYABLE = ("expired", "canceled")  # nur diese Batch-Ergebnisse werden erneut eingereicht
+# Direktmodus: Cluster, deren Claude-Anfrage bereits bezahlt und verworfen wurde (z. B. Zitat nicht wörtlich) oder
+# fehlschlug. Sie werden in diesem Prozess nicht erneut angefragt; sonst würde dieselbe Meldung bei jedem Durchlauf
+# (alle 5 Minuten, 3 Tage lang) erneut Kosten verursachen. Der Batch-Modus merkt sich das in sentiment_batch_items.
+_DIRECT_FAILED: set[int] = set()
 
 
 def _claude() -> ClaudeSentimentSource | None:
@@ -72,6 +77,8 @@ def compute(db: Session, cluster: NewsCluster) -> SentimentResult:
         try:
             return claude.classify(db, item.title, item.excerpt, item.language)
         except SourceError as exc:
+            if not isinstance(exc, BudgetExceeded | SourceUnavailable):
+                _DIRECT_FAILED.add(cluster.id)
             log.info("Claude-Stimmung nicht verfügbar (%s), Lexikon-Fallback", exc)
     return analyze(item.title, item.excerpt, item.language)
 
@@ -182,7 +189,7 @@ def sentiment_pass(db: Session, limit: int = 30) -> int:
         submit_batch(db)
     elif _claude() is not None and fallback_reason(db) is None and done < limit:
         upgrades = db.scalars(select(NewsCluster).join(Sentiment, Sentiment.cluster_id == NewsCluster.id)
-                              .where(Sentiment.method == "lexicon",
+                              .where(Sentiment.method == "lexicon", NewsCluster.id.notin_(_DIRECT_FAILED),
                                      NewsCluster.first_published_at > utcnow() - UPGRADE_WINDOW)
                               .order_by(NewsCluster.first_published_at.desc()).limit(limit - done)).all()
         for c in upgrades:

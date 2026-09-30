@@ -54,6 +54,7 @@ def env(monkeypatch, client):
         monkeypatch.setenv(k, "")
     get_settings.cache_clear()
     registry.clear()
+    monkeypatch.setattr("app.sentiment_service._DIRECT_FAILED", set())
     offline = httpx.MockTransport(lambda r: httpx.Response(200, json={"articles": []}))  # kein echtes Netz in Tests
     fin, mar, gd = FinnhubNewsAdapter(), MarketauxAdapter(), GdeltAdapter(transport=offline, sleep=lambda _s: None)
     for a in (fin, mar, gd, LexiconSentimentSource(), ClaudeSentimentSource()):
@@ -128,6 +129,15 @@ def test_ingest_merges_duplicates_across_sources_and_keeps_every_source(env):
         assert len(db.scalars(select(NewsItem)).all()) == 4
         types = [e.type for e in db.scalars(select(Event))]
         assert types.count("news") == 3  # je Ereignis-Cluster das letzte; Cluster 1 zweimal (neu, erweitert)
+
+
+def test_non_web_links_are_discarded(env):
+    with SessionLocal() as db:
+        stats = ingest(db, [rec("finnhub_news", "x1", "Apple beats estimates", "javascript:alert(1)", symbols=["AAPL"]),
+                            rec("finnhub_news", "x2", "Apple beats estimates again", "https://a.example/2",
+                                symbols=["AAPL"])], env["finnhub"])
+        assert stats["discarded"] == 1 and stats["new_items"] == 1
+        assert [i.url for i in db.scalars(select(NewsItem))] == ["https://a.example/2"]
 
 
 def test_require_match_discards_unmatched_noise(env):
@@ -212,6 +222,17 @@ def test_claude_invalid_answer_falls_back_to_lexicon(env, monkeypatch):
                env["finnhub"])
         sentiment_pass(db)
         assert db.scalars(select(Sentiment)).one().method == "lexicon"
+
+
+def test_rejected_claude_answer_is_not_paid_again_in_direct_mode(env, monkeypatch):
+    calls = []
+    claude_source(monkeypatch, lambda r: calls.append(1) or tool_reply({**GOOD, "evidence": ["erfundenes Zitat"]}))
+    with SessionLocal() as db:
+        ingest(db, [rec("finnhub_news", "f1", "Apple beats estimates", "https://a.example/1", symbols=["AAPL"])],
+               env["finnhub"])
+        sentiment_pass(db)
+        sentiment_pass(db)
+        assert len(calls) == 1 and db.scalars(select(Sentiment)).one().method == "lexicon"
 
 
 def test_budget_cap_blocks_claude_calls_and_reports_fallback(env, monkeypatch):
