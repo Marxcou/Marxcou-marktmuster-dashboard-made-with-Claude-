@@ -20,7 +20,7 @@ def claude(monkeypatch):
     """Registriert die Erklär-Quelle mit Schlüssel; handler(request) -> Text. Gibt (calls, set_handler) zurück."""
     state = {"calls": [], "text": None}
 
-    def install(text_fn=None, budget="10", tin=1500, tout=300):
+    def install(text_fn=None, budget="10", tin=1500, tout=300, stop_reason="end_turn"):
         monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test")
         monkeypatch.setenv("CLAUDE_MONTHLY_BUDGET_USD", budget)
         get_settings.cache_clear()
@@ -29,7 +29,7 @@ def claude(monkeypatch):
             state["calls"].append(req.read().decode())
             facts = state["calls"][-1]
             text = text_fn(facts) if text_fn else ""
-            return httpx.Response(200, json={"content": [{"type": "text", "text": text}],
+            return httpx.Response(200, json={"content": [{"type": "text", "text": text}], "stop_reason": stop_reason,
                                              "usage": {"input_tokens": tin, "output_tokens": tout}})
 
         registry.clear()
@@ -57,6 +57,17 @@ def test_template_passes_own_validation_and_is_neutral(client):
     assert validate(tpl, facts) is None
     assert "Doppelboden" in tpl and "keine Anlageberatung" in tpl
     assert det["backtest"]["status"] == "nicht_berechnet" and "nicht berechnet" in facts
+
+
+def test_symmetric_triangle_levels_are_breakouts_not_invalidation(client):
+    _, det = setup_pattern(client)
+    det = {**det, "pattern_type": "dreieck_symmetrisch", "name": "Symmetrisches Dreieck",
+           "direction_if_confirmed": "offen"}
+    facts, tpl = pattern_facts_text(det), pattern_template(det)
+    assert "Ausbruchsniveau oben" in facts and "Ausbruchsniveau unten" in facts
+    assert "\nUngültigkeitsniveau:" not in facts and "Ungültigkeitsniveau" not in tpl
+    assert "Ausbruch nach unten" in tpl
+    assert validate(tpl, facts) is None
 
 
 def test_validate_rejects_invented_numbers_dates_and_advice():
@@ -134,6 +145,16 @@ def test_forbidden_or_invented_ai_text_falls_back_to_template_and_is_cached(clie
     install(lambda body: pattern_template(det) + " Der Kurs steigt danach auf 999,99.")
     body = client.get(f"/api/patterns/{det['id']}/explanation").json()
     assert body["source"] == "vorlage" and "999,99" in body["fallback_reason"]
+
+
+def test_truncated_ai_text_falls_back_to_template(client, claude):
+    state, install = claude
+    _, det = setup_pattern(client)
+    # Ein bei max_tokens abgeschnittener Text kann die Prüfung bestehen, bricht aber mitten im Satz ab.
+    install(lambda body: pattern_template(det)[:400], stop_reason="max_tokens")
+    body = client.get(f"/api/patterns/{det['id']}/explanation").json()
+    assert body["source"] == "vorlage" and "max_tokens" in body["fallback_reason"]
+    assert body["text"].endswith("keine Anlageberatung.") and body["cost_usd"] > 0
 
 
 def test_budget_exhausted_uses_template_without_calling_api(client, claude):

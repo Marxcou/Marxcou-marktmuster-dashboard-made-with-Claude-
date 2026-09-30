@@ -179,9 +179,11 @@ def quote_from_daily(db: Session, inst: Instrument) -> bool:
     src = db.get(Source, last.source_id)
     assert src is not None
     ts = last.ts_utc if last.ts_utc.tzinfo else last.ts_utc.replace(tzinfo=UTC)
-    exists = db.scalar(select(Quote.id).where(Quote.instrument_id == inst.id, Quote.ts_utc == ts,
-                                             Quote.source_id == src.id).limit(1))
-    if exists:
+    # Die Kerze des laufenden Handelstags ändert sich bis zum Handelsende (die Quelle aktualisiert ihren Schlusskurs).
+    # Nur ein unveränderter Wert wird übersprungen; sonst bliebe der erste Abruf des Tages den ganzen Tag stehen.
+    known = db.scalar(select(Quote.price).where(Quote.instrument_id == inst.id, Quote.ts_utc == ts,
+                                               Quote.source_id == src.id).order_by(Quote.id.desc()).limit(1))
+    if known is not None and known == last.close:
         return False
     store_quote(db, inst, QuoteRecord(
         symbol=inst.symbol, exchange=inst.exchange, price=last.close, ts_utc=ts, source_key=src.key,

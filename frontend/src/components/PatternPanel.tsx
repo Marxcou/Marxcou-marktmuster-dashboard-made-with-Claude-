@@ -1,6 +1,6 @@
 import type { PatternBacktest, PatternDetection } from "../lib/api";
 import { formatDate, formatDateTime, formatNumber, formatPercentPoints, formatShare } from "../lib/format";
-import { STATUS_TEXT } from "../lib/analysis";
+import { levelLabels, STATUS_TEXT } from "../lib/analysis";
 import { AiExplanation } from "./AiExplanation";
 import { SourceTip } from "./SourceTip";
 
@@ -65,6 +65,7 @@ export function BacktestBlock({ b }: { b: PatternBacktest | null }) {
 
 export function PatternPanel({ p, onClose }: { p: PatternDetection; onClose?: () => void }) {
   const missing = missingParts(p);
+  const labels = levelLabels(p.direction_if_confirmed);
   return (
     <article className="rounded-lg border border-violet-800/60 bg-slate-900 p-4" data-testid="pattern-panel" aria-label={`Erklärung: ${p.name}`}>
       <header className="flex flex-wrap items-start justify-between gap-2">
@@ -145,9 +146,11 @@ export function PatternPanel({ p, onClose }: { p: PatternDetection; onClose?: ()
           ))}
         </div>
         <p className="mt-2 text-sm" data-testid="levels">
-          Bestätigungsniveau: {p.confirmation_level != null ? formatNumber(p.confirmation_level) : "nicht verfügbar"} · Ungültigkeitsniveau: {p.invalidation_level != null ? formatNumber(p.invalidation_level) : "nicht verfügbar"}
+          {labels.confirmation}: {p.confirmation_level != null ? formatNumber(p.confirmation_level) : "nicht verfügbar"} · {labels.invalidation}: {p.invalidation_level != null ? formatNumber(p.invalidation_level) : "nicht verfügbar"}
         </p>
-        <p className="text-xs text-slate-400">Beide Niveaus beschreiben nur, ab wann das Muster per Schlusskurs als bestätigt bzw. ungültig gilt. Sie sind keine Kursziele.</p>
+        <p className="text-xs text-slate-400">{p.direction_if_confirmed === "offen"
+          ? "Beide Niveaus beschreiben nur, ab wann das Muster per Schlusskurs als nach oben bzw. unten aufgelöst gilt. Ungültig wird es, wenn die Spitze der Linien oder das Fristende ohne Ausbruch erreicht wird. Sie sind keine Kursziele."
+          : "Beide Niveaus beschreiben nur, ab wann das Muster per Schlusskurs als bestätigt bzw. ungültig gilt. Sie sind keine Kursziele."}</p>
       </section>
 
       <section className="mt-4" aria-labelledby={`b-${p.id}`}>

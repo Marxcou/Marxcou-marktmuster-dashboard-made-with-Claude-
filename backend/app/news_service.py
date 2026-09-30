@@ -5,6 +5,7 @@ import logging
 import threading
 from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
+from urllib.parse import urlparse
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -28,6 +29,14 @@ _INGEST_LOCK = threading.Lock()  # ein Schreiber, damit parallele Jobs keine dop
 
 def _aware(dt: datetime) -> datetime:
     return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
+
+
+def is_web_link(url: str) -> bool:
+    try:
+        parsed = urlparse(url.strip())
+    except ValueError:
+        return False
+    return parsed.scheme.lower() in ("http", "https") and bool(parsed.netloc)
 
 
 def watchlist_targets(db: Session) -> list[NewsTarget]:
@@ -60,6 +69,9 @@ def ingest(db: Session, records: Sequence[NewsRecord], adapter: NewsAdapter) -> 
         for rec in sorted(records, key=lambda r: r.published_at):
             if rec.external_id in known:
                 stats["already_known"] += 1
+                continue
+            if not is_web_link(rec.url):  # der Link wird als href gezeigt; "javascript:" o. Ä. wäre ausführbar
+                stats["discarded"] += 1
                 continue
             matches = matcher.match(rec)
             if adapter.require_match and not matches:

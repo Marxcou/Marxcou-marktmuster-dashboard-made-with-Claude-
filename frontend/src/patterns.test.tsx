@@ -46,6 +46,13 @@ describe("Erklärpanel (Grundregel 3)", () => {
     expect(screen.getByTestId("levels").textContent).toContain("139,72");
     expect(screen.queryByTestId("pattern-incomplete")).toBeNull();
   });
+  it("nennt beim symmetrischen Dreieck beide Niveaus Ausbruchsniveaus statt eines davon Ungültigkeitsniveau", () => {
+    render(<PatternPanel p={{ ...PATTERN, pattern_type: "dreieck_symmetrisch", name: "Symmetrisches Dreieck", direction_if_confirmed: "offen" }} />);
+    const t = screen.getByTestId("levels").textContent ?? "";
+    expect(t).toContain("Ausbruchsniveau oben: 151,40");
+    expect(t).toContain("Ausbruchsniveau unten: 139,72");
+    expect(t).not.toContain("Ungültigkeitsniveau");
+  });
   it("nennt fehlenden Backtest ausdrücklich und erfindet keine Trefferquote", () => {
     render(<PatternPanel p={PATTERN} />);
     expect(screen.getByTestId("backtest-missing").textContent).toContain("nicht verfügbar");

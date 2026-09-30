@@ -106,6 +106,21 @@ def test_daily_job_uses_stooq_for_xetra_and_derives_quote(db, monkeypatch):
     assert db.scalars(select(Event).where(Event.type == "quote")).first() is not None
 
 
+def test_daily_quote_follows_updated_close_of_current_day(db, monkeypatch):
+    """Die Tageskerze des laufenden Tages ändert ihren Schlusskurs; die abgeleitete Quote muss folgen."""
+    today = NOW.replace(hour=0)
+    stooq = Fake("stooq", ("XETR",), bars=[bar("stooq", "1d", today - timedelta(days=1), 100, "SAP", "XETR"),
+                                          bar("stooq", "1d", today, 101, "SAP", "XETR")])
+    add_instrument(db, [stooq], "SAP", "XETR")
+    monkeypatch.setattr(ps, "SessionLocal", SessionLocal)
+    ps.daily_job()
+    stooq._bars[-1] = bar("stooq", "1d", today, 104, "SAP", "XETR")  # späterer Abruf am selben Tag
+    ps.daily_job()
+    ps.daily_job()  # unverändert: keine weitere Quote
+    prices = [q.price for q in db.scalars(select(Quote).order_by(Quote.id))]
+    assert prices == [101, 104]
+
+
 def test_failing_adapter_falls_through_without_invented_data(db, monkeypatch):
     good = Fake("stooq", ("XNAS",), bars=[bar("stooq", "1d", NOW - timedelta(days=1), 5)])
     bad = Fake("alpaca", ("XNAS",), fail=True)

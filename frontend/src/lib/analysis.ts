@@ -90,3 +90,11 @@ export const EVENT_NAME: Record<IndicatorEventType, string> = {
 export const DIRECTION_TEXT = { up: "Werte oberhalb bzw. steigend", down: "Werte unterhalb bzw. fallend" } as const;
 
 export const STATUS_TEXT: Record<string, string> = { in_bildung: "In Bildung", bestaetigt: "Bestätigt", ungueltig: "Ungültig" };
+
+// Beim symmetrischen Dreieck (Richtung "offen") sind beide Niveaus Ausbruchsniveaus: ein Schlusskurs außerhalb einer der
+// Linien löst das Muster auf. Ungültig wird es erst, wenn die Spitze ohne Ausbruch erreicht wird oder die Frist abläuft.
+export function levelLabels(direction: string): { confirmation: string; invalidation: string } {
+  return direction === "offen"
+    ? { confirmation: "Ausbruchsniveau oben", invalidation: "Ausbruchsniveau unten" }
+    : { confirmation: "Bestätigungsniveau", invalidation: "Ungültigkeitsniveau" };
+}

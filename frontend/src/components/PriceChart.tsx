@@ -2,7 +2,7 @@ import { ColorType, CrosshairMode, createChart, LineStyle, type IChartApi, type 
 import { useEffect, useRef } from "react";
 import type { Bar, ForecastExamplePath, ForecastStep, IndicatorEvent, PatternDetection, SRZone } from "../lib/api";
 import { BAND_FILL, BANDS, bandSeries, EXAMPLE_COLOR, MEDIAN_COLOR, medianSeries, validExamplePaths, validSteps, type ScenarioLevel } from "../lib/forecast";
-import { EVENT_SHORT } from "../lib/analysis";
+import { EVENT_SHORT, levelLabels } from "../lib/analysis";
 import { type AlignedPoint, ascendingUnique, priceOnLine, snapTime, toTime } from "../lib/chartData";
 import type { ChartGroup } from "../lib/chartSync";
 
@@ -103,8 +103,9 @@ export function PriceChart({ bars, kind, intraday, markers = [], onMarkerClick, 
         s.setData(ascendingUnique(points));
       }
       if (sel) {
-        if (p.confirmation_level != null) main.createPriceLine({ price: p.confirmation_level, color: PATTERN_COLOR, lineStyle: LineStyle.Solid, lineWidth: 1, axisLabelVisible: true, title: "Bestätigungsniveau" });
-        if (p.invalidation_level != null) main.createPriceLine({ price: p.invalidation_level, color: "#f472b6", lineStyle: LineStyle.Solid, lineWidth: 1, axisLabelVisible: true, title: "Ungültigkeitsniveau" });
+        const labels = levelLabels(p.direction_if_confirmed);
+        if (p.confirmation_level != null) main.createPriceLine({ price: p.confirmation_level, color: PATTERN_COLOR, lineStyle: LineStyle.Solid, lineWidth: 1, axisLabelVisible: true, title: labels.confirmation });
+        if (p.invalidation_level != null) main.createPriceLine({ price: p.invalidation_level, color: "#f472b6", lineStyle: LineStyle.Solid, lineWidth: 1, axisLabelVisible: true, title: labels.invalidation });
       }
     }
 

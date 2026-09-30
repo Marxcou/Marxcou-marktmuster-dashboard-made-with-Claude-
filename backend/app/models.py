@@ -7,7 +7,6 @@ from sqlalchemy import (
     JSON,
     Boolean,
     Date,
-    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -20,7 +19,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db import Base
+from app.db import Base, UtcDateTime
 
 
 def utcnow() -> datetime:
@@ -36,7 +35,7 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(10), default="user")  # admin | user
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default=true())
     must_change_password: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
 
 
 class UserSession(Base):
@@ -44,8 +43,8 @@ class UserSession(Base):
     token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     csrf_token: Mapped[str] = mapped_column(String(64))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(UtcDateTime())
 
 
 class Source(Base):
@@ -62,7 +61,7 @@ class Source(Base):
     requires_key: Mapped[bool] = mapped_column(Boolean, default=False)
     is_official: Mapped[bool] = mapped_column(Boolean, default=True)
     status: Mapped[str] = mapped_column(String(20), default="disabled")  # online|degraded|offline|disabled
-    last_success_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_success_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
@@ -77,7 +76,7 @@ class Instrument(Base):
     currency: Mapped[str] = mapped_column(String(3))
     provider_symbols: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    fetched_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
     __table_args__ = (UniqueConstraint("symbol", "exchange"),)
 
 
@@ -86,21 +85,21 @@ class WatchlistItem(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id"), primary_key=True)
     position: Mapped[int] = mapped_column(Integer, default=0)
-    added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    added_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
 
 
 class PriceBar(Base):
     __tablename__ = "price_bars"
     instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id"), primary_key=True)
     timeframe: Mapped[str] = mapped_column(String(3), primary_key=True)  # 1m|5m|1h|1d
-    ts_utc: Mapped[datetime] = mapped_column(DateTime(timezone=True), primary_key=True)
+    ts_utc: Mapped[datetime] = mapped_column(UtcDateTime(), primary_key=True)
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"), primary_key=True)
     open: Mapped[float] = mapped_column(Float)
     high: Mapped[float] = mapped_column(Float)
     low: Mapped[float] = mapped_column(Float)
     close: Mapped[float] = mapped_column(Float)
     volume: Mapped[float | None] = mapped_column(Float, nullable=True)
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    fetched_at: Mapped[datetime] = mapped_column(UtcDateTime())
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
@@ -111,9 +110,9 @@ class Quote(Base):
     price: Mapped[float] = mapped_column(Float)
     change_abs: Mapped[float | None] = mapped_column(Float, nullable=True)
     change_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
-    ts_utc: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ts_utc: Mapped[datetime] = mapped_column(UtcDateTime())
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    fetched_at: Mapped[datetime] = mapped_column(UtcDateTime())
     delay_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
     __table_args__ = (Index("ix_quotes_instr_ts", "instrument_id", "ts_utc"),)
@@ -125,7 +124,7 @@ class Event(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     type: Mapped[str] = mapped_column(String(40))  # quote | news | detection | source_status
     payload: Mapped[dict[str, Any]] = mapped_column(JSON)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
 
 
 class NewsCluster(Base):
@@ -133,10 +132,10 @@ class NewsCluster(Base):
     __tablename__ = "news_clusters"
     id: Mapped[int] = mapped_column(primary_key=True)
     canonical_title: Mapped[str] = mapped_column(String(500))
-    first_published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
-    last_published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    first_published_at: Mapped[datetime] = mapped_column(UtcDateTime(), index=True)
+    last_published_at: Mapped[datetime] = mapped_column(UtcDateTime())
     item_count: Mapped[int] = mapped_column(Integer, default=1)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
 
 
 class NewsItem(Base):
@@ -148,8 +147,8 @@ class NewsItem(Base):
     url_normalized: Mapped[str] = mapped_column(String(1000), index=True)
     title: Mapped[str] = mapped_column(String(500))
     excerpt: Mapped[str] = mapped_column(String(300), default="")  # nie der Volltext
-    published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    published_at: Mapped[datetime] = mapped_column(UtcDateTime(), index=True)
+    fetched_at: Mapped[datetime] = mapped_column(UtcDateTime())
     language: Mapped[str | None] = mapped_column(String(8), nullable=True)
     publisher: Mapped[str | None] = mapped_column(String(200), nullable=True)
     cluster_id: Mapped[int] = mapped_column(ForeignKey("news_clusters.id"), index=True)
@@ -162,7 +161,7 @@ class NewsInstrument(Base):
     instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id"), primary_key=True, index=True)
     match_method: Mapped[str] = mapped_column(String(20))  # provider_tag | isin | ticker | name
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    fetched_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
 
 
 class Sentiment(Base):
@@ -178,7 +177,7 @@ class Sentiment(Base):
     model_name: Mapped[str] = mapped_column(String(100))
     model_version: Mapped[str] = mapped_column(String(50))
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
 
 
 class LlmUsage(Base):
@@ -205,7 +204,7 @@ class AiExplanation(Base):
     model_version: Mapped[str | None] = mapped_column(String(50), nullable=True)
     cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
     fallback_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
     __table_args__ = (UniqueConstraint("subject_kind", "subject_id", "input_hash"),)
 
 
@@ -219,10 +218,10 @@ class IndicatorEvent(Base):
     # golden_cross | death_cross | rsi_divergence | bb_breakout | volume_spike
     type: Mapped[str] = mapped_column(String(20))
     direction: Mapped[str] = mapped_column(String(4), default="none")  # up | down | none
-    ts_utc: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    start_ts: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    end_ts: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    confirmed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ts_utc: Mapped[datetime] = mapped_column(UtcDateTime())
+    start_ts: Mapped[datetime] = mapped_column(UtcDateTime())
+    end_ts: Mapped[datetime] = mapped_column(UtcDateTime())
+    confirmed_at: Mapped[datetime] = mapped_column(UtcDateTime())
     title: Mapped[str] = mapped_column(String(200))
     summary: Mapped[str] = mapped_column(Text)
     criteria: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
@@ -231,8 +230,8 @@ class IndicatorEvent(Base):
     algo_version: Mapped[str] = mapped_column(String(40))
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
     source_ids: Mapped[list[int]] = mapped_column(JSON)
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    detected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    fetched_at: Mapped[datetime] = mapped_column(UtcDateTime())
+    detected_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
     __table_args__ = (
         UniqueConstraint("instrument_id", "timeframe", "type", "direction", "ts_utc", "algo_version"),
@@ -246,8 +245,8 @@ class NotableMove(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id"), index=True)
     timeframe: Mapped[str] = mapped_column(String(3))
-    move_start: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    move_end: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    move_start: Mapped[datetime] = mapped_column(UtcDateTime())
+    move_end: Mapped[datetime] = mapped_column(UtcDateTime())
     return_pct: Mapped[float] = mapped_column(Float)
     return_z: Mapped[float | None] = mapped_column(Float, nullable=True)
     volume_z: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -256,8 +255,8 @@ class NotableMove(Base):
     algo_version: Mapped[str] = mapped_column(String(40))
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
     source_ids: Mapped[list[int]] = mapped_column(JSON)
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    detected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    fetched_at: Mapped[datetime] = mapped_column(UtcDateTime())
+    detected_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
     __table_args__ = (UniqueConstraint("instrument_id", "timeframe", "move_start", "algo_version"),)
 
@@ -269,7 +268,7 @@ class MoveNewsLink(Base):
     cluster_id: Mapped[int] = mapped_column(ForeignKey("news_clusters.id"), primary_key=True)
     time_offset_minutes: Mapped[int] = mapped_column(Integer)  # Veröffentlichung minus Beginn der Kerze
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    fetched_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
 class ApiUsage(Base):
     """Abrufzähler je Quelle und UTC-Tag für Tageskontingente (übersteht Neustarts des Workers)."""
     __tablename__ = "api_usage"
@@ -286,8 +285,8 @@ class SentimentBatch(Base):
     batch_id: Mapped[str] = mapped_column(String(100), unique=True)
     status: Mapped[str] = mapped_column(String(15), default="in_progress")  # in_progress | ended
     reserved_usd: Mapped[float] = mapped_column(Float, default=0.0)
-    submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    submitted_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
+    completed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
 
 
 class SentimentBatchItem(Base):
@@ -310,14 +309,14 @@ class PatternDetection(Base):
     fingerprint: Mapped[str] = mapped_column(String(64))
     name: Mapped[str] = mapped_column(String(100))
     direction: Mapped[str] = mapped_column(String(10))  # aufwärts | abwärts | offen
-    start_ts: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    end_ts: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    formed_ts: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    start_ts: Mapped[datetime] = mapped_column(UtcDateTime())
+    end_ts: Mapped[datetime] = mapped_column(UtcDateTime())
+    formed_ts: Mapped[datetime] = mapped_column(UtcDateTime())
     status: Mapped[str] = mapped_column(String(12))  # in_bildung | bestaetigt | ungueltig
     status_reason: Mapped[str] = mapped_column(Text, default="")
-    status_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    invalidated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    status_changed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
+    confirmed_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
+    invalidated_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
     breakout_direction: Mapped[str | None] = mapped_column(String(10), nullable=True)
     key_points: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
     lines: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
@@ -333,9 +332,9 @@ class PatternDetection(Base):
     algo_version: Mapped[str] = mapped_column(String(20))
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
     source_ids: Mapped[list[int]] = mapped_column(JSON)
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    detected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    fetched_at: Mapped[datetime] = mapped_column(UtcDateTime())
+    detected_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
     __table_args__ = (
         UniqueConstraint("instrument_id", "timeframe", "fingerprint"),
@@ -353,8 +352,8 @@ class SupportResistanceZone(Base):
     lower: Mapped[float] = mapped_column(Float)
     upper: Mapped[float] = mapped_column(Float)
     touches: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
-    first_touch: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    last_touch: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    first_touch: Mapped[datetime] = mapped_column(UtcDateTime())
+    last_touch: Mapped[datetime] = mapped_column(UtcDateTime())
     criteria: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
     confidence: Mapped[float] = mapped_column(Float)
     confidence_breakdown: Mapped[list[dict[str, Any]]] = mapped_column(JSON)
@@ -363,8 +362,8 @@ class SupportResistanceZone(Base):
     algo_version: Mapped[str] = mapped_column(String(20))
     source_id: Mapped[int] = mapped_column(ForeignKey("sources.id"))
     source_ids: Mapped[list[int]] = mapped_column(JSON)
-    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    computed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    fetched_at: Mapped[datetime] = mapped_column(UtcDateTime())
+    computed_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
@@ -374,12 +373,12 @@ class PatternScan(Base):
     __tablename__ = "pattern_scans"
     instrument_id: Mapped[int] = mapped_column(ForeignKey("instruments.id"), primary_key=True)
     timeframe: Mapped[str] = mapped_column(String(3), primary_key=True)
-    computed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
-    bars_from: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    bars_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    recent_from: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    computed_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
+    bars_from: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
+    bars_to: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
+    recent_from: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
     bar_count: Mapped[int] = mapped_column(Integer, default=0)
-    last_fetched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_fetched_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
     source_ids: Mapped[list[int]] = mapped_column(JSON, default=list)
     params_hash: Mapped[str] = mapped_column(String(16))
     algo_version: Mapped[str] = mapped_column(String(20))
@@ -405,7 +404,7 @@ class BacktestRun(Base):
     base_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
     metrics: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     code_version: Mapped[str] = mapped_column(String(40), default="")
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
     __table_args__ = (Index("ix_backtest_runs_lookup", "kind", "subject", "timeframe", "algo_version", "created_at"),)
 
 
@@ -419,7 +418,7 @@ class Forecast(Base):
     timeframe: Mapped[str] = mapped_column(String(3))
     method: Mapped[str] = mapped_column(String(40))
     horizon: Mapped[int] = mapped_column(Integer, default=0)
-    based_on_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    based_on_until: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
     last_close: Mapped[float | None] = mapped_column(Float, nullable=True)
     steps: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     params: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
@@ -431,11 +430,11 @@ class Forecast(Base):
     pattern_levels: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     # Nur Hauptmethode: einige simulierte Pfade als Beispiele (analysis.forecast.example_path_rows)
     example_paths: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
-    bars_from: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    bars_from: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
     bar_count: Mapped[int] = mapped_column(Integer, default=0)
     source_ids: Mapped[list[int]] = mapped_column(JSON, default=list)
-    fetched_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    fetched_at: Mapped[datetime | None] = mapped_column(UtcDateTime(), nullable=True)
     empty_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime(), default=utcnow)
     __table_args__ = (UniqueConstraint("instrument_id", "timeframe", "method"),)
